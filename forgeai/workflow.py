@@ -6,9 +6,9 @@ import time
 from pydantic import TypeAdapter
 
 from .documents import digest
-from .evaluation import freeze, generate, read_frozen
+from .evaluation import Case, freeze, generate, read_frozen
 from .judge import Result, assess
-from .llm import Ollama, PROMPTS
+from .llm import GROQ_JUDGE, PROMPTS, make_model
 from .optimizer import changes, proposed_patch
 from .runner import Runner
 from .schema import Config, Passage
@@ -52,23 +52,23 @@ def score(results: list[Result], version: int, seconds: float) -> dict:
 
 def report(out: Path, cards: list[dict], logs: list[dict], best: int | None, stop: str,
            selected: list[Result], config: Config) -> None:
-    lines = ["# ForgeAI quality report", "", f"- Stop reason · {stop}", f"- Selected version · {best}",
-             f"- Agent model · {config.model}", f"- Embedding model · {config.embedding}", "",
+    lines = ["# ForgeAI quality report", "", f"- Stop reason Ãƒâ€š· {stop}", f"- Selected version Ãƒâ€š· {best}",
+             f"- Agent model Ãƒâ€š· {config.model}", f"- Embedding model Ãƒâ€š· {config.embedding}", "",
              "| Version | Passed | Failed | Errors | Total | Rate | Seconds |", "| --- | --- | --- | --- | --- | --- | --- |"]
     for card in cards:
         lines.append(f"| {card['version']} | {card['passed']} | {card['failed']} | {card['error']} | "
                      f"{card['total']} | {card['pass_rate']:.1%} | {card['seconds']} |")
     if best is not None:
-        lines += ["", f"Measured improvement · {'yes' if cards[best]['pass_rate'] > cards[0]['pass_rate'] else 'no'}",
+        lines += ["", f"Measured improvement Ãƒâ€š· {'yes' if cards[best]['pass_rate'] > cards[0]['pass_rate'] else 'no'}",
                   "", "## Selected version checks", ""]
-        lines += [f"- {key} · {value['passed']}/{value['scored']} scored cases"
+        lines += [f"- {key} Ãƒâ€š· {value['passed']}/{value['scored']} scored cases"
                   for key, value in cards[best]["dimensions"].items()]
         lines += ["", "## Remaining failures and errors", ""]
-        lines += [f"- {r.case.id} · {r.failure or r.status} · {r.explanation}"
+        lines += [f"- {r.case.id} Ãƒâ€š· {r.failure or r.status} Ãƒâ€š· {r.explanation}"
                   for r in selected if r.status != "passed"] or ["All cases in this run passed."]
     if logs:
         lines += ["", "## Targeted iterations", ""]
-        lines += [f"- Version {log['iteration']} · {log['reason']} Outcome {log.get('outcome', 'unmeasured')}."
+        lines += [f"- Version {log['iteration']} Ãƒâ€š· {log['reason']} Outcome {log.get('outcome', 'unmeasured')}."
                   for log in logs]
     lines += ["", "## Assumptions and limitations", ""]
     lines += [f"- {s}" for s in [*config.requirements.assumptions, *config.requirements.unresolved]]
@@ -79,16 +79,34 @@ def report(out: Path, cards: list[dict], logs: list[dict], best: int | None, sto
     (out / "final_report.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATION_LIMIT) -> list[dict]:
+def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATION_LIMIT,
+        *, resume_generation: bool = False) -> list[dict]:
     if not 0 <= max_iterations <= ITERATION_LIMIT:
         raise ValueError(f"Iterations must be between 0 and {ITERATION_LIMIT}")
     runner = Runner(out / "agent_config.json")
     if runner.sources is None:
         raise ValueError("Full evaluation requires a run with original source snapshots")
-    generator = Ollama(runner.config.model)
-    judge = Ollama(judge_model or runner.config.model)
+    generator = make_model(runner.config.model)
+    default_judge = GROQ_JUDGE if runner.config.model.startswith("groq:") else runner.config.model
+    judge = make_model(judge_model or default_judge)
     path = out / "eval_dataset.json"
-    if path.exists() or (out / "run_metadata.json").exists():
+    metadata_path = out / "run_metadata.json"
+    draft_path = out / "eval_generation_progress.json"
+    prompt_hashes = {p.name: digest(p.read_bytes()) for p in sorted(PROMPTS.glob("*.txt"))}
+    resume_options = {}
+    if resume_generation:
+        if path.exists() or not metadata_path.is_file() or not draft_path.is_file():
+            raise ValueError("Resume requires an incomplete run with saved drafts and no frozen dataset")
+        previous = json.loads(metadata_path.read_bytes())
+        if (previous["status"] != "incomplete" or previous["agent_model"] != runner.config.model
+                or any(prompt_hashes.get(name) != fingerprint
+                        for name, fingerprint in previous["prompt_hashes"].items())):
+            raise ValueError("Resume requires the original agent model and unchanged prompts")
+        resume_options["resume"] = TypeAdapter(tuple[Case, ...]).validate_json(draft_path.read_bytes())
+        history = out / "generation_resume_history.json"
+        attempts = json.loads(history.read_bytes()) if history.is_file() else []
+        write_json(history, [*attempts, previous])
+    elif path.exists() or metadata_path.exists():
         raise ValueError("Evaluation already started in this run directory")
     cards, logs, selected = [], [], []
     best = None
@@ -96,14 +114,15 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
         "status": "running", "started": datetime.now(timezone.utc).isoformat(),
         "agent_model": runner.config.model, "judge_model": judge.model,
         "embedding": runner.config.embedding, "max_iterations": max_iterations,
-        "prompt_hashes": {p.name: digest(p.read_bytes()) for p in sorted(PROMPTS.glob("*.txt"))},
+        "prompt_hashes": prompt_hashes,
+        "resumed_drafts": len(resume_options.get("resume", ())),
     }
     write_json(out / "run_metadata.json", metadata)
     stop = "evaluation did not finish"
     try:
         print("Generating evaluation cases", flush=True)
         fingerprint = freeze(generate(runner.config, runner.sources, generator,
-            lambda cases: write_json(out / "eval_generation_progress.json", cases)), path)
+            lambda cases: write_json(draft_path, cases), **resume_options), path)
         metadata["eval_sha256"] = fingerprint
         write_json(out / "run_metadata.json", metadata)
         for iteration in range(max_iterations + 1):

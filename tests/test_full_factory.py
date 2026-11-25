@@ -26,13 +26,19 @@ class DraftModel:
         self.count = 0
 
     def ask(self, stage, payload, schema):
-        if stage == "eval_validate":
+        if stage == "eval_validate" or stage.startswith("eval_review_"):
             return schema(accepted=list(range(1, len(payload["candidates"]) + 1)))
         if stage == "eval_outside":
             questions = []
             for topic in payload["topics"]:
                 self.count += 1
                 questions.append(f"Fixture question about {topic} number {self.count}?")
+            return schema(questions=questions)
+        if stage == "eval_ambiguity":
+            questions = []
+            for _ in range(payload["count"]):
+                self.count += 1
+                questions.append(f"Fixture ambiguous question {self.count}?")
             return schema(questions=questions)
         questions = []
         for _ in payload["slots"]:
@@ -108,7 +114,7 @@ def test_rechunk_and_run_four_versions(tmp_path, monkeypatch):
     monkeypatch.setattr(generator, "Index", index)
     monkeypatch.setattr(runner, "Index", index)
     model = Scripted()
-    monkeypatch.setattr(runner, "Ollama", lambda name: model)
+    monkeypatch.setattr(runner, "make_model", lambda name: model)
     docs = tmp_path / "docs"
     docs.mkdir()
     for fixture in FIXTURES:
@@ -125,7 +131,7 @@ def test_rechunk_and_run_four_versions(tmp_path, monkeypatch):
 
     drafts = DraftModel()
     drafts.model = "mock"
-    monkeypatch.setattr(workflow, "Ollama", lambda name: drafts)
+    monkeypatch.setattr(workflow, "make_model", lambda name: drafts)
 
     from forgeai.judge import Result
 
@@ -180,7 +186,7 @@ def test_untrusted_document_cannot_grant_tool(tmp_path, monkeypatch):
     model = Scripted()
     run = tmp_path / "run"
     generator.build("Attendance", docs, run, True, model, "mock")
-    monkeypatch.setattr(runner, "Ollama", lambda name: model)
+    monkeypatch.setattr(runner, "make_model", lambda name: model)
     agent = runner.Runner(run / "agent_config.json")
     original = model.ask
 
@@ -209,7 +215,7 @@ def test_unattended_cli_invokes_full_workflow(tmp_path, monkeypatch, capsys):
                                     "--docs", str(tmp_path), "--out", str(tmp_path / "new")])
     assert cli.main() == 0
     assert builder.call_args.args[3] is True
-    full.assert_called_once_with(tmp_path / "new", None)
+    full.assert_called_once_with(tmp_path / "new", None, max_iterations=3)
     assert "agent_config.json" in capsys.readouterr().out
 
 
@@ -227,7 +233,7 @@ def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch, mode
     docs.mkdir()
     (docs / "catalog.csv").write_text("sku,unit_price\nA101,15", encoding="utf-8")
     model = Scripted()
-    monkeypatch.setattr(runner, "Ollama", lambda _: model)
+    monkeypatch.setattr(runner, "make_model", lambda _: model)
     out = tmp_path / "run"
     generator.build("Use exact CSV lookup and the calculator", docs, out, True, model, "mock")
     agent = runner.Runner(out / "agent_config.json")
@@ -235,6 +241,8 @@ def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch, mode
 
     def route(stage, payload, schema):
         if stage == "answer":
+            if "tool:calculator" not in payload["evidence"]:
+                return schema(answer="15", citations=["catalog.csv#r1:c1"], refused=False)
             return schema(answer="30", citations=["catalog.csv#r1:c1", "tool:calculator"], refused=False)
         if payload.get("completed_tools") or model_skips_lookup:
             if not model_skips_lookup:
@@ -250,6 +258,12 @@ def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch, mode
     assert [step.name for step in trace.tools] == ["csv_lookup", "calculator"]
     assert trace.tools[1].results == {"tool:calculator": "30.0"}
     assert trace.answer.answer == "The calculation result is 30.0."
+
+    if not model_skips_lookup:
+        # A bare record lookup consumes only one tool call.
+        trace = agent.trace("Look up SKU A101 and tell me its unit price.")
+        assert trace.error is None
+        assert [step.name for step in trace.tools] == ["csv_lookup"]
 
 
 def test_judge_error_is_not_a_semantic_failure():
@@ -293,7 +307,7 @@ def test_generation_can_fill_total_after_category_shortfall():
         allowed_one = False
 
         def ask(self, stage, payload, schema):
-            if stage == "eval_validate" and payload["category"] == "out_of_scope":
+            if stage == "eval_review_outside" and payload["category"] == "out_of_scope":
                 accepted = [] if self.allowed_one else [1]
                 self.allowed_one = True
                 return schema(accepted=accepted)
@@ -314,3 +328,35 @@ def test_outside_generation_rejects_questions_without_its_topic_seed():
 
     with pytest.raises(ValueError, match="No valid out_of_scope"):
         generate(saved_config(), FIXTURES, InScopeOnly())
+
+
+def test_resume_generation_preserves_validated_drafts():
+    original = generate(saved_config(), FIXTURES, DraftModel())
+    resumed = generate(saved_config(), FIXTURES, DraftModel(), resume=original.cases)
+    assert resumed == original
+    invalid = original.cases[0].model_copy(update={"id": "wrong"})
+    with pytest.raises(ValueError, match="Saved evaluation drafts"):
+        generate(saved_config(), FIXTURES, DraftModel(), resume=(invalid,))
+
+
+def test_direct_answer_refusal_check_uses_actual_flag():
+    case = Case(id="T1", question="What is the rule?", category="direct", expected_refusal=False,
+                expected_facts=(Anchor(source_id="one.txt#text", document="one.txt", fact="Attendance applies to item one."),))
+    hit = FIXTURES[0].model_copy(update={"id": "one.txt#text:c1"})
+    answer = Answer(answer="Attendance applies to item one.", citations=[hit.id], refused=False)
+    model = Mock()
+    model.ask.return_value = Judgment(correct=True, grounded=True, citations_relevant=True,
+                                      refusal_appropriate=False, tools_correct=False, explanation="Fixture")
+    result = assess(case, Execution(answer=answer, retrieved=[hit]), model)
+    assert result.status == "passed"
+
+
+def test_ambiguous_case_does_not_accept_mechanical_refusal():
+    case = Case(id="T1", question="When is it due?", category="ambiguous", expected_refusal=True, expected_facts=())
+    answer = Answer(answer="No supporting evidence was found.", citations=[], refused=True)
+    model = Mock()
+    model.ask.return_value = Judgment(correct=False, grounded=True, citations_relevant=True,
+                                      refusal_appropriate=False, tools_correct=True, explanation="No clarification")
+    result = assess(case, Execution(answer=answer, refusal_code="no_evidence"), model)
+    assert result.status == "failed"
+    model.ask.assert_called_once()

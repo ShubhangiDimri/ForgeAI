@@ -28,3 +28,7 @@ venv/
 .coverage
 htmlcov/
 *.log
+
+# Local Groq pilots kept for debugging
+/artifacts/groq-academic/
+/artifacts/groq-procurement/

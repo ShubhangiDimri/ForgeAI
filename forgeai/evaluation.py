@@ -87,16 +87,26 @@ def evidence_cards(sources: list[Passage]) -> list[Anchor]:
 
 
 def generate(config: Config, sources: list[Passage], model,
-             checkpoint: Callable[[list[dict]], None] | None = None) -> Dataset:
+             checkpoint: Callable[[list[dict]], None] | None = None,
+             resume: tuple[Case, ...] = ()) -> Dataset:
     cards = evidence_cards(sources)
     if len({a.document for a in cards}) < 2:
         raise ValueError("Multi-document evaluations require at least two source documents")
-    cases = []
-    seen = set()
+    cases = list(resume)
+    seen = {question_key(case.question) for case in cases}
     available = {t.name for t in config.tools}
+    allowed_facts = {(a.source_id, a.document, a.fact) for a in cards}
+    if len(seen) != len(cases) or any(
+        case.id != f"E{i:03d}" or not set(case.expected_tools) <= available
+        or any((a.source_id, a.document, a.fact) not in allowed_facts for a in case.expected_facts)
+        for i, case in enumerate(cases, 1)
+    ):
+        raise ValueError("Saved evaluation drafts do not match the source corpus or tool allowlist")
     scope_terms = set(question_key(" ".join([config.requirements.scope, *config.requirements.must_answer,
                                            *(a.fact for a in cards)])).split())
     distractors = [topic for topic in DISTRACTOR_TOPICS if not set(topic.split()) & scope_terms]
+    all_source_cards = [[anchor.document, anchor.fact] for anchor in cards]
+    review_full_corpus = sum(len(anchor.fact) for anchor in cards) <= 8000
 
     def add_cases(category: str, target: int) -> int:
         print(f"Generating {target} {category} cases", flush=True)
@@ -138,6 +148,8 @@ def generate(config: Config, sources: list[Passage], model,
                 "category": category, "count": size,
                 "scope": config.requirements.scope,
                 "topics": config.requirements.must_answer,
+                "restricted_topics": config.requirements.must_refuse,
+                "agent_scope_instructions": config.system_prompt,
                 "unsupported_topics": [t for t, f in config.coverage.items()
                                        if f.status == "unsupported" and not f.inconclusive],
                 "tools": sorted(available),
@@ -150,14 +162,19 @@ def generate(config: Config, sources: list[Passage], model,
                 start_topic = attempt * size
                 context["unrelated_topic_seeds"] = [distractors[(start_topic + index) % len(distractors)]
                                                       for index in range(size)]
-            if category == "ambiguous":
-                context["ambiguity_seeds"] = [a.fact for a in sample[:size]]
             try:
                 if category == "out_of_scope" and context.get("unrelated_topic_seeds"):
                     draft = model.ask("eval_outside", {"topics": context["unrelated_topic_seeds"]}, Batch)
                     questions = {i: q for i, q in enumerate(draft.questions, 1)
                                  if any(set(seed.split()) & set(question_key(q).split())
                                         for seed in context["unrelated_topic_seeds"])}
+                elif category == "ambiguous":
+                    draft = model.ask("eval_ambiguity", {
+                        "count": size, "scope": context["scope"], "topics": context["topics"],
+                        "source_cards": all_source_cards if review_full_corpus else context["source_cards"],
+                        "previous_questions": context["previous_questions"],
+                    }, Batch)
+                    questions = dict(enumerate(draft.questions, 1))
                 elif options and size > 1:
                     draft = model.ask("eval_generate", context, IndexedBatch)
                     questions = {item.slot: item.question for item in draft.cases if item.slot <= size}
@@ -188,8 +205,16 @@ def generate(config: Config, sources: list[Passage], model,
                 print(f"{category} batch {attempt + 1} had no usable questions", flush=True)
                 continue
             try:
-                review = model.ask("eval_validate", {**context,
-                    "candidates": [c.model_dump() for c in candidates]}, Validation)
+                stage = {"ambiguous": "eval_review_ambiguity", "out_of_scope": "eval_review_outside"}.get(
+                    category, "eval_validate")
+                review = model.ask(stage, {
+                    "category": category, "scope": context["scope"], "topics": context["topics"],
+                    "restricted_topics": context["restricted_topics"],
+                    **({"agent_scope_instructions": config.system_prompt} if stage == "eval_validate" else {}),
+                    "candidates": [c.model_dump() for c in candidates],
+                    "source_cards": (all_source_cards if review_full_corpus else context["source_cards"])
+                                    if category in {"unsupported", "ambiguous"} else [],
+                }, Validation)
             except ValueError as exc:
                 print(f"Rejected malformed {category} review: {exc}", flush=True)
                 continue
@@ -206,7 +231,8 @@ def generate(config: Config, sources: list[Passage], model,
         return len(cases) - start
 
     for category, target in TARGETS.items():
-        if not add_cases(category, target):
+        prior = sum(case.category == category for case in cases)
+        if prior < target and not add_cases(category, target - prior) and not prior:
             raise ValueError(f"No valid {category} evaluation cases were generated")
     # The assignment requires coverage of each category and twenty cases overall.
     # Smaller corpora and model refusals can make the preferred distribution impractical.

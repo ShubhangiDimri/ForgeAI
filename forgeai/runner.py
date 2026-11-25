@@ -3,7 +3,7 @@ import re
 from typing import Literal
 from pydantic import TypeAdapter
 from .documents import chunk, digest
-from .llm import Ollama
+from .llm import make_model
 from .retrieval import Index
 from .schema import Answer, Config, Model, Passage, Quote, Text, Tool
 from .tools import REGISTRY, execute
@@ -19,6 +19,19 @@ class Route(Model):
 class DocumentRoute(Route):
     """A document-only agent cannot request a tool call."""
     tool: None = None
+
+
+class CalculatorRoute(Route):
+    """After a CSV lookup, only a follow-up calculation is permitted."""
+    tool: Literal["calculator"] | None = None
+
+
+def requests_calculation(question: str) -> bool:
+    if re.search(r"\b(?:calculator|calculat\w*|comput\w*|subtotals?|totals?|sum|arithmetic|multiply|divide)\b",
+                 question, re.I):
+        return True
+    quantity = re.search(r"(?<![\w-])\d+(?:\.\d+)?\s+(?!\d)\w+", question)
+    return bool(quantity and re.search(r"\b(?:cost|price|quantity|units?|orders?|packs?)\b", question, re.I))
 
 
 class InvalidCitationError(ValueError):
@@ -42,6 +55,7 @@ class Execution(Model):
     error: str | None = None
     invalid_citation: bool = False
     invalid_tool_call: bool = False
+    refusal_code: Literal["restricted", "no_evidence"] | None = None
 
 
 class QuotedAnswer(Answer):
@@ -64,7 +78,7 @@ class Runner:
             self.sources = adapter.validate_json(raw)
             self.corpus = chunk(self.sources, self.config.settings)
         self.index = Index(self.corpus, self.config.settings, self.config.embedding)
-        self.model = Ollama(self.config.model)
+        self.model = make_model(self.config.model)
 
     def reconfigure(self, config: Config) -> None:
         previous = self.config.settings
@@ -114,11 +128,12 @@ class Runner:
 
     def _answer(self, question: str, trace: Execution) -> Answer:
         config = self.config
-        def refuse(reason: str) -> Answer:
+        def refuse(reason: str, code: Literal["restricted", "no_evidence"] | None = None) -> Answer:
+            trace.refusal_code = code
             return Answer(answer=reason, citations=[], refused=True)
         banned = [*config.requirements.must_refuse, *(t for t, f in config.coverage.items() if f.status == "unsupported" and not f.inconclusive)]
         if any(t.casefold() in question.casefold() for t in banned):
-            return refuse("This topic is restricted by the agent definition.")
+            return refuse("This topic is restricted by the agent definition.", "restricted")
         allowed = {t.name for t in config.tools}
         context = {"question": question, "requirements": config.requirements.model_dump(),
                    "coverage": {t: ["inconclusive" if f.inconclusive else f.status, f.limitation]
@@ -129,7 +144,7 @@ class Runner:
         trace.retrieved = self.index.search(question)
         evidence = {p.id: p.text for p in trace.retrieved}
         if not evidence and not allowed:
-            return refuse("No supporting evidence was found.")
+            return refuse("No supporting evidence was found.", "no_evidence")
         if config.verify_scope:
             context["scope_review"] = ("Refuse only when the question is outside the declared scope, restricted, "
                                        "or lacks relevant evidence. A paraphrase of a supported topic is in scope.")
@@ -163,14 +178,15 @@ class Runner:
             if not call.results:
                 return refuse("The requested lookup returned no matching rows.")
             evidence.update(call.results)
-            if route.tool != "csv_lookup" or "calculator" not in unused:
+            if (route.tool != "csv_lookup" or "calculator" not in unused
+                    or (deferred_calculation is None and not requests_calculation(question))):
                 break
             route = deferred_calculation or self.model.ask("route", {**context, "evidence": evidence, "completed_tools": ["csv_lookup"],
-                                   "tools": {"calculator": REGISTRY["calculator"].model_json_schema()}}, Route)
+                                   "tools": {"calculator": REGISTRY["calculator"].model_json_schema()}}, CalculatorRoute)
             if route.decision == "refuse":
                 return refuse(route.reason)
         if not evidence:
-            return refuse("No supporting evidence was found.")
+            return refuse("No supporting evidence was found.", "no_evidence")
         # Return trusted arithmetic directly for a single explicit calculation request.
         if ("tool:calculator" in evidence and
                 re.search(r"\b(?:use|with) (?:the )?calculator\b", question, re.I) and

@@ -1,0 +1,52 @@
+[
+  {
+    "iteration": 1,
+    "base_version": 0,
+    "changes": {
+      "evidence_only": {
+        "before": false,
+        "after": true
+      }
+    },
+    "reason": "Require a verified verbatim excerpt for each citation.",
+    "affected_case_ids": [
+      "E004",
+      "E015",
+      "E016",
+      "E018",
+      "E019"
+    ],
+    "before": {
+      "version": 0,
+      "total": 20,
+      "passed": 12,
+      "failed": 7,
+      "error": 1,
+      "pass_rate": 0.6,
+      "dimensions": {
+        "correct": {
+          "passed": 14,
+          "scored": 19
+        },
+        "grounded": {
+          "passed": 16,
+          "scored": 19
+        },
+        "citations_relevant": {
+          "passed": 14,
+          "scored": 19
+        },
+        "refusal_appropriate": {
+          "passed": 14,
+          "scored": 19
+        },
+        "tools_correct": {
+          "passed": 19,
+          "scored": 19
+        }
+      },
+      "seconds": 277.39
+    },
+    "outcome": "unmeasured. The provider interruption left 6/20 case records"
+  }
+]

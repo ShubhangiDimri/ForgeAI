@@ -63,3 +63,20 @@
 - Qwen2.5 3B was absent from the local model store. Its initial pull to the regular model store failed because the sandbox denied opening a partial blob. An isolated local Ollama server on port 11440 uses a writable workspace cache, with 4.9 GiB RAM free after unloading Gemma. The pull is in progress. No Qwen results have been recorded yet.
 
 The requester took over model installation. Stopped the scratch Qwen pull, its local server and the queued probe. The partial download was preserved in the workspace cache. Install qwen2.5:3b in the normal Ollama store before resuming. No Qwen inference or full live evaluation scores are available yet.
+
+
+## Groq Free Plan integration
+
+- Added an optional Groq transport in llm.py using project-root .env or GROQ_API_KEY from the environment. Existing local Ollama configurations still load. Hosted configs save a groq: model reference and never store credentials.
+- GPT-OSS 120B generates requirements, designs, cases and answers. GPT-OSS 20B separately judges the answers. A live header check matched the published Free Plan quotas of 1,000 requests per day and 8,000 tokens per minute. The first HTTP 403 came from Cloudflare error 1010 for the default urllib client identifier. ForgeAI now sends its own client identifier.
+- The first academic run hit HTTP 429 after accepting 15 drafts. Rate-limit retries now use bounded backoff. The CLI resumed the academic drafts, froze 20 cases and measured the pilot baseline at 8 passed, 12 failed and 0 infrastructure errors.
+- The pilot exposed evaluation quality issues. Some positive questions stretched the narrow academic brief and some ambiguous questions asked the user to identify an omission. The judge occasionally gave conflicting refusal and citation flags for correct answers or safe abstentions. Tightened semantic review and ambiguity prompts, added a separate broader academic factory brief for future runs, and moved mechanically knowable checks to code. The pilot cases remain frozen and its scores retain the original judge behavior.
+- The original procurement attempt was interrupted after five accepted drafts to reduce Free Plan token contention. The partial artifacts remain under artifacts/groq-procurement.
+- Regression tests after these changes returned 40 passed in 4.39 seconds. These include mocked Groq request, authorization and rate-limit checks, draft resume, and deterministic refusal scoring. Live demo evidence is tracked separately.
+
+### Live quota and fallback checkpoint
+
+- The earlier academic pilot measured 8/20 at baseline and 9/20 after one targeted patch. Its weaker rubric and cases are retained separately.
+- The revised Groq runs each scored 12/20 at baseline on 20 frozen cases. The baselines each include seven semantic failures and one infrastructure error. The daily GPT-OSS 120B token cap interrupted version 1. Academic retained 6/20 results and procurement retained 13/20. There are no full version 1 scorecards.
+- Confirmed the SHA-256 fingerprints and exact per-case records against both frozen datasets. Verified academic chat 3/3 with GPT-OSS 20B. Verified procurement CSV plus calculator and the standalone CSV routing regression with GPT-OSS 120B.
+- NVIDIA's free Nemotron 3.5 Lightning endpoint returned a valid JSON response. Added an explicit NVIDIA model prefix and bounded host-specific retries. A fresh NVIDIA run uses its own artifact directory.

@@ -123,7 +123,7 @@ def test_mocked_saved_agent_and_scope(tmp_path, monkeypatch):
     monkeypatch.setattr(generator, "Index", index)
     monkeypatch.setattr(runner, "Index", index)
     model = Scripted()
-    monkeypatch.setattr(runner, "Ollama", lambda name: model)
+    monkeypatch.setattr(runner, "make_model", lambda name: model)
     out = tmp_path / "run"
     conf = generator.build("Student policies", docs, out, True, model, "mock")
     assert conf.requirements.unresolved == ["Preferred format?"]

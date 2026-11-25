@@ -88,7 +88,12 @@ def assess(case: Case, execution: Execution, model) -> Result:
     cited_documents = {a.document for a in case.expected_facts if a.source_id in covered_sources}
     tool_names = {tool.name for tool in execution.tools if tool.results}
     tools_correct = set(case.expected_tools) <= tool_names and (not case.expected_refusal or not tool_names)
-    if not membership or (not case.expected_refusal and answer.refused) or (evidence_gap and not case.expected_refusal):
+    if (case.category in {"out_of_scope", "unsupported"} and case.expected_refusal
+            and answer.refused and execution.refusal_code and not answer.citations and not execution.tools):
+        judgment = Judgment(correct=True, grounded=True, citations_relevant=True,
+                            refusal_appropriate=True, tools_correct=True,
+                            explanation=f"Agent refused without factual claims ({execution.refusal_code}).")
+    elif not membership or (not case.expected_refusal and answer.refused) or (evidence_gap and not case.expected_refusal):
         judgment = Judgment(correct=False, grounded=membership and not evidence_gap, citations_relevant=membership,
                             refusal_appropriate=answer.refused == case.expected_refusal, tools_correct=tools_correct,
                             explanation="Deterministic check found missing expected evidence, invalid citations or wrong refusal.")
@@ -106,8 +111,16 @@ def assess(case: Case, execution: Execution, model) -> Result:
         judgment.correct &= not numeric_conflict
         judgment.grounded &= not numeric_conflict
         judgment.citations_relevant &= membership and (answer.refused or expected_documents <= cited_documents)
-        judgment.refusal_appropriate &= answer.refused == case.expected_refusal
-        judgment.tools_correct &= tools_correct
+        if case.expected_refusal:
+            judgment.refusal_appropriate &= answer.refused
+            if answer.refused and not answer.citations:
+                judgment.citations_relevant = True
+        else:
+            judgment.refusal_appropriate = not answer.refused
+        if not execution.tools:
+            judgment.tools_correct = tools_correct
+        else:
+            judgment.tools_correct &= tools_correct
     passed = all([judgment.correct, judgment.grounded, judgment.citations_relevant,
                   judgment.refusal_appropriate, judgment.tools_correct])
     reason = judgment.explanation

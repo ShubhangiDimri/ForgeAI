@@ -6,13 +6,13 @@ from pydantic import TypeAdapter
 from . import documents
 from .coverage import assess
 from .intake import interview
-from .llm import Ollama
+from .llm import ModelClient
 from .retrieval import Index
 from .schema import Answer, Config, Design, Passage, Selection, Settings
 from .tools import REGISTRY, select_tools
 
 
-def build(brief: str, docs: Path, out: Path, unattended: bool, model: Ollama, embedding: str) -> Config:
+def build(brief: str, docs: Path, out: Path, unattended: bool, model: ModelClient, embedding: str) -> Config:
     if out.exists() or out.resolve().is_relative_to(docs.resolve()):
         raise ValueError("Choose a new output directory outside the document folder")
     passages, manifest = documents.load(docs)

@@ -90,3 +90,49 @@ Full builds generate and freeze at least 20 cases across five categories, then m
 For a fresh prototype run, add --prototype-only. To evaluate a new prototype with a source snapshot, run python -m forgeai evaluate --run followed by the run path. Evaluation preserves metric files per run and refuses to overwrite an existing evaluation run. Interrupted runs retain available checkpoints.
 
 The keyless weather tool uses the fixed Open-Meteo forecast endpoint. It accepts explicit latitude and longitude and sends only those coordinates and fixed query fields. Its current conditions are in UTC. Calculator and CSV lookup execute locally. See DEVELOPMENT_PROGRESS.md and PROJECT_STATUS.md for observed results and live verification limits.
+
+
+## Groq Cloud on the Free Plan
+
+ForgeAI can use Groq for chat completions while keeping ingestion, embeddings, retrieval
+and tools local. Groq receives the brief, relevant document text and evaluation payloads.
+Use synthetic or approved documents. Groq's Free Plan covers both configured GPT-OSS
+models within its limits. Use a key from a Free Plan organization for zero usage charges.
+Create a project-root .env containing GROQ_API_KEY=your-key. The file is ignored by Git.
+
+From the project root in PowerShell, using a Python environment with the project dependencies
+and the cached MiniLM embedding model:
+
+~~~powershell
+$academic = (Get-Content -Raw .\demo_data\academic_factory_brief.txt).Trim()
+$procurement = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
+python -m forgeai build --groq --non-interactive --brief $academic --docs .\demo_data\academic --out .\artifacts\my-groq-academic
+python -m forgeai build --groq --non-interactive --brief $procurement --docs .\demo_data\procurement --out .\artifacts\my-groq-procurement
+python -m forgeai chat --config .\artifacts\my-groq-academic\agent_config.json
+~~~
+
+The default Groq agent and case generator use openai/gpt-oss-120b. The judge uses
+openai/gpt-oss-20b. Override with --model groq:<model-id> or --judge-model groq:<model-id>.
+Choose fresh output directories for each run. A saved agent remembers its backend through
+its model name. Local Ollama builds still use their existing model tags.
+
+If the Free Plan rate limit interrupts evaluation before the dataset is frozen and
+the run saved accepted drafts, it can resume in the same folder with unchanged prompts:
+
+~~~powershell
+python -m forgeai evaluate --resume-generation --run .\artifacts\my-groq-academic
+~~~
+
+Run the two demos sequentially because they share the same account quotas.
+
+Use --max-iterations 1 for a shorter baseline and optimization run. The default allows three iterations.
+
+### NVIDIA Free Endpoint
+
+Set NVIDIA_API_KEY in the same project-root .env, then select the model explicitly.
+This uses a separate run folder and sends model payloads to NVIDIA.
+
+~~~powershell
+$brief = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
+python -m forgeai build --non-interactive --max-iterations 1 --model nvidia:nvidia/nemotron-3.5-lightning-30b-a3b --brief $brief --docs .\demo_data\procurement --out .\artifacts\my-nvidia-procurement
+~~~

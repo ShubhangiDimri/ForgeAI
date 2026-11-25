@@ -1,0 +1,238 @@
+{
+  "cases": [
+    {
+      "id": "E001",
+      "question": "If you place three purchase orders, what is the total lead time in business days?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment."
+        }
+      ],
+      "expected_tools": [
+        "calculator"
+      ]
+    },
+    {
+      "id": "E002",
+      "question": "What is the allowed return period for unused standard parts?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E003",
+      "question": "Under what circumstance does Beacon Technical waive the restocking fee?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical waives the restocking fee when it shipped the wrong part."
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E004",
+      "question": "Which part is identified by the SKU MQ-103?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r3",
+          "document": "catalogue.csv",
+          "fact": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1"
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E005",
+      "question": "Who is the supplier for the SKU BT-201?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r4",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1"
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E006",
+      "question": "What is the pack quantity for the SKU BT-202?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r5",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E007",
+      "question": "What must Beacon Technical receive before processing an international order?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical requires an approved shipping quote for international orders."
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E008",
+      "question": "Please look up the record for SKU BT-202 and tell me its unit price in USD.",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r5",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+        }
+      ],
+      "expected_tools": [
+        "csv_lookup"
+      ]
+    },
+    {
+      "id": "E009",
+      "question": "What is the primary method used in astronomy to measure distances to faraway galaxies?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E010",
+      "question": "What is the role of the circle of fifths in music theory?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E011",
+      "question": "What factors determine the suitability of wildlife habitats for endangered species?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E012",
+      "question": "What is the ideal temperature range for proofing dough in bread baking?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E013",
+      "question": "What is the shipping cost for delivering a standard part order to a remote island location?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E014",
+      "question": "How much would the total price be for ordering 7 units of SKU BT-203, including any applicable restocking fees if returned?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E015",
+      "question": "What is the expected delivery date if I place an order for SKU MQ-102 on a Friday, considering lead times and shipping days?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E016",
+      "question": "What is the unit price for the part with SKU BT-202, assuming it is supplied by Beacon Technical or Quay Marine?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E017",
+      "question": "How many business days will it take to receive a standard part order if the supplier is Beacon Technical or Quay Marine?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E018",
+      "question": "What is the return period for unused standard parts if the supplier is Beacon Technical or Quay Marine?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    {
+      "id": "E019",
+      "question": "What are the lead times for Beacon Technical and Quay Marine after purchase order acknowledgment?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment."
+        },
+        {
+          "source_id": "quay_marine.txt#text",
+          "document": "quay_marine.txt",
+          "fact": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment."
+        }
+      ],
+      "expected_tools": []
+    },
+    {
+      "id": "E020",
+      "question": "What is the return period for unused standard parts from Beacon Technical and the unit price in USD for SKU BT-203?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
+        },
+        {
+          "source_id": "catalogue.csv#r6",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6"
+        }
+      ],
+      "expected_tools": []
+    }
+  ]
+}

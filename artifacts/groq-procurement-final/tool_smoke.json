@@ -1,0 +1,96 @@
+{
+  "answer": {
+    "answer": "The calculation result is 127.5 USD.",
+    "citations": [
+      "catalogue.csv#r1:c1",
+      "tool:calculator"
+    ],
+    "refused": false
+  },
+  "retrieved": [
+    {
+      "id": "catalogue.csv#r2:c1",
+      "file": "catalogue.csv",
+      "text": "sku=MQ-102 | part=Pump gasket | supplier=Quay Marine | unit_price_usd=18.00 | pack_quantity=4",
+      "page": null,
+      "row": 2,
+      "cells": {
+        "sku": "MQ-102",
+        "part": "Pump gasket",
+        "supplier": "Quay Marine",
+        "unit_price_usd": "18.00",
+        "pack_quantity": "4"
+      }
+    },
+    {
+      "id": "catalogue.csv#r1:c1",
+      "file": "catalogue.csv",
+      "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+      "page": null,
+      "row": 1,
+      "cells": {
+        "sku": "MQ-101",
+        "part": "Impeller seal",
+        "supplier": "Quay Marine",
+        "unit_price_usd": "42.50",
+        "pack_quantity": "1"
+      }
+    },
+    {
+      "id": "catalogue.csv#r3:c1",
+      "file": "catalogue.csv",
+      "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+      "page": null,
+      "row": 3,
+      "cells": {
+        "sku": "MQ-103",
+        "part": "Coupling sleeve",
+        "supplier": "Quay Marine",
+        "unit_price_usd": "76.00",
+        "pack_quantity": "1"
+      }
+    },
+    {
+      "id": "catalogue.csv#r6:c1",
+      "file": "catalogue.csv",
+      "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+      "page": null,
+      "row": 6,
+      "cells": {
+        "sku": "BT-203",
+        "part": "Filter element",
+        "supplier": "Beacon Technical",
+        "unit_price_usd": "14.75",
+        "pack_quantity": "6"
+      }
+    }
+  ],
+  "tools": [
+    {
+      "name": "csv_lookup",
+      "arguments": {
+        "file": "catalogue.csv",
+        "column": "sku",
+        "value": "MQ-101"
+      },
+      "results": {
+        "catalogue.csv#r1:c1": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1"
+      }
+    },
+    {
+      "name": "calculator",
+      "arguments": {
+        "operation": "multiply",
+        "left": 42.5,
+        "right": 3
+      },
+      "results": {
+        "tool:calculator": "127.5"
+      }
+    }
+  ],
+  "error": null,
+  "invalid_citation": false,
+  "invalid_tool_call": false,
+  "refusal_code": null
+}

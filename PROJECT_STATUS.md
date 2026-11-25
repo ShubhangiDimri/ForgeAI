@@ -1,5 +1,54 @@
 # ForgeAI implementation status
 
+
+## Groq integration and live verification checkpoint
+
+The complete factory can use a Groq Free Plan key in the ignored project-root .env.
+The default hosted agent uses GPT-OSS 120B and the separate judge uses GPT-OSS 20B.
+The local Ollama path and locally cached MiniLM embeddings remain available. The
+successful authenticated call reported 1,000 requests per day and 8,000 tokens per
+minute, matching the Free Plan.
+
+| Requirement | Current verification |
+| --- | --- |
+| 1. Intake | Live unattended briefs produced requirements.json on both domains. See forgeai/intake.py and each final run directory. The interactive path and question limit have scripted coverage. |
+| 2. Groundability | Both live builds wrote coverage.json before generating their designs. forgeai/coverage.py preserves evidence and identifies unsupported and inconclusive topics. |
+| 3. Agent generator | Both live builds saved dynamic agent definitions with tool selections. The procurement tool check used the generated configuration and executed CSV lookup and calculator, returning 127.50 USD. See forgeai/generator.py, forgeai/tools.py and artifacts/groq-procurement-final/tool_smoke.json. |
+| 4. Evaluation generation | forgeai/evaluation.py and forgeai/prompts generated live frozen cases. The original academic pilot revealed scope and ambiguity issues. Category-specific review prompts and draft resume were exercised in the revised runs. |
+| 5. Judge | forgeai/judge.py combines model evaluation with evidence, refusal, citation and tool checks. The pilot recorded a full baseline and an optimized scorecard. Revised rules avoid mechanically inconsistent refusal and citation flags found in the pilot. |
+| 6. Critic and optimizer | forgeai/optimizer.py and forgeai/workflow.py ran one measured targeted pilot iteration. It improved from 8/20 to 9/20 under the original rubric. Scripted integration tests cover additional iteration, classification, rollback and rechunking behavior. |
+| 7. Reports | The pilot quality report and scorecards preserve 20 scored cases per measured version, the original rubric and the source dataset hash. Individual execution records are under case_results. |
+| 8. Runnable product | forgeai/runner.py loads hosted and local definitions. Gemma answered/refused the three academic smoke questions. GPT-OSS successfully executed both tools in the procurement smoke. |
+| 9. Two full demonstrations | The revised academic and procurement runs have independent synthetic data, brief, requirements and generated agent snapshots. The current run artifacts are under artifacts/groq-academic-final and artifacts/groq-procurement-final. Completion is determined by the run metadata and measured scorecards. |
+
+The earlier checklist and Phase A audit below are historical. The pilot's measured
+improvement is a workflow observation. Several pilot evaluation cases were weak,
+so its scores should not be used as a comparison against the revised rubric. The
+assignment describes a small open runtime model. The historical small local model
+smoke checks and the hosted GPT-OSS full runs are separate evidence. A full small
+local-model evaluation remains unverified.
+
+### Live scores and blocker
+
+| Groq run | Baseline | Targeted rerun |
+| --- | --- | --- |
+| Academic | 12 passed, 7 failed, 1 execution error | 6/20 recorded. Final score unmeasured. |
+| Procurement | 12 passed, 7 failed, 1 judge error | 13/20 recorded. Final score unmeasured. |
+
+Both frozen datasets contain 20 distinct cases in five categories. Both baseline
+scorecards were checked against their raw cases and dataset hashes. Groq's
+GPT-OSS 120B reached the Free Plan 200,000 daily token cap. The baseline remained
+selected in each revised Groq run. The academic smoke passed all three checks.
+The procurement agent returned 127.50 USD using CSV lookup and calculator.
+A subsequent live regression check returned 27.25 USD with CSV lookup alone.
+That runtime fix did not change the frozen evaluation cases or past scores.
+
+NVIDIA support uses a separate provider and run directory. The free
+Nemotron 3.5 Lightning endpoint returned valid JSON using NVIDIA_API_KEY.
+The old GPT-OSS 20B free NVIDIA endpoint returned HTTP 410. Full NVIDIA
+verification is tracked in the run directories if available. Requirement 9
+remains open until two complete live runs are recorded.
+
 ## Current development checkpoint
 
 The following table supersedes the earlier Phase A audit retained below. Prototype smoke execution and procurement tool routing are verified. Evaluation and optimization are implemented and tested with scripted model outputs. The live Gemma attempts stopped before a frozen dataset and produced no baseline or optimization scores.

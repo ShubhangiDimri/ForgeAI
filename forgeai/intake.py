@@ -1,9 +1,9 @@
 import re
 from .schema import Passage, Questions, Requirements
-from .llm import Ollama
+from .llm import ModelClient
 
 
-def interview(brief: str, passages: list[Passage], unattended: bool, model: Ollama) -> Requirements:
+def interview(brief: str, passages: list[Passage], unattended: bool, model: ModelClient) -> Requirements:
     preview = {}
     for item in passages:
         preview.setdefault(item.file, [])

@@ -1,7 +1,7 @@
 import re
 from typing import Literal
 from pydantic import Field
-from .llm import Ollama
+from .llm import ModelClient
 from .schema import Finding, Model, Passage, Quote, Requirements
 from .retrieval import Index
 
@@ -34,7 +34,7 @@ def tabular_support(topic: str, passages: list[Passage]) -> Finding | None:
     return None
 
 
-def assess(requirements: Requirements, index: Index, model: Ollama) -> dict[str, Finding]:
+def assess(requirements: Requirements, index: Index, model: ModelClient) -> dict[str, Finding]:
     results = {}
     for topic in requirements.must_answer:
         passages = getattr(index, "passages", None)

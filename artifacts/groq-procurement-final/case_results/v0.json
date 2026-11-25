@@ -1,0 +1,1599 @@
+[
+  {
+    "case": {
+      "id": "E001",
+      "question": "If you place three purchase orders, what is the total lead time in business days?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment."
+        }
+      ],
+      "expected_tools": [
+        "calculator"
+      ]
+    },
+    "execution": {
+      "answer": {
+        "answer": "Insufficient information about which suppliers the three purchase orders are for, needed to determine lead times",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": false,
+      "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal."
+    },
+    "status": "failed",
+    "failure": "wrong refusal",
+    "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal. Failed checks: correct, refusal_appropriate, tools_correct.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E002",
+      "question": "What is the allowed return period for unused standard parts?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Unused standard parts can be returned within 30 calendar days for Quay Marine and within 14 calendar days for Beacon Technical.",
+        "citations": [
+          "quay_marine.txt#text:c1",
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states the 14‑day return period for Beacon Technical and also provides correct additional information about Quay Marine. All cited passages support the claims, and no tool usage was required."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states the 14‑day return period for Beacon Technical and also provides correct additional information about Quay Marine. All cited passages support the claims, and no tool usage was required.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E003",
+      "question": "Under what circumstance does Beacon Technical waive the restocking fee?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical waives the restocking fee when it shipped the wrong part."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Beacon Technical waives the restocking fee when it shipped the wrong part.",
+        "citations": [
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states the fact that Beacon Technical waives the restocking fee when it shipped the wrong part, matches the cited evidence, and no tools were used."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states the fact that Beacon Technical waives the restocking fee when it shipped the wrong part, matches the cited evidence, and no tools were used.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E004",
+      "question": "Which part is identified by the SKU MQ-103?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r3",
+          "document": "catalogue.csv",
+          "fact": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r2:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-102 | part=Pump gasket | supplier=Quay Marine | unit_price_usd=18.00 | pack_quantity=4",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "sku": "MQ-102",
+            "part": "Pump gasket",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "18.00",
+            "pack_quantity": "4"
+          }
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        }
+      ],
+      "tools": [
+        {
+          "name": "csv_lookup",
+          "arguments": {
+            "file": "catalogue.csv",
+            "column": "sku",
+            "value": "MQ-103"
+          },
+          "results": {
+            "catalogue.csv#r3:c1": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1"
+          }
+        },
+        {
+          "name": "csv_lookup",
+          "arguments": {
+            "file": "catalogue.csv",
+            "sku": "MQ-103"
+          },
+          "results": {}
+        }
+      ],
+      "error": "Tool not permitted: csv_lookup",
+      "invalid_citation": false,
+      "invalid_tool_call": true,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "Tool not permitted: csv_lookup",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E005",
+      "question": "Who is the supplier for the SKU BT-201?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r4",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Beacon Technical",
+        "citations": [
+          "catalogue.csv#r4:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r4:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "sku": "BT-201",
+            "part": "Strainer basket",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "115.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        }
+      ],
+      "tools": [
+        {
+          "name": "csv_lookup",
+          "arguments": {
+            "file": "catalogue.csv",
+            "column": "sku",
+            "value": "BT-201"
+          },
+          "results": {
+            "catalogue.csv#r4:c1": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1"
+          }
+        }
+      ],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly identifies Beacon Technical as the supplier for SKU BT-201, cites the exact evidence row, and the tool usage matches the query."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly identifies Beacon Technical as the supplier for SKU BT-201, cites the exact evidence row, and the tool usage matches the query.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E006",
+      "question": "What is the pack quantity for the SKU BT-202?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r5",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The pack quantity for SKU BT-202 is 2.",
+        "citations": [
+          "catalogue.csv#r5:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "catalogue.csv#r4:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "sku": "BT-201",
+            "part": "Strainer basket",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "115.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r2:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-102 | part=Pump gasket | supplier=Quay Marine | unit_price_usd=18.00 | pack_quantity=4",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "sku": "MQ-102",
+            "part": "Pump gasket",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "18.00",
+            "pack_quantity": "4"
+          }
+        }
+      ],
+      "tools": [
+        {
+          "name": "csv_lookup",
+          "arguments": {
+            "file": "catalogue.csv",
+            "column": "sku",
+            "value": "BT-202"
+          },
+          "results": {
+            "catalogue.csv#r5:c1": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+          }
+        }
+      ],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Answer correctly states pack quantity 2, cites the correct row, and uses the csv_lookup tool properly."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "Answer correctly states pack quantity 2, cites the correct row, and uses the csv_lookup tool properly.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E007",
+      "question": "What must Beacon Technical receive before processing an international order?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical requires an approved shipping quote for international orders."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Beacon Technical must receive an approved shipping quote before processing an international order.",
+        "citations": [
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer states that Beacon Technical requires an approved shipping quote before processing an international order, which matches the fact in the evidence. The citation points to the correct passage that contains this fact. No tools were used, so tools_correct is true."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer states that Beacon Technical requires an approved shipping quote before processing an international order, which matches the fact in the evidence. The citation points to the correct passage that contains this fact. No tools were used, so tools_correct is true.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E008",
+      "question": "Please look up the record for SKU BT-202 and tell me its unit price in USD.",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "catalogue.csv#r5",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+        }
+      ],
+      "expected_tools": [
+        "csv_lookup"
+      ]
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        },
+        {
+          "id": "catalogue.csv#r4:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "sku": "BT-201",
+            "part": "Strainer basket",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "115.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        }
+      ],
+      "tools": [
+        {
+          "name": "csv_lookup",
+          "arguments": {
+            "file": "catalogue.csv",
+            "column": "sku",
+            "value": "BT-202"
+          },
+          "results": {
+            "catalogue.csv#r5:c1": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+          }
+        },
+        {
+          "name": "csv_lookup",
+          "arguments": {
+            "file": "catalogue.csv",
+            "sku": "BT-202"
+          },
+          "results": {}
+        }
+      ],
+      "error": "Tool not permitted: csv_lookup",
+      "invalid_citation": false,
+      "invalid_tool_call": true,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "Tool not permitted: csv_lookup",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E009",
+      "question": "What is the primary method used in astronomy to measure distances to faraway galaxies?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Question outside the maritime spare-parts procurement scope",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The assistant correctly refused to answer because the question is outside the maritime spare-parts procurement scope."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The assistant correctly refused to answer because the question is outside the maritime spare-parts procurement scope.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E010",
+      "question": "What is the role of the circle of fifths in music theory?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Question outside the maritime spare-parts procurement scope",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The assistant correctly refused to answer because the question is outside the maritime spare-parts procurement scope, matching the expected refusal."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The assistant correctly refused to answer because the question is outside the maritime spare-parts procurement scope, matching the expected refusal.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E011",
+      "question": "What factors determine the suitability of wildlife habitats for endangered species?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Question about wildlife habitats is unrelated to maritime spare-parts procurement scope",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly refuses, as the question is out of scope."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly refuses, as the question is out of scope.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E012",
+      "question": "What is the ideal temperature range for proofing dough in bread baking?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The request is unrelated to the maritime spare-parts procurement scope, which requires SKU lookups, pricing, and related calculations.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The assistant correctly refused to answer because the question is outside the maritime spare-parts procurement scope, matching the expected refusal."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The assistant correctly refused to answer because the question is outside the maritime spare-parts procurement scope, matching the expected refusal.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E013",
+      "question": "What is the shipping cost for delivering a standard part order to a remote island location?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Insufficient shipping rule data for remote island location",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r2:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-102 | part=Pump gasket | supplier=Quay Marine | unit_price_usd=18.00 | pack_quantity=4",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "sku": "MQ-102",
+            "part": "Pump gasket",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "18.00",
+            "pack_quantity": "4"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": false,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The assistant correctly refused to answer, as the question is unsupported and no shipping rule data for remote islands is provided. No evidence or citations were needed, and no tools were invoked."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The assistant correctly refused to answer, as the question is unsupported and no shipping rule data for remote islands is provided. No evidence or citations were needed, and no tools were invoked. Failed checks: grounded.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E014",
+      "question": "How much would the total price be for ordering 7 units of SKU BT-203, including any applicable restocking fees if returned?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The subtotal for 7 units of SKU BT-203 is $103.25. No restocking fee information is provided, so only the purchase total can be given.",
+        "citations": [
+          "catalogue.csv#r6:c1",
+          "tool:calculator"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "catalogue.csv#r4:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "sku": "BT-201",
+            "part": "Strainer basket",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "115.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        }
+      ],
+      "tools": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "operation": "multiply",
+            "left": 7,
+            "right": 14.75
+          },
+          "results": {
+            "tool:calculator": "103.25"
+          }
+        }
+      ],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": false,
+      "grounded": false,
+      "citations_relevant": false,
+      "refusal_appropriate": false,
+      "tools_correct": false,
+      "explanation": "The assistant failed to refuse as required for an unsupported category and provided incomplete information about restocking fees."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The assistant failed to refuse as required for an unsupported category and provided incomplete information about restocking fees. Failed checks: correct, grounded, citations_relevant, refusal_appropriate, tools_correct.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E015",
+      "question": "What is the expected delivery date if I place an order for SKU MQ-102 on a Friday, considering lead times and shipping days?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "SKU MQ-102 not found in catalogue evidence, cannot determine lead time or shipping schedule",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The catalogue evidence shows only MQ‑101 and MQ‑103; MQ‑102 is absent, so the assistant correctly refuses to provide a delivery date."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The catalogue evidence shows only MQ‑101 and MQ‑103; MQ‑102 is absent, so the assistant correctly refuses to provide a delivery date.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E016",
+      "question": "What is the unit price for the part with SKU BT-202, assuming it is supplied by Beacon Technical or Quay Marine?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The unit price for SKU BT-202 is $27.25 USD.",
+        "citations": [
+          "catalogue.csv#r5:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        },
+        {
+          "id": "catalogue.csv#r4:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "sku": "BT-201",
+            "part": "Strainer basket",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "115.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r2:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-102 | part=Pump gasket | supplier=Quay Marine | unit_price_usd=18.00 | pack_quantity=4",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "sku": "MQ-102",
+            "part": "Pump gasket",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "18.00",
+            "pack_quantity": "4"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The answer correctly states the unit price of $27.25 USD for SKU BT-202 supplied by Beacon Technical, which matches the cited evidence. No refusal was needed, and no tools were used."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The answer correctly states the unit price of $27.25 USD for SKU BT-202 supplied by Beacon Technical, which matches the cited evidence. No refusal was needed, and no tools were used. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E017",
+      "question": "How many business days will it take to receive a standard part order if the supplier is Beacon Technical or Quay Marine?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Quay Marine: 5 business days; Beacon Technical: 8 business days.",
+        "citations": [
+          "quay_marine.txt#text:c1",
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "Judge error: Groq openai/gpt-oss-20b returned HTTP 429",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E018",
+      "question": "What is the return period for unused standard parts if the supplier is Beacon Technical or Quay Marine?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Beacon Technical allows returns within 14 calendar days, while Quay Marine allows returns within 30 calendar days of delivery.",
+        "citations": [
+          "beacon_technical.txt#text:c1",
+          "quay_marine.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r2:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-102 | part=Pump gasket | supplier=Quay Marine | unit_price_usd=18.00 | pack_quantity=4",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "sku": "MQ-102",
+            "part": "Pump gasket",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "18.00",
+            "pack_quantity": "4"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": false,
+      "grounded": false,
+      "citations_relevant": false,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The assistant provided an answer instead of refusing, violating the instruction to refuse for an ambiguous question. The answer is not grounded, citations are irrelevant, and no tools were used."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The assistant provided an answer instead of refusing, violating the instruction to refuse for an ambiguous question. The answer is not grounded, citations are irrelevant, and no tools were used. Failed checks: correct, grounded, citations_relevant, refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E019",
+      "question": "What are the lead times for Beacon Technical and Quay Marine after purchase order acknowledgment?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment."
+        },
+        {
+          "source_id": "quay_marine.txt#text",
+          "document": "quay_marine.txt",
+          "fact": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Beacon Technical lead time is 8 business days; Quay Marine lead time is 5 business days after purchase order acknowledgment.",
+        "citations": [
+          "beacon_technical.txt#text:c1",
+          "quay_marine.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "catalogue.csv#r3:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "sku": "MQ-103",
+            "part": "Coupling sleeve",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "76.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "catalogue.csv#r1:c1",
+          "file": "catalogue.csv",
+          "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "sku": "MQ-101",
+            "part": "Impeller seal",
+            "supplier": "Quay Marine",
+            "unit_price_usd": "42.50",
+            "pack_quantity": "1"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer states the lead times exactly as in the cited evidence and includes correct citations. No refusal was needed."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer states the lead times exactly as in the cited evidence and includes correct citations. No refusal was needed.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E020",
+      "question": "What is the return period for unused standard parts from Beacon Technical and the unit price in USD for SKU BT-203?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
+        },
+        {
+          "source_id": "catalogue.csv#r6",
+          "document": "catalogue.csv",
+          "fact": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The return period is 14 calendar days, and the unit price for SKU BT-203 is $14.75 USD.",
+        "citations": [
+          "beacon_technical.txt#text:c1",
+          "catalogue.csv#r6:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "catalogue.csv#r5:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2",
+          "page": null,
+          "row": 5,
+          "cells": {
+            "sku": "BT-202",
+            "part": "Valve seat",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "27.25",
+            "pack_quantity": "2"
+          }
+        },
+        {
+          "id": "catalogue.csv#r6:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-203 | part=Filter element | supplier=Beacon Technical | unit_price_usd=14.75 | pack_quantity=6",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "sku": "BT-203",
+            "part": "Filter element",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "14.75",
+            "pack_quantity": "6"
+          }
+        },
+        {
+          "id": "catalogue.csv#r4:c1",
+          "file": "catalogue.csv",
+          "text": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "sku": "BT-201",
+            "part": "Strainer basket",
+            "supplier": "Beacon Technical",
+            "unit_price_usd": "115.00",
+            "pack_quantity": "1"
+          }
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Answer matches expected facts, citations are relevant, no refusal needed, no tools used."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "Answer matches expected facts, citations are relevant, no refusal needed, no tools used.",
+    "score": 1
+  }
+]
