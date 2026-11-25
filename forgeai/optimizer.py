@@ -27,12 +27,21 @@ def proposed_patch(config: Config, results: list[Result], tried: tuple[dict, ...
             candidate.verify_scope = True
             reason = "Recheck in-scope evidence before refusing."
         elif category == "prompt defect":
-            rule = (" Address every distinct part of the question and preserve units and qualifiers. "
-                    "For underspecified questions, ask for the missing detail before answering.")
+            defects = [r for r in results if r.failure == category]
+            if any(r.execution.invalid_tool_call or r.case.expected_tools for r in defects):
+                rule = (" Use an allowed tool when the question genuinely requires it. "
+                        "Check every argument against its schema and use values from the request or retrieved evidence.")
+                reason = "Clarify tool choice and input provenance after tool-related failures."
+            elif any(r.case.expected_refusal for r in defects):
+                rule = (" Respect the stated scope and evidence limits. "
+                        "If a material detail is ambiguous, ask for that detail before giving a factual answer.")
+                reason = "Clarify scope and disambiguation after incorrect answers to refusal cases."
+            else:
+                rule = " Address each requested detail and preserve the source values, units and qualifiers."
+                reason = "Strengthen factual completeness and precision after in-scope answer errors."
             if rule in config.system_prompt:
                 continue
             candidate.system_prompt += rule
-            reason = "Add explicit completeness and ambiguity-handling guidance."
         else:
             continue
         if changes(config, candidate) not in tried:

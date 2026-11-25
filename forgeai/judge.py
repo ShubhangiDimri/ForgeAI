@@ -1,4 +1,6 @@
 """Blinded per-case judgment with deterministic evidence checks."""
+from decimal import Decimal
+import re
 from typing import Literal
 from pydantic import computed_field
 from .documents import anchor_id
@@ -32,6 +34,11 @@ class Result(Model):
         return None if self.status == "error" else int(self.status == "passed")
 
 
+def numeric_literals(text: str) -> set[Decimal]:
+    return {Decimal(value.replace(",", "")) for value in re.findall(
+        r"(?<![\w.])[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?!\w)", text)}
+
+
 def matching_facts(case: Case, chunks: dict[str, str]) -> set[int]:
     return {i for i, fact in enumerate(case.expected_facts)
             if any(anchor_id(key) == fact.source_id and fact.fact in " ".join(text.split())
@@ -57,6 +64,8 @@ def assess(case: Case, execution: Execution, model) -> Result:
     answer = execution.answer
     if execution.invalid_citation:
         return Result(**base, status="failed", failure="hallucination", explanation=execution.error or "Invalid citation")
+    if execution.invalid_tool_call:
+        return Result(**base, status="failed", failure="prompt defect", explanation=execution.error or "Invalid tool call")
     if execution.error or answer is None:
         return Result(**base, status="error", explanation=execution.error or "No answer was produced")
     evidence = {p.id: p.text for p in execution.retrieved}
@@ -69,6 +78,13 @@ def assess(case: Case, execution: Execution, model) -> Result:
     # All expected source documents should be represented by at least one relevant citation.
     covered_sources = {anchor_id(key) for key in cited}
     expected_documents = {a.document for a in case.expected_facts}
+    # Guard against a judge accepting an unrelated numeric value on simple numeric evidence.
+    numeric_sources = " ".join(evidence.values())
+    source_values = numeric_literals(numeric_sources)
+    answer_values = numeric_literals(answer.answer)
+    expected_values = numeric_literals(" ".join(fact.fact for fact in case.expected_facts))
+    numeric_conflict = bool(expected_values and answer_values and not answer_values.issubset(
+        source_values | numeric_literals(case.question)))
     cited_documents = {a.document for a in case.expected_facts if a.source_id in covered_sources}
     tool_names = {tool.name for tool in execution.tools if tool.results}
     tools_correct = set(case.expected_tools) <= tool_names and (not case.expected_refusal or not tool_names)
@@ -87,6 +103,8 @@ def assess(case: Case, execution: Execution, model) -> Result:
             }, Judgment)
         except (RuntimeError, ValueError, OSError) as exc:
             return Result(**base, status="error", explanation=f"Judge error: {exc}")
+        judgment.correct &= not numeric_conflict
+        judgment.grounded &= not numeric_conflict
         judgment.citations_relevant &= membership and (answer.refused or expected_documents <= cited_documents)
         judgment.refusal_appropriate &= answer.refused == case.expected_refusal
         judgment.tools_correct &= tools_correct

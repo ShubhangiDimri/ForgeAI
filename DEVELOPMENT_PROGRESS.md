@@ -37,3 +37,11 @@
 - Expanded the suite to 28 tests. The latest run at this checkpoint returned 28 passed in 5.87 seconds. Model expectations and embedding vectors are scripted where relevant.
 - Prior live evidence and the new academic smoke rerun remain distinct from full-pipeline live results.
 
+
+## Live generation debugging
+
+- The first full academic run saved its generated agent and stopped before evaluation. Its model produced 0 of 8 valid direct cases. The incomplete quality report and run metadata are preserved under artifacts/full-academic.
+- A live diagnostic reproduced the cause. Gemma wrote four relevant policy questions but returned an empty evidence-anchor array for each. The independent validation call accepted the questions, while the generator correctly rejected their missing evidence.
+- Changed generation to source-assigned slots with model-generated questions and independent semantic checks. Added a synthetic academic procedures supplement and a separate synthesis prompt while preserving the original files.
+- The first procurement build selected CSV lookup and calculator. Its initial evaluation was interrupted for the generator change. A separate evaluation from the identical built snapshot started in artifacts/full-procurement-slot and validated 3 of 8 direct cases in its first batch.
+- The fresh academic full run is running under artifacts/full-academic-slot. The expanded regression suite returned 31 passed in 4.34 seconds. Both runs use the same installed Gemma model and MiniLM cache. CPU model response latency has been approximately 30 to 120 seconds during this session.

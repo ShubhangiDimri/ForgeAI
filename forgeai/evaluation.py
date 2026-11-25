@@ -1,5 +1,6 @@
 """Generate and freeze an evidence-backed evaluation set."""
 from collections import Counter
+from itertools import combinations
 from pathlib import Path
 import re
 from typing import Literal
@@ -20,8 +21,7 @@ class Anchor(Model):
 
 class Draft(Model):
     question: Text
-    anchors: list[int] = Field(max_length=4)
-    tools: list[Tool] = Field(max_length=2)
+    slot: int = Field(ge=1, le=4)
 
 
 class Batch(Model):
@@ -96,38 +96,70 @@ def generate(config: Config, sources: list[Passage], model) -> Dataset:
             sample = (cards[offset:] + cards[:offset])[:14]
             if len({a.document for a in sample}) < 2:
                 sample[-1] = next(a for a in cards if a.document != sample[0].document)
-            numbered = dict(enumerate(sample, 1))
+            size = min(remaining, 4)
+            slots = []
+            options = []
+            if category == "direct":
+                used = {a.fact for c in cases if c.category == category for a in c.expected_facts}
+                options = [(a,) for a in sorted(sample, key=lambda a: a.fact in used)]
+            if category == "multi_document":
+                options = [(a, b) for a, b in combinations(sample, 2) if a.document != b.document]
+                options.sort(key=lambda pair: len(set(question_key(pair[0].fact).split()) &
+                                                  set(question_key(pair[1].fact).split())), reverse=True)
+                options = options[attempt:attempt + size] or options
+            for position in range(size):
+                anchors = options[position % len(options)] if options else ()
+                requested_tools = ()
+                if category == "direct" and "csv_lookup" in available and position == 0:
+                    rows = [a for a in cards if a.document.lower().endswith(".csv")]
+                    if rows and not any("csv_lookup" in c.expected_tools for c in cases):
+                        anchors = (rows[attempt % len(rows)],)
+                        requested_tools = ("csv_lookup",)
+                if category == "direct" and "calculator" in available and position == 1:
+                    numeric = [a for a in cards if re.search(r"\b\d+(?:\.\d+)?\b", a.fact)]
+                    if numeric and not any("calculator" in c.expected_tools for c in cases):
+                        anchors = (numeric[attempt % len(numeric)],)
+                        requested_tools = ("calculator",)
+                slots.append((anchors, requested_tools))
             context = {
-                "category": category, "count": min(remaining, 4),
+                "category": category, "count": size,
                 "scope": config.requirements.scope,
                 "topics": config.requirements.must_answer,
                 "unsupported_topics": [t for t, f in config.coverage.items()
                                        if f.status == "unsupported" and not f.inconclusive],
                 "tools": sorted(available),
-                "source_cards": {i: [a.document, a.fact] for i, a in numbered.items()},
+                "source_cards": [[a.document, a.fact] for a in sample] if not options else [],
+                "slots": [{"slot": i, "facts": [a.fact for a in anchors], "tools": expected_tools}
+                          for i, (anchors, expected_tools) in enumerate(slots, 1)],
                 "previous_questions": [c.question for c in cases],
             }
-            draft = model.ask("eval_generate", context, Batch)
+            try:
+                draft = model.ask("eval_generate", context, Batch)
+            except ValueError as exc:
+                print(f"Rejected malformed {category} batch: {exc}", flush=True)
+                continue
             candidates = []
+            used_slots = set()
             for item in draft.cases:
                 key = question_key(item.question)
                 if not key or key in seen or any(key == question_key(c.question) for c in candidates):
                     continue
-                if any(i not in numbered for i in item.anchors) or set(item.tools) - available:
+                if item.slot > len(slots) or item.slot in used_slots:
                     continue
-                anchors = tuple(numbered[i] for i in dict.fromkeys(item.anchors))
-                refusal = category not in {"direct", "multi_document"}
-                if bool(anchors) == refusal or (refusal and item.tools):
-                    continue
-                if category == "multi_document" and len({a.document for a in anchors}) < 2:
-                    continue
+                used_slots.add(item.slot)
+                anchors, expected_tools = slots[item.slot - 1]
                 candidates.append(Case(id="candidate", question=item.question, category=category,
-                                       expected_refusal=refusal, expected_facts=anchors,
-                                       expected_tools=tuple(dict.fromkeys(item.tools))))
+                                       expected_refusal=not bool(anchors), expected_facts=anchors,
+                                       expected_tools=expected_tools))
             if not candidates:
+                print(f"{category} batch {attempt + 1} had no usable questions", flush=True)
                 continue
-            review = model.ask("eval_validate", {**context,
-                "candidates": [c.model_dump() for c in candidates]}, Validation)
+            try:
+                review = model.ask("eval_validate", {**context,
+                    "candidates": [c.model_dump() for c in candidates]}, Validation)
+            except ValueError as exc:
+                print(f"Rejected malformed {category} review: {exc}", flush=True)
+                continue
             for i in dict.fromkeys(review.accepted):
                 if not 1 <= i <= len(candidates) or len(cases) - start == target:
                     continue
@@ -135,6 +167,7 @@ def generate(config: Config, sources: list[Passage], model) -> Dataset:
                 candidate.id = f"E{len(cases) + 1:03d}"
                 seen.add(question_key(candidate.question))
                 cases.append(candidate)
+            print(f"{category} accepted {len(cases) - start}/{target} after batch {attempt + 1}", flush=True)
         if len(cases) - start < target:
             raise ValueError(f"Generated only {len(cases) - start} of {target} required {category} cases")
     return Dataset(cases=tuple(cases))

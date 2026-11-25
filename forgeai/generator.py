@@ -33,7 +33,7 @@ def build(brief: str, docs: Path, out: Path, unattended: bool, model: Ollama, em
     if not any(p.cells for p in passages):
         available.remove("csv_lookup")
     design = model.ask("design", {"brief": brief, "requirements": req.model_dump(),
-                       "files": list(manifest), "coverage": {t: f.status for t, f in coverage.items()}, "available_tools": sorted(available)}, Design)
+                       "files": list(manifest), "coverage": {t: "inconclusive" if f.inconclusive else f.status for t, f in coverage.items()}, "available_tools": sorted(available)}, Design)
     if any(t.name not in available for t in design.tools):
         raise ValueError("Model selected an unavailable tool")
     design.tools = select_tools(design.tools, " ".join([brief, *req.must_answer]))

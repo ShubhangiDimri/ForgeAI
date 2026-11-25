@@ -43,7 +43,7 @@ def assess(requirements: Requirements, index: Index, model: Ollama) -> dict[str,
         else:
             evidence = [candidates[n - 1] for n in numbers]
             results[topic] = Finding(status=assessment.status, evidence=evidence,
-                                     retrieval_miss=any(e.id not in retrieved for e in evidence),
+                                     retrieval_miss=not any(e.id in retrieved for e in evidence),
                                      limitation=assessment.limitation)
     return results
 

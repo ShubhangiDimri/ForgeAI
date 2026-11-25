@@ -28,15 +28,11 @@ class DraftModel:
     def ask(self, stage, payload, schema):
         if stage == "eval_validate":
             return schema(accepted=list(range(1, len(payload["candidates"]) + 1)))
-        first = next(iter(payload["source_cards"]))
-        other = next(i for i, p in payload["source_cards"].items()
-                     if p[0] != payload["source_cards"][first][0])
         cases = []
-        for _ in range(payload["count"]):
+        for slot in payload["slots"]:
             self.count += 1
             category = payload["category"]
-            anchors = [first, other] if category == "multi_document" else [first] if category == "direct" else []
-            cases.append(dict(question=f"Fixture {category} question {self.count}?", anchors=anchors, tools=[]))
+            cases.append(dict(question=f"Fixture {category} question {self.count}?", slot=slot["slot"]))
         return schema(cases=cases)
 
 
@@ -63,7 +59,7 @@ def test_generate_and_freeze(tmp_path):
 def test_invalid_model_evidence_is_rejected():
     model = Mock()
     model.ask.side_effect = lambda stage, payload, schema: schema(cases=[
-        dict(question="Unverified fact?", anchors=[999], tools=[])])
+        dict(question="Unverified fact?", slot=999)])
     with pytest.raises(ValueError, match="Generated only"):
         generate(saved_config(), FIXTURES, model)
     assert model.ask.call_count == 5
@@ -253,3 +249,30 @@ def test_judge_error_is_not_a_semantic_failure():
     model.ask.side_effect = ValueError("invalid model output")
     result = assess(case, trace, model)
     assert result.status == "error" and result.score is None and result.failure is None
+
+
+def test_unsupported_numeric_claim_cannot_pass_an_agreeable_judge():
+    case = Case(id="T", question="What is the threshold?", category="direct", expected_refusal=False,
+                expected_facts=(Anchor(source_id="policy.txt#text", document="policy.txt",
+                                       fact="The threshold is 75 percent."),))
+    source = Passage(id="policy.txt#text:c1", file="policy.txt", text="The threshold is 75 percent.")
+    trace = Execution(answer=Answer(answer="74%", citations=[source.id], refused=False), retrieved=[source])
+    model = Mock()
+    model.ask.return_value = Judgment(correct=True, grounded=True, citations_relevant=True,
+                                      refusal_appropriate=True, tools_correct=True, explanation="Overly agreeable judge")
+    result = assess(case, trace, model)
+    assert result.failure == "hallucination" and result.score == 0
+
+
+def test_interactive_chat_continues_after_question_error(monkeypatch, capsys):
+    import sys
+    from forgeai import __main__ as cli
+    agent = Mock()
+    agent.answer.side_effect = [ValueError("invalid tool arguments"),
+                                Answer(answer="Second question worked", citations=["example"], refused=False)]
+    monkeypatch.setattr(cli, "Runner", lambda path: agent)
+    monkeypatch.setattr(sys, "argv", ["forgeai", "chat", "--config", "config.json"])
+    monkeypatch.setattr("builtins.input", Mock(side_effect=["question 1", "question 2", "/quit"]))
+    assert cli.main() == 0
+    captured = capsys.readouterr()
+    assert "Question failed" in captured.err and "Second question worked" in captured.out

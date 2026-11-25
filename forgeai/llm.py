@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 PROMPTS = Path(__file__).with_name("prompts")
+OUTPUT_BUDGET = {"questions": 160, "requirements": 320, "coverage": 180, "design": 320,
+                 "route": 150, "answer": 240, "eval_generate": 260, "eval_validate": 72, "judge": 160}
 
 
 class Ollama:
@@ -21,8 +23,9 @@ class Ollama:
         messages = [{"role": "system", "content": system},
                     {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}]
         for attempt in range(2):
+            budget = min(640, OUTPUT_BUDGET.get(stage, 320) * (attempt + 1))
             body = dict(model=self.model, messages=messages, format=schema.model_json_schema(),
-                        stream=False, options={"temperature": 0, "num_ctx": 4096, "num_predict": 640, "num_thread": 4})
+                        stream=False, options={"temperature": 0, "num_ctx": 4096, "num_predict": budget, "num_thread": 4})
             try:
                 req = Request(self.url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
                 with urlopen(req, timeout=240) as response:

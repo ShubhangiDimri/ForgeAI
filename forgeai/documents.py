@@ -1,4 +1,5 @@
 import hashlib
+import re
 from pathlib import Path
 import pandas as pd
 import pymupdf
@@ -7,7 +8,7 @@ from .schema import Passage, Settings
 
 def anchor_id(chunk_id: str) -> str:
     """Return the stable source locator without its version-specific chunk suffix."""
-    return chunk_id.rsplit(":c", 1)[0]
+    return re.sub(r":c\d+$", "", chunk_id)
 
 
 def digest(data: bytes) -> str:

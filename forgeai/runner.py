@@ -25,6 +25,10 @@ class InvalidCitationError(ValueError):
     pass
 
 
+class InvalidToolCall(ValueError):
+    pass
+
+
 class ToolTrace(Model):
     name: Tool
     arguments: dict
@@ -37,6 +41,7 @@ class Execution(Model):
     tools: list[ToolTrace] = []
     error: str | None = None
     invalid_citation: bool = False
+    invalid_tool_call: bool = False
 
 
 class QuotedAnswer(Answer):
@@ -83,6 +88,9 @@ class Runner:
         except InvalidCitationError as exc:
             trace.invalid_citation = True
             trace.error = str(exc)
+        except InvalidToolCall as exc:
+            trace.invalid_tool_call = True
+            trace.error = str(exc)
         except (RuntimeError, ValueError, ArithmeticError, OSError) as exc:
             trace.error = f"{type(exc).__name__}: {exc}"
         return trace
@@ -96,7 +104,8 @@ class Runner:
             return refuse("This topic is restricted by the agent definition.")
         allowed = {t.name for t in config.tools}
         context = {"question": question, "requirements": config.requirements.model_dump(),
-                   "coverage": {t: [f.status, f.limitation] for t, f in config.coverage.items()},
+                   "coverage": {t: ["inconclusive" if f.inconclusive else f.status, f.limitation]
+                                for t, f in config.coverage.items()},
                    "agent_guidance": config.system_prompt}
         if "csv_lookup" in allowed:
             context["csv_columns"] = {p.file: list(p.cells) for p in self.corpus if p.cells is not None}
@@ -122,8 +131,11 @@ class Runner:
                     value = route.arguments.get(key)
                     numbers = re.findall(r"(?<![\w.])[-+]?\d+(?:\.\d+)?(?![\w.])", question)
                     if isinstance(value, bool) or not isinstance(value, (int, float)) or not any(float(n) == value for n in numbers):
-                        raise ValueError("Weather needs explicit coordinates from the question")
-            call.results = execute(route.tool, route.arguments, unused, self.corpus)
+                        raise InvalidToolCall("Weather needs explicit coordinates from the question")
+            try:
+                call.results = execute(route.tool, route.arguments, unused, self.corpus)
+            except (ValueError, ArithmeticError) as exc:
+                raise InvalidToolCall(str(exc)) from exc
             unused.remove(route.tool)
             if not call.results:
                 return refuse("The requested lookup returned no matching rows.")
@@ -144,6 +156,7 @@ class Runner:
             if not set(answer.citations).issubset(verified):
                 return refuse("The answer lacked verifiable excerpts for its citations.")
         if not set(answer.citations).issubset(evidence):
+            trace.answer = Answer(answer=answer.answer, citations=answer.citations, refused=answer.refused)
             raise InvalidCitationError("Model cited a source outside retrieved evidence")
         return Answer(answer=answer.answer, citations=answer.citations, refused=answer.refused)
 

@@ -17,7 +17,7 @@ def main() -> int:
     create.add_argument("--docs", required=True, type=Path)
     create.add_argument("--out", required=True, type=Path)
     create.add_argument("--non-interactive", action="store_true")
-    create.add_argument("--model", default=os.getenv("FORGE_MODEL", "qwen2.5:3b"))
+    create.add_argument("--model", default=os.getenv("FORGE_MODEL", "gemma2:2b"))
     create.add_argument("--embedding", default=os.getenv("FORGE_EMBEDDING", "sentence-transformers/all-MiniLM-L6-v2"))
     evaluate = commands.add_parser("evaluate")
     evaluate.add_argument("--run", required=True, type=Path)

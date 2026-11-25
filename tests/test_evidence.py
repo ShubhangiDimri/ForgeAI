@@ -46,3 +46,20 @@ def test_relevance_filter_needs_brief_capability():
     assert select_tools(proposals, "Explain attendance requirements") == []
     assert [t.name for t in select_tools(proposals, "Calculate totals from a catalog lookup")] == [
         "calculator", "csv_lookup"]
+
+
+def test_coverage_distinguishes_fallback_evidence_from_absence():
+    record = Passage(id="spec#p1:c1", file="spec", text="width 10 cm")
+    index = Mock()
+    index.search.return_value = []
+    index.passages = [record]
+    model = Mock()
+    model.ask.return_value = Assessment(status="supported", sentence_numbers=[1], limitation="")
+    found = assess(requirements(), index, model)["dimensions"]
+    assert found.status == "supported" and found.retrieval_miss and not found.inconclusive
+    model.ask.return_value = Assessment(status="unsupported", sentence_numbers=[], limitation="Absent")
+    absent = assess(requirements(), index, model)["dimensions"]
+    assert not absent.retrieval_miss and not absent.inconclusive
+    index.passages = [record.model_copy(update={"text": "word " * 2000})]
+    uncertain = assess(requirements(), index, model)["dimensions"]
+    assert uncertain.inconclusive and uncertain.retrieval_miss

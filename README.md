@@ -85,7 +85,7 @@ $env:OLLAMA_MODELS = 'C:\Users\shubh\.ollama\models'
 ollama serve
 ```
 
-Full builds generate and freeze at least 20 cases across five categories, then measure a baseline and up to three targeted iterations. The judge defaults to the agent model. Set --judge-model or FORGE_JUDGE_MODEL to another installed model to assess independently. Keep each run directory intact. Chat loads the selected configuration in the run root. The source snapshot supports actual rechunking. Historical Phase A configs still load without that snapshot.
+Full builds generate and freeze at least 20 cases across five categories, then measure a baseline and up to three targeted iterations. New builds default to the installed Gemma 2B model. Use --model or FORGE_MODEL to select another installed model. The judge defaults to the agent model. Set --judge-model or FORGE_JUDGE_MODEL to another installed model to assess independently. Keep each run directory intact. Chat loads the selected configuration in the run root. The source snapshot supports actual rechunking. Historical Phase A configs still load without that snapshot.
 
 For a fresh prototype run, add --prototype-only. To evaluate a new prototype with a source snapshot, run python -m forgeai evaluate --run followed by the run path. Evaluation preserves metric files per run and refuses to overwrite an existing evaluation run. Interrupted runs retain available checkpoints.
 
