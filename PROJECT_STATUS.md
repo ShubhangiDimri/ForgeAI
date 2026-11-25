@@ -16,7 +16,7 @@ The following table supersedes the earlier Phase A audit retained below. Prototy
 | 8 Runnable product | Verified on the saved academic agent. `__main__.py` and `runner.py` reload it and answer documented CLI questions. Fresh Gemma rerun passed 3/3 in `artifacts/phase1-smoke/smoke.json`. |
 | 9 Two full demonstrations | Procurement and academic inputs exist. Both full CLI commands generated runnable agents. Live evaluation retries exposed invalid questions and did not reach the scoring stage. Incomplete attempts and the successful procurement tool probe are retained under artifacts. Two complete demonstrations remain open. |
 
-Regression command `python -B -m pytest -q -p no:cacheprovider` returned **35 passed in 4.24s**. These tests substitute model output and embeddings where appropriate. Full demo commands and artifact descriptions are in README.md. Phase notes are in DEVELOPMENT_PROGRESS.md. Python 3.11 remains unverified. Gemma used pre-existing dependencies and weights. Qwen2.5 3B was selected for a short comparison and is downloading to a writable workspace cache.
+Regression command `python -B -m pytest -q -p no:cacheprovider` returned **35 passed in 4.24s**. These tests substitute model output and embeddings where appropriate. Full demo commands and artifact descriptions are in README.md. Phase notes are in DEVELOPMENT_PROGRESS.md. Python 3.11 remains unverified. Gemma used pre-existing dependencies and weights. Qwen2.5 3B was selected for a short comparison. The partial workspace download was stopped at the requester's direction. Manual installation is pending.
 
 ## Historical Phase A audit
 

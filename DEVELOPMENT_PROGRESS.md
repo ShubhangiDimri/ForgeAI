@@ -61,3 +61,5 @@
 - The latest Gemma procurement run saved three candidate cases before being interrupted for model comparison. Audit found an invalid calculator expectation among them. Deterministic checks now reject calculator and lookup cases without explicit corresponding intent.
 - The regression command returned 35 passed in 4.24 seconds under Python 3.13.5. The suite includes category shortfalls, rejection of an in-scope question masquerading as an out-of-scope one and live-independent workflow checks.
 - Qwen2.5 3B was absent from the local model store. Its initial pull to the regular model store failed because the sandbox denied opening a partial blob. An isolated local Ollama server on port 11440 uses a writable workspace cache, with 4.9 GiB RAM free after unloading Gemma. The pull is in progress. No Qwen results have been recorded yet.
+
+The requester took over model installation. Stopped the scratch Qwen pull, its local server and the queued probe. The partial download was preserved in the workspace cache. Install qwen2.5:3b in the normal Ollama store before resuming. No Qwen inference or full live evaluation scores are available yet.
