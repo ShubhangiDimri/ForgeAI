@@ -1,6 +1,7 @@
 """Lightweight FastAPI wrapper around the existing ForgeAI pipeline."""
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime, timezone
 import io
 import json
@@ -18,14 +19,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
-from forgeai import coverage as cov_mod
-from forgeai import documents as docs_mod
 from forgeai import generator as gen_mod
-from forgeai import intake as intake_mod
 from forgeai import llm as llm_mod
 from forgeai import runner as runner_mod
 from forgeai import workflow as workflow_mod
-from forgeai.schema import Config, Questions, Requirements
+from forgeai.schema import Finding, Requirements
 
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
 ARTIFACTS_DIR = BACKEND_ROOT / "artifacts"
@@ -54,7 +52,8 @@ app.add_middleware(
 _BUILDS_LOCK = threading.Lock()
 _BUILDS: dict[str, dict[str, Any]] = {}
 _RUNNERS_LOCK = threading.Lock()
-_RUNNERS: dict[str, runner_mod.Runner] = {}
+_RECOVERIES: set[str] = set()
+_RUNNERS: dict[tuple[str, str | None], tuple[tuple[int | None, ...], runner_mod.Runner]] = {}
 
 PIPELINE_STAGES = [
     "Document ingestion",
@@ -91,15 +90,19 @@ def _read_json_if_exists(path: Path) -> Any:
         return None
 
 
-def _get_runner(run_id: str) -> runner_mod.Runner:
+def _get_runner(run_id: str, model: str | None) -> runner_mod.Runner:
     with _RUNNERS_LOCK:
-        if run_id not in _RUNNERS:
-            run_path = _run_dir(run_id)
-            config_path = run_path / "agent_config.json"
-            if not config_path.is_file():
-                raise HTTPException(status_code=404, detail="Agent configuration not found")
-            _RUNNERS[run_id] = runner_mod.Runner(config_path)
-        return _RUNNERS[run_id]
+        run_path = _run_dir(run_id)
+        config_path = run_path / "agent_config.json"
+        if not config_path.is_file():
+            raise HTTPException(status_code=404, detail="Agent configuration not found")
+        paths = (config_path, run_path / "corpus.json", run_path / "sources.json")
+        revision = tuple(path.stat().st_mtime_ns if path.is_file() else None for path in paths)
+        key = (run_id, model)
+        cached = _RUNNERS.get(key)
+        if cached is None or cached[0] != revision:
+            _RUNNERS[key] = revision, runner_mod.Runner(config_path, model_override=model)
+        return _RUNNERS[key][1]
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +131,7 @@ class ApproveRequirementsRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
+    model: str | None = Field(default=None, max_length=160)
 
 
 class ResumeRequest(BaseModel):
@@ -156,6 +160,14 @@ def _has_key(var: str) -> bool:
         return False
 
 
+def _has_groq_key() -> bool:
+    try:
+        llm_mod.groq_key()
+        return True
+    except RuntimeError:
+        return False
+
+
 @app.get("/api/providers")
 def providers() -> dict[str, Any]:
     return {
@@ -163,7 +175,7 @@ def providers() -> dict[str, Any]:
             {
                 "id": "groq",
                 "name": "Groq",
-                "configured": _has_key("GROQ_API_KEY") or _has_key("GROQ_API_KEY_1") or _has_key("GROQ_API_KEY_2"),
+                "configured": _has_groq_key(),
                 "default_model": llm_mod.GROQ_DEFAULT,
                 "judge_model": llm_mod.GROQ_JUDGE,
                 "models": ["groq:openai/gpt-oss-120b", "groq:openai/gpt-oss-20b"],
@@ -321,11 +333,22 @@ def download_zip(run_id: str):
 
 @app.post("/api/runs/{run_id}/chat")
 def chat(run_id: str, req: ChatRequest) -> dict[str, Any]:
-    runner = _get_runner(run_id)
-    trace = runner.trace(req.question.strip())
-    if trace.error and trace.answer is None and not trace.invalid_citation and not trace.invalid_tool_call:
+    question = req.question.strip()
+    if not question:
+        raise HTTPException(status_code=422, detail="Enter a question.")
+    if req.model and not any(
+        provider["configured"] and req.model in provider["models"]
+        for provider in providers()["providers"]
+    ):
+        raise HTTPException(status_code=422, detail="Choose an available chat model.")
+    try:
+        runner = _get_runner(run_id, req.model)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail=f"Could not load agent. {exc}") from exc
+    trace = runner.trace(question)
+    if trace.error:
         raise HTTPException(status_code=502, detail=trace.error)
-    return trace.model_dump(mode="json")
+    return trace.model_dump(mode="json") | {"model": runner.model.model}
 
 
 # ---------------------------------------------------------------------------
@@ -374,102 +397,46 @@ def _set_stage(build_id: str, index: int, status: str, detail: str = "") -> None
 def _execute_build(build_id: str, req: BuildRequest, docs_path: Path, out_dir: Path) -> None:
     start_ts = time.monotonic()
     try:
-        model = llm_mod.make_model(req.model)
+        def checkpoint(status: str, data: dict[str, Any], reply: str) -> Any:
+            with _BUILDS_LOCK:
+                build = _BUILDS[build_id]
+                event = build["_event"]
+                event.clear()
+                build.update(data, status=status)
+            if not event.wait(timeout=1800):
+                raise TimeoutError("Build checkpoint expired after 30 minutes")
+            with _BUILDS_LOCK:
+                build = _BUILDS[build_id]
+                build["status"] = "running"
+                return build[reply]
+
+        def answer_questions(questions: list[str]) -> dict[str, str]:
+            answers = checkpoint("waiting_intake", {"questions": questions}, "answers")
+            return dict(zip(questions, answers))
+
+        def approve(requirements: Requirements, coverage: dict[str, Finding]) -> Requirements:
+            response = checkpoint("waiting_approval", {
+                "requirements": requirements.model_dump(mode="json"),
+                "coverage": {topic: finding.model_dump(mode="json") for topic, finding in coverage.items()},
+            }, "approved_requirements")
+            return Requirements.model_validate(response)
+
+        stages = ("ingestion", "intake", "groundability", "generation")
+
+        def progress(stage: str, status: str, detail: str) -> None:
+            _set_stage(build_id, stages.index(stage), status, detail)
+
         embedding = os.getenv("FORGE_EMBEDDING", "sentence-transformers/all-MiniLM-L6-v2")
-
-        # 1. Document ingestion
-        _set_stage(build_id, 0, "running", f"Reading {docs_path.name}")
-        sources, manifest = docs_mod.load_folder(docs_path)
-        _set_stage(build_id, 0, "completed", f"Loaded {len(manifest)} files ({len(sources)} passages)")
-
-        # 2. Intake interview
-        _set_stage(build_id, 1, "running", "Analyzing brief and excerpts")
-        excerpts = intake_mod.sample_excerpts(sources)
-        if req.interactive:
-            q_resp = model.ask("questions", {"brief": req.brief, "documents": excerpts}, Questions)
-            questions = q_resp.questions[:5]
-            if questions:
-                with _BUILDS_LOCK:
-                    _BUILDS[build_id]["status"] = "waiting_intake"
-                    _BUILDS[build_id]["questions"] = questions
-                    _BUILDS[build_id]["_event"].clear()
-                _BUILDS[build_id]["_event"].wait(timeout=1800)
-                with _BUILDS_LOCK:
-                    answers_list = _BUILDS[build_id].get("answers", [])
-                    _BUILDS[build_id]["status"] = "running"
-                qa = list(zip(questions, answers_list))
-            else:
-                qa = []
-            requirements = intake_mod.gather(req.brief, sources, model, interactive=False) if not qa else model.ask(
-                "requirements",
-                {"brief": req.brief, "documents": excerpts, "answers": [{"question": q, "answer": a} for q, a in qa]},
-                Requirements,
-            )
-        else:
-            requirements = intake_mod.gather(req.brief, sources, model, interactive=False)
-        _set_stage(build_id, 1, "completed", f"Scope: {requirements.scope[:80]}")
-
-        # 3. Groundability verification
-        _set_stage(build_id, 2, "running", "Checking topic groundability")
-        findings = cov_mod.assess(requirements, sources, model, embedding)
-        _set_stage(build_id, 2, "completed", f"Checked {len(findings)} topics")
-
-        if req.interactive:
-            with _BUILDS_LOCK:
-                _BUILDS[build_id]["status"] = "waiting_approval"
-                _BUILDS[build_id]["requirements"] = requirements.model_dump(mode="json")
-                _BUILDS[build_id]["coverage"] = {k: v.model_dump(mode="json") for k, v in findings.items()}
-                _BUILDS[build_id]["_event"].clear()
-            _BUILDS[build_id]["_event"].wait(timeout=1800)
-            with _BUILDS_LOCK:
-                approved = _BUILDS[build_id].get("approved_requirements")
-                if approved:
-                    requirements = Requirements.model_validate(approved)
-                _BUILDS[build_id]["status"] = "running"
-
-        # 4. Agent generation
-        _set_stage(build_id, 3, "running", "Generating validated agent definition")
-        from forgeai.schema import Design, Passage, Answer
-        from pydantic import TypeAdapter
-        design = model.ask(
-            "design",
-            {
-                "requirements": requirements.model_dump(),
-                "coverage": {t: f.model_dump() for t, f in findings.items()},
-                "tools": sorted(gen_mod.REGISTRY),
-            },
-            Design,
+        gen_mod.build(
+            req.brief, docs_path, out_dir, True, llm_mod.make_model(req.model), embedding,
+            answer_questions=answer_questions if req.interactive else None,
+            approve=approve if req.interactive else None, progress=progress,
         )
-        chunks = docs_mod.chunk(sources, design.settings)
-        corpus_bytes = TypeAdapter(list[Passage]).dump_json(chunks)
-        sources_bytes = TypeAdapter(list[Passage]).dump_json(sources)
-        config = Config(
-            **design.model_dump(),
-            version=1,
-            model=model.model,
-            embedding=embedding,
-            requirements=requirements,
-            coverage=findings,
-            document_manifest=manifest,
-            output_contract=Answer.model_json_schema(),
-            corpus_sha256=docs_mod.digest(corpus_bytes),
-            sources_sha256=docs_mod.digest(sources_bytes),
-        )
-        out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / "requirements.json").write_text(requirements.model_dump_json(indent=2), encoding="utf-8")
-        (out_dir / "coverage.json").write_text(
-            json.dumps({k: v.model_dump() for k, v in findings.items()}, indent=2), encoding="utf-8"
-        )
-        (out_dir / "document_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-        (out_dir / "corpus.json").write_bytes(corpus_bytes)
-        (out_dir / "sources.json").write_bytes(sources_bytes)
-        (out_dir / "agent_config.json").write_text(config.model_dump_json(indent=2), encoding="utf-8")
-        _set_stage(build_id, 3, "completed", f"Saved {out_dir.name}")
 
         if not req.prototype_only:
             _set_stage(build_id, 4, "running", "Generating and freezing evaluation cases")
-            workflow_mod.run(out_dir, req.judge_model, max_iterations=req.max_iterations)
-            _set_stage(build_id, 4, "completed", "20 cases frozen")
+            cards = workflow_mod.run(out_dir, req.judge_model, max_iterations=req.max_iterations)
+            _set_stage(build_id, 4, "completed", f"{cards[0]['total']} cases frozen")
             _set_stage(build_id, 5, "completed", "Baseline scored")
             _set_stage(build_id, 6, "completed", "Optimization complete")
             _set_stage(build_id, 7, "completed", "Final report written")
@@ -536,7 +503,7 @@ def get_build(build_id: str) -> dict[str, Any]:
         b = _BUILDS.get(build_id)
         if not b:
             raise HTTPException(status_code=404, detail="Build not found")
-        return {k: v for k, v in b.items() if k != "_event"}
+        return deepcopy({k: v for k, v in b.items() if k != "_event"})
 
 
 @app.post("/api/builds/{build_id}/intake")
@@ -548,6 +515,7 @@ def submit_intake(build_id: str, req: IntakeAnswersRequest) -> dict[str, Any]:
         if b["status"] != "waiting_intake":
             raise HTTPException(status_code=409, detail="Build is not waiting for intake answers")
         b["answers"] = req.answers
+        b["status"] = "running"
         b["_event"].set()
     return {"status": "resumed"}
 
@@ -561,6 +529,7 @@ def approve_requirements(build_id: str, req: ApproveRequirementsRequest) -> dict
         if b["status"] != "waiting_approval":
             raise HTTPException(status_code=409, detail="Build is not waiting for requirements approval")
         b["approved_requirements"] = req.requirements.model_dump(mode="json")
+        b["status"] = "running"
         b["_event"].set()
     return {"status": "resumed"}
 
@@ -568,12 +537,35 @@ def approve_requirements(build_id: str, req: ApproveRequirementsRequest) -> dict
 @app.post("/api/runs/{run_id}/resume")
 def resume_run(run_id: str, req: ResumeRequest) -> dict[str, Any]:
     folder = _run_dir(run_id)
-    def _worker():
-        if req.mode == "scoring":
-            workflow_mod.resume_scoring(folder, req.judge_model)
-        else:
-            workflow_mod.run(folder, req.judge_model, resume_generation=True)
-    t = threading.Thread(target=_worker, daemon=True)
-    t.start()
-    return {"run_id": run_id, "status": "resuming", "mode": req.mode}
+    metadata = _read_json_if_exists(folder / "run_metadata.json") or {}
+    if metadata.get("status") != "incomplete":
+        raise HTTPException(status_code=409, detail="Only incomplete runs can be resumed.")
+    if req.mode == "scoring" and not (folder / "eval_dataset.json").is_file():
+        raise HTTPException(status_code=409, detail="Scoring requires a frozen dataset.")
+    if req.mode == "generation" and (
+        (folder / "eval_dataset.json").is_file() or not (folder / "eval_generation_progress.json").is_file()
+    ):
+        raise HTTPException(status_code=409, detail="Generation resume requires saved drafts and no frozen dataset.")
+    with _BUILDS_LOCK:
+        if run_id in _RECOVERIES:
+            raise HTTPException(status_code=409, detail="This run is already resuming.")
+        _RECOVERIES.add(run_id)
 
+    def worker() -> None:
+        try:
+            if req.mode == "scoring":
+                workflow_mod.resume_scoring(folder, req.judge_model)
+            else:
+                workflow_mod.run(folder, req.judge_model, max_iterations=metadata.get("max_iterations", 3),
+                                 resume_generation=True)
+        except Exception as exc:
+            current = _read_json_if_exists(folder / "run_metadata.json") or metadata
+            if current.get("status") not in {"complete", "complete_with_errors"}:
+                current.update(status="incomplete", stop_reason=f"{type(exc).__name__}: {exc}")
+                workflow_mod.write_json(folder / "run_metadata.json", current)
+        finally:
+            with _BUILDS_LOCK:
+                _RECOVERIES.discard(run_id)
+
+    threading.Thread(target=worker, daemon=True).start()
+    return {"run_id": run_id, "status": "resuming", "mode": req.mode}

@@ -82,3 +82,18 @@ The requester took over model installation. Stopped the scratch Qwen pull, its l
 - NVIDIA's free Nemotron 3.5 Lightning endpoint returned a valid JSON response. Added an explicit NVIDIA model prefix and bounded host-specific retries. A fresh NVIDIA run uses its own artifact directory.
 
 - Final regression suite: 41 passed in 4.22 seconds. The live NVIDIA adapter passed Pydantic validation and built a procurement agent. Its evaluation had accepted 5 drafts at the reporting checkpoint. No NVIDIA score was observed.
+
+
+## Full stack verification on 26 November 2026
+
+- Verified backend and frontend are the current project roots. All tracked
+  legacy root paths being removed had local backend counterparts.
+- Fixed numbered Groq credentials, readable chat errors, chat model selection,
+  report separator encoding and the Build API's use of the shared factory.
+- Verified 54 backend tests, a successful frontend production build, both live
+  Playground chats, scorecards, and a report ZIP download.
+- Reconciled both saved Groq demos against their frozen test sets and raw
+  case results. Both retained baseline v0 at 12/20 after v1 scored 11/20.
+  Both remain complete_with_errors due to baseline infrastructure errors.
+- Kept the validation changes local because GitHub reported origin as public.
+- Fresh browser build completed with three live intake questions, a groundability review and explicit approval. The prototype saved a runnable definition. The full evaluation evidence comes from the two saved Groq demos.

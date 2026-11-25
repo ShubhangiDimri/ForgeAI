@@ -63,7 +63,7 @@ class QuotedAnswer(Answer):
 
 
 class Runner:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, *, model_override: str | None = None):
         self.config = Config.model_validate_json(path.read_bytes())
         data = path.with_name("corpus.json").read_bytes()
         if digest(data) != self.config.corpus_sha256:
@@ -77,8 +77,8 @@ class Runner:
                 raise ValueError("Source snapshot does not match saved definition")
             self.sources = adapter.validate_json(raw)
             self.corpus = chunk(self.sources, self.config.settings)
+        self.model = make_model(model_override or self.config.model)
         self.index = Index(self.corpus, self.config.settings, self.config.embedding)
-        self.model = make_model(self.config.model)
 
     def reconfigure(self, config: Config) -> None:
         previous = self.config.settings

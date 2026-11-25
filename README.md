@@ -18,26 +18,42 @@ ForgeAI/
 └── PROJECT_SPEC.md
 ```
 
-## Development Startup
+## Start ForgeAI locally
 
-### Backend (FastAPI)
-```powershell
-cd backend
-python -m uvicorn api.main:app --reload --port 8000
-```
+Open two PowerShell terminals at the repository root. Install dependencies once.
 
-### Frontend (React + Vite)
-```powershell
-cd frontend
-npm install
+### Backend
+
+~~~powershell
+Set-Location backend
+python -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+& .\.venv\Scripts\python.exe -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+~~~
+
+Put provider credentials in backend/.env using backend/.env.example as a guide.
+Groq accepts GROQ_API_KEY or the numbered GROQ_API_KEY_1 and GROQ_API_KEY_2.
+Set FORGE_GROQ_KEY_SLOT=2 in backend/.env to select slot 2, then restart Uvicorn.
+A configured provider must still have a valid key and available quota. RAG uses
+the locally cached MiniLM embedding model.
+
+### Frontend
+
+~~~powershell
+Set-Location frontend
+npm ci
 npm run dev
-```
+~~~
 
-### Production Frontend Build
-```powershell
-cd frontend
-npm run build
-```
+Open http://127.0.0.1:5173 for ForgeAI or http://127.0.0.1:8000/docs for API docs.
+The Vite server proxies /api to the backend. Use npm run build in frontend/ to
+produce dist/. For another deployment, route /api to FastAPI or set
+VITE_API_BASE_URL when building and configure CORS for the deployment origin.
+
+Overview lists the two saved Groq demos. Playground uses the saved run model
+by default when its provider is configured. You can select a different model
+for chat without changing the saved agent or evaluation evidence. Reports
+provides individual artifacts and a run ZIP.
 
 ## Windows PowerShell setup
 

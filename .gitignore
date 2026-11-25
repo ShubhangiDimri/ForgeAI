@@ -6,6 +6,7 @@ __pycache__/
 *.safetensors
 work/
 .env.*
+!/backend/.env.example
 *.pem
 *.key
 *.ckpt
@@ -47,3 +48,6 @@ backend/artifacts/cf-academic/
 backend/artifacts/cf-procurement/
 backend/artifacts/nvidia-academic-r2/
 backend/artifacts/nvidia-procurement-r2/
+
+# Local UI verification runs
+/backend/artifacts/ui-verification-*/

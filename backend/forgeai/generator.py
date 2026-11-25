@@ -1,6 +1,7 @@
 import json
 import re
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 from pydantic import TypeAdapter
 from . import documents
@@ -8,19 +9,39 @@ from .coverage import assess
 from .intake import interview
 from .llm import ModelClient
 from .retrieval import Index
-from .schema import Answer, Config, Design, Passage, Selection, Settings
+from .schema import Answer, Config, Design, Finding, Passage, Requirements, Selection, Settings
 from .tools import REGISTRY, select_tools
 
 
-def build(brief: str, docs: Path, out: Path, unattended: bool, model: ModelClient, embedding: str) -> Config:
+def build(brief: str, docs: Path, out: Path, unattended: bool, model: ModelClient, embedding: str, *,
+          answer_questions: Callable[[list[str]], dict[str, str]] | None = None,
+          approve: Callable[[Requirements, dict[str, Finding]], Requirements] | None = None,
+          progress: Callable[[str, str, str], None] | None = None) -> Config:
+    def notify(name: str, status: str, detail: str) -> None:
+        if progress is not None:
+            progress(name, status, detail)
+
     if out.exists() or out.resolve().is_relative_to(docs.resolve()):
         raise ValueError("Choose a new output directory outside the document folder")
+    notify("ingestion", "running", f"Reading {docs.name}")
     passages, manifest = documents.load(docs)
-    req = interview(brief, passages, unattended, model)
+    notify("ingestion", "completed", f"Loaded {len(manifest)} files")
+    notify("intake", "running", "Analyzing the brief and documents")
+    req = interview(brief, passages, unattended, model, answer_questions=answer_questions)
+    notify("intake", "completed", req.scope)
+    notify("groundability", "running", "Checking document support")
     discovery = Settings(chunk_words=100, overlap=20, top_k=6, min_score=0.18)
     discovery_corpus = documents.chunk(passages, discovery)
     discovery_index = Index(discovery_corpus, discovery, embedding)
     coverage = assess(req, discovery_index, model)
+    if approve is not None:
+        approved = approve(req, coverage)
+        if approved.must_answer != req.must_answer:
+            notify("groundability", "running", "Checking the edited topics")
+            coverage = assess(approved, discovery_index, model)
+        req = approved
+    notify("groundability", "completed", f"Checked {len(coverage)} topics")
+    notify("generation", "running", "Generating the agent definition")
     req.must_refuse = list(dict.fromkeys([*req.must_refuse, *(t for t, f in coverage.items()
                                      if f.status == "unsupported" and not f.inconclusive)]))
     req.unresolved.extend(f"Document support uncertain: {topic}" for topic, finding in coverage.items()
@@ -61,5 +82,6 @@ def build(brief: str, docs: Path, out: Path, unattended: bool, model: ModelClien
         (stage / "corpus.json").write_bytes(data)
         (stage / "sources.json").write_bytes(sources)
         stage.rename(out)
+    notify("generation", "completed", f"Saved {out.name}")
     return config
 

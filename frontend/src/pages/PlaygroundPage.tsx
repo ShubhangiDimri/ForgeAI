@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FileText, PanelRightClose, PanelRightOpen, RotateCcw, Send } from 'lucide-react';
 import { api } from '../services/api';
-import type { RunDetail, RunSummary } from '../types/forgeai';
+import type { ProvidersResponse, RunDetail, RunSummary } from '../types/forgeai';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -11,6 +11,7 @@ interface ChatMessage {
   refused?: boolean;
   retrieved?: { id: string; file: string; text: string }[];
   tools?: { name: string; arguments: Record<string, unknown>; results: Record<string, string> }[];
+  model?: string;
   timestamp: string;
 }
 
@@ -24,6 +25,18 @@ export function PlaygroundPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPanel, setShowPanel] = useState(true);
+  const [providers, setProviders] = useState<ProvidersResponse['providers']>([]);
+  const [override, setOverride] = useState<string>();
+  const savedModel = runs.find((run) => run.id === selectedRun)?.model;
+  const savedProvider = providers.find((provider) =>
+    savedModel?.startsWith(provider.id + ':') && provider.id !== 'ollama');
+  const configuredHosted = providers.filter((provider) => provider.configured && provider.id !== 'ollama');
+  const chatModel = override ?? (savedProvider && !savedProvider.configured ? configuredHosted[0]?.default_model : '');
+
+  useEffect(() => {
+    api.providers().then(({ providers }) => setProviders(providers))
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load chat models'));
+  }, []);
 
   useEffect(() => {
     api.listRuns().then((res) => {
@@ -56,7 +69,7 @@ export function PlaygroundPage() {
     ]);
     setSending(true);
     try {
-      const trace = await api.chat(selectedRun, question);
+      const trace = await api.chat(selectedRun, question, chatModel || undefined);
       setMessages((prev) => [
         ...prev,
         {
@@ -66,6 +79,7 @@ export function PlaygroundPage() {
           refused: trace.answer?.refused ?? false,
           retrieved: trace.retrieved,
           tools: trace.tools,
+          model: trace.model,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -87,11 +101,15 @@ export function PlaygroundPage() {
             Interactive chat
           </h1>
           <select
+            aria-label="Agent run"
+            disabled={sending}
             value={selectedRun}
             onChange={(e) => {
               setSelectedRun(e.target.value);
               setSearchParams({ run: e.target.value });
               setMessages([]);
+              setOverride(undefined);
+              setError(null);
             }}
             className="px-3 py-1.5 rounded-md border border-[#E4E0D8] bg-white text-sm text-[#292724]"
           >
@@ -103,7 +121,21 @@ export function PlaygroundPage() {
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-xs text-[#78756F]">
+            Chat model
+            <select
+              className="ml-2 max-w-64 px-2 py-1.5 rounded-md border border-[#E4E0D8] bg-white text-[#292724]"
+              value={chatModel || ''}
+              disabled={sending}
+              onChange={(e) => setOverride(e.target.value)}
+            >
+              <option value="">Saved run model{savedProvider && !savedProvider.configured ? ' (not configured)' : ''}</option>
+              {providers.filter((provider) => provider.configured).flatMap((provider) =>
+                provider.models.map((model) => <option key={model} value={model}>{model}</option>)
+              )}
+            </select>
+          </label>
           <button
             type="button"
             onClick={() => setMessages([])}
@@ -131,6 +163,7 @@ export function PlaygroundPage() {
               <div className="pb-3 border-b border-[#E4E0D8]">
                 <div className="text-base font-medium text-[#292724]">{detail.id}</div>
                 <div className="text-xs text-[#78756F]">{detail.agent_config.requirements.scope}</div>
+                {chatModel && <p className="mt-1 text-xs text-[#78756F]">This chat uses {chatModel}. Saved evaluations still use {savedModel}.</p>}
               </div>
             )}
 
@@ -154,7 +187,7 @@ export function PlaygroundPage() {
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="text-sm text-[#292724] whitespace-pre-wrap">{msg.content}</div>
-                    <span className="text-[11px] text-[#78756F] shrink-0">{msg.timestamp}</span>
+                    <span className="text-[11px] text-[#78756F] shrink-0">{msg.model ? msg.model + ' · ' : ''}{msg.timestamp}</span>
                   </div>
 
                   {msg.refused && (

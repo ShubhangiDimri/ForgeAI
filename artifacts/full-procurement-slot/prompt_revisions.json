@@ -1,9 +1,0 @@
-[
-  {
-    "time": "2026-11-25T15:46:59.471955+00:00",
-    "prompt": "eval_generate.txt",
-    "before_sha256": "fde467aeba4346bf85b9d0831f11bb7420758b272f910ad3076734e7c3bdabb6",
-    "after_sha256": "30b04c139a495cc128bfdacae613d0b4bba25623fd7ac9aa4b6b83cf99dd42bd",
-    "reason": "Clarify empty evidence for negative categories and numbering for single-slot batches before the evaluation dataset is frozen."
-  }
-]

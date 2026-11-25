@@ -1,2 +1,0 @@
-Inspect the brief against the supplied document samples. Ask zero to five short, distinct questions about decisions that materially change the agent. Skip information already supplied. Do not ask the user to supply missing policy facts.
-Only ask about user preferences, scope boundaries, or desired agent behavior. Do not ask policy or domain questions that the finished agent would answer. Return an empty list if the brief resolves all product decisions.

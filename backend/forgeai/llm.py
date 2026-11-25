@@ -59,12 +59,15 @@ GROQ_DEFAULT = "groq:openai/gpt-oss-120b"
 GROQ_JUDGE = "groq:openai/gpt-oss-20b"
 
 
+def _credential_paths() -> tuple[Path, ...]:
+    return tuple(dict.fromkeys((Path.cwd() / ".env", Path(__file__).resolve().parents[1] / ".env")))
+
+
 def provider_key(variable: str) -> str:
     """Read one provider credential from the environment or the project-root .env."""
     if value := os.getenv(variable, "").strip():
         return value
-    for base in (Path.cwd(), Path(__file__).resolve().parent.parent):
-        path = base / ".env"
+    for path in _credential_paths():
         if path.is_file():
             for line in path.read_text(encoding="utf-8-sig").splitlines():
                 name, _, value = line.strip().removeprefix("export ").partition("=")
@@ -75,6 +78,25 @@ def provider_key(variable: str) -> str:
                     if value:
                         return value
     raise RuntimeError(f"Set {variable} in the environment or in the project-root .env")
+
+
+def groq_key() -> str:
+    """Pick a credential name once for this client so its requests use one account."""
+    try:
+        slot = provider_key("FORGE_GROQ_KEY_SLOT")
+    except RuntimeError:
+        slot = ""
+    if slot not in {"", "1", "2"}:
+        raise RuntimeError("FORGE_GROQ_KEY_SLOT must be 1 or 2")
+    names = (f"GROQ_API_KEY_{slot}",) if slot else (
+        "GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2",
+    )
+    for name in names:
+        try:
+            return provider_key(name)
+        except RuntimeError:
+            continue
+    raise RuntimeError(f"Set {' or '.join(names)} in backend/.env or the environment")
 
 
 class HostedClient(ModelClient):
@@ -125,6 +147,10 @@ class HostedClient(ModelClient):
 class Groq(HostedClient):
     key_variable = "GROQ_API_KEY"
     url = "https://api.groq.com/openai/v1/chat/completions"
+
+    def __init__(self, model: str):
+        self.model = model
+        self._key = groq_key()
 
     def payload(self, messages: list[dict], budget: int) -> dict:
         body = super().payload(messages, budget)
@@ -297,7 +323,6 @@ def make_model(model: str) -> ModelClient:
             if not m:
                 continue
             try:
-                provider_key(cls.key_variable)
                 chain.append(cls(m if ":" in m else f"{provider}:{m}"))
             except RuntimeError:
                 pass  # Credential not configured; skip this provider

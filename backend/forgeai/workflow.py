@@ -52,23 +52,23 @@ def score(results: list[Result], version: int, seconds: float) -> dict:
 
 def report(out: Path, cards: list[dict], logs: list[dict], best: int | None, stop: str,
            selected: list[Result], config: Config) -> None:
-    lines = ["# ForgeAI quality report", "", f"- Stop reason Ãƒâ€š· {stop}", f"- Selected version Ãƒâ€š· {best}",
-             f"- Agent model Ãƒâ€š· {config.model}", f"- Embedding model Ãƒâ€š· {config.embedding}", "",
+    lines = ["# ForgeAI quality report", "", f"- Stop reason · {stop}", f"- Selected version · {best}",
+             f"- Agent model · {config.model}", f"- Embedding model · {config.embedding}", "",
              "| Version | Passed | Failed | Errors | Total | Rate | Seconds |", "| --- | --- | --- | --- | --- | --- | --- |"]
     for card in cards:
         lines.append(f"| {card['version']} | {card['passed']} | {card['failed']} | {card['error']} | "
                      f"{card['total']} | {card['pass_rate']:.1%} | {card['seconds']} |")
     if best is not None:
-        lines += ["", f"Measured improvement Ãƒâ€š· {'yes' if cards[best]['pass_rate'] > cards[0]['pass_rate'] else 'no'}",
+        lines += ["", f"Measured improvement · {'yes' if cards[best]['pass_rate'] > cards[0]['pass_rate'] else 'no'}",
                   "", "## Selected version checks", ""]
-        lines += [f"- {key} Ãƒâ€š· {value['passed']}/{value['scored']} scored cases"
+        lines += [f"- {key} · {value['passed']}/{value['scored']} scored cases"
                   for key, value in cards[best]["dimensions"].items()]
         lines += ["", "## Remaining failures and errors", ""]
-        lines += [f"- {r.case.id} Ãƒâ€š· {r.failure or r.status} Ãƒâ€š· {r.explanation}"
+        lines += [f"- {r.case.id} · {r.failure or r.status} · {r.explanation}"
                   for r in selected if r.status != "passed"] or ["All cases in this run passed."]
     if logs:
         lines += ["", "## Targeted iterations", ""]
-        lines += [f"- Version {log['iteration']} Ãƒâ€š· {log['reason']} Outcome {log.get('outcome', 'unmeasured')}."
+        lines += [f"- Version {log['iteration']} · {log['reason']} Outcome {log.get('outcome', 'unmeasured')}."
                   for log in logs]
     lines += ["", "## Assumptions and limitations", ""]
     lines += [f"- {s}" for s in [*config.requirements.assumptions, *config.requirements.unresolved]]

@@ -1,7 +1,0 @@
-Quay Marine standard lead time is 5 business days after purchase order acknowledgment.
-Quay Marine ships domestic orders on Tuesdays and Thursdays.
-Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery.
-Quay Marine charges a 10 percent restocking fee on approved returns.
-Quay Marine requires a return authorization number before any return shipment.
-Quay Marine does not accept returns on custom-machined parts.
-

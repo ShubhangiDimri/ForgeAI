@@ -1,6 +1,39 @@
 # ForgeAI implementation status
 
 
+## Full stack verification on 26 November 2026
+
+ForgeAI now has a Python factory and FastAPI service in backend/, and a React,
+TypeScript and Vite application in frontend/. The CLI and web build share
+the same intake, groundability, agent generation and evaluation pipeline.
+
+| Check | Observed result |
+| --- | --- |
+| Backend tests | 54 passed in 6.49 s on Python 3.13. The test suite includes mocked provider and API flows, real FAISS and saved artifact checks. |
+| Frontend build | npm run build succeeded. Vite emitted a bundle-size advisory. |
+| Browser | Overview listed both saved Groq demos. Build, Playground, Evaluations, Reports, Settings and Documentation opened. A procurement report ZIP downloaded successfully. |
+| Academic Playground | Live Groq GPT-OSS 20B answered 75 percent and cited attendance.txt#text:c1. |
+| Procurement Playground | Live Groq GPT-OSS 120B looked up MQ-101, called the calculator, and returned 127.50 USD with both citations. |
+| Interactive build | Live Groq GPT-OSS 20B ingested four files, asked three clarification questions, received answers, checked seven topics, waited for approval, and saved the runnable prototype ui-verification-ffe43f. |
+| Demo evidence | Both Groq runs have 20 frozen cases, verified raw rows and two complete scorecards. Baseline 12 passed, 7 failed, 1 infrastructure error. Iteration 1 had 11 passed, 9 failed, 0 errors. Both retained v0 and are marked complete_with_errors. |
+
+Fixed the API's credential lookup to support numbered Groq keys. The first
+credential returned HTTP 401. The local ignored backend/.env selects slot 2,
+which authenticated and answered both demo chats. The Playground model override
+is recorded in its response and leaves saved runs and scorecards intact. Missing
+provider configuration returns a readable error.
+
+Fixed the Build API to call the shared factory for both unattended and
+interactive requests. The API captures intake and approval checkpoints,
+rechecks coverage after topic edits, and rejects invalid recovery requests.
+The tested web service binds to loopback. Interactive jobs are held in memory
+until artifacts are written. A server restart can interrupt a job.
+
+Current paths are relative to the repository root. Older entries below refer to
+the original root layout. They are historical and do not supersede this evidence.
+GitHub reported origin as public. The current verification changes are local.
+
+
 ## Groq integration and live verification checkpoint
 
 The complete factory can use a Groq Free Plan key in the ignored project-root .env.

@@ -1,9 +1,11 @@
 import re
+from collections.abc import Callable
 from .schema import Passage, Questions, Requirements
 from .llm import ModelClient
 
 
-def interview(brief: str, passages: list[Passage], unattended: bool, model: ModelClient) -> Requirements:
+def interview(brief: str, passages: list[Passage], unattended: bool, model: ModelClient, *,
+              answer_questions: Callable[[list[str]], dict[str, str]] | None = None) -> Requirements:
     preview = {}
     for item in passages:
         preview.setdefault(item.file, [])
@@ -18,7 +20,12 @@ def interview(brief: str, passages: list[Passage], unattended: bool, model: Mode
             continue
         key = re.sub(r"\W+", " ", question.casefold()).strip()
         unique.setdefault(key, question)
-    replies = {q: "" if unattended else input(q + " ").strip() for q in unique.values()}
+    replies = dict.fromkeys(unique.values(), "")
+    if answer_questions and replies:
+        submitted = answer_questions(list(replies))
+        replies = {question: submitted.get(question, "").strip() for question in replies}
+    elif not unattended:
+        replies = {question: input(question + " ").strip() for question in replies}
     # Unanswered model questions and document examples are not requester decisions.
     answered = {q: a for q, a in replies.items() if a}
     result = model.ask("requirements", {"brief": brief, "user_answers": answered}, Requirements)

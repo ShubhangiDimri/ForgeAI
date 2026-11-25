@@ -26,11 +26,11 @@ export const api = {
     ),
   listRuns: () => request<{ runs: RunSummary[] }>('/api/runs'),
   getRun: (runId: string) => request<RunDetail>(`/api/runs/${encodeURIComponent(runId)}`),
-  chat: (runId: string, question: string) =>
-    request<RunDetail['case_results']['v0'][0]['execution']>(`/api/runs/${encodeURIComponent(runId)}/chat`, {
+  chat: (runId: string, question: string, model?: string) =>
+    request<RunDetail['case_results']['v0'][0]['execution'] & { model: string }>(`/api/runs/${encodeURIComponent(runId)}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, model }),
     }),
   uploadDocuments: async (files: File[]) => {
     const form = new FormData();
