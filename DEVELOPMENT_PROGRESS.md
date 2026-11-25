@@ -80,3 +80,5 @@ The requester took over model installation. Stopped the scratch Qwen pull, its l
 - The revised Groq runs each scored 12/20 at baseline on 20 frozen cases. The baselines each include seven semantic failures and one infrastructure error. The daily GPT-OSS 120B token cap interrupted version 1. Academic retained 6/20 results and procurement retained 13/20. There are no full version 1 scorecards.
 - Confirmed the SHA-256 fingerprints and exact per-case records against both frozen datasets. Verified academic chat 3/3 with GPT-OSS 20B. Verified procurement CSV plus calculator and the standalone CSV routing regression with GPT-OSS 120B.
 - NVIDIA's free Nemotron 3.5 Lightning endpoint returned a valid JSON response. Added an explicit NVIDIA model prefix and bounded host-specific retries. A fresh NVIDIA run uses its own artifact directory.
+
+- Final regression suite: 41 passed in 4.22 seconds. The live NVIDIA adapter passed Pydantic validation and built a procurement agent. Its evaluation had accepted 5 drafts at the reporting checkpoint. No NVIDIA score was observed.

@@ -45,8 +45,7 @@ That runtime fix did not change the frozen evaluation cases or past scores.
 
 NVIDIA support uses a separate provider and run directory. The free
 Nemotron 3.5 Lightning endpoint returned valid JSON using NVIDIA_API_KEY.
-The old GPT-OSS 20B free NVIDIA endpoint returned HTTP 410. Full NVIDIA
-verification is tracked in the run directories if available. Requirement 9
+The old GPT-OSS 20B free NVIDIA endpoint returned HTTP 410. The live NVIDIA procurement build saved its runnable agent in artifacts/nvidia-procurement. It had accepted 5 evaluation drafts at the reporting checkpoint. No NVIDIA scorecard had been measured. The final regression suite returned 41 passed in 4.22 seconds, with mocked provider transport tests. Requirement 9
 remains open until two complete live runs are recorded.
 
 ## Current development checkpoint
