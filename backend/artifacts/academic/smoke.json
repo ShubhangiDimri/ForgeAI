@@ -1,0 +1,35 @@
+[
+  {
+    "case": "supported",
+    "question": "What is the minimum attendance per taught module?",
+    "expected_refusal": false,
+    "response": {
+      "answer": "The question asks for the minimum attendance per taught module. The provided evidence is not sufficient to answer this question.",
+      "citations": [],
+      "refused": true
+    },
+    "passed": false
+  },
+  {
+    "case": "unsupported",
+    "question": "Who qualifies for a scholarship?",
+    "expected_refusal": true,
+    "response": {
+      "answer": "The question asks about scholarship qualification criteria. The provided evidence and tools do not contain information on scholarship qualifications.",
+      "citations": [],
+      "refused": true
+    },
+    "passed": true
+  },
+  {
+    "case": "out_of_scope",
+    "question": "What is the capital of France?",
+    "expected_refusal": true,
+    "response": {
+      "answer": "The question is about the capital of France. The scope of this tool is North Quay Institute student policy.",
+      "citations": [],
+      "refused": true
+    },
+    "passed": true
+  }
+]

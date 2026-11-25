@@ -1,0 +1,1 @@
+Create a fictional institute policy corpus for a retrieval smoke test. Write separate short attendance and reassessment policies with explicit numerical rules and a CSV of office locations. Omit scholarship eligibility entirely so the factory must identify a requested coverage gap. Use no personal data.

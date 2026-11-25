@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/layouts/applayout.tsx","./src/pages/buildagentpage.tsx","./src/pages/docspage.tsx","./src/pages/evaluationspage.tsx","./src/pages/overviewpage.tsx","./src/pages/playgroundpage.tsx","./src/pages/reportspage.tsx","./src/pages/settingspage.tsx","./src/services/api.ts","./src/types/forgeai.ts"],"version":"5.9.3"}

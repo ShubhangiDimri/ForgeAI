@@ -1,0 +1,272 @@
+[
+  {
+    "case": {
+      "id": "E001",
+      "question": "How do North Quay Institute students submit attendance appeals?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "academic_procedures.txt#text",
+          "document": "academic_procedures.txt",
+          "fact": "North Quay Institute students submit attendance appeals through the student records portal."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Students submit attendance appeals via the student records portal; the institute requires 75 % attendance per taught module; only one reassessment attempt is allowed, with registration open ten days after results are released.",
+        "citations": [
+          "academic_procedures.txt#text:c1",
+          "attendance.txt#text:c1",
+          "assessment.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "academic_procedures.txt#text:c1",
+          "file": "academic_procedures.txt",
+          "text": "North Quay Institute students submit attendance appeals through the student records portal. Attendance appeal decisions are sent to the student's institutional email address. The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal. Students register for reassessment through the assessment portal. A",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "attendance.txt#text:c1",
+          "file": "attendance.txt",
+          "text": "North Quay Institute requires 75 percent attendance in each taught module. Attendance appeals must reach the registrar within five working days of the attendance notice.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "assessment.txt#text:c1",
+          "file": "assessment.txt",
+          "text": "North Quay Institute permits one reassessment attempt for a failed taught module. The reassessment registration window is ten calendar days after results are published.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that appeals are submitted via the student records portal, matching the expected fact, and all cited passages support the claim. No extra unsupported claims are made."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states that appeals are submitted via the student records portal, matching the expected fact, and all cited passages support the claim. No extra unsupported claims are made.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E002",
+      "question": "Where are attendance appeal decisions sent for each student?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "academic_procedures.txt#text",
+          "document": "academic_procedures.txt",
+          "fact": "Attendance appeal decisions are sent to the student's institutional email address."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The query asks about attendance appeal decision delivery, which is outside the allowed topics of minimum attendance, reassessment attempts, and scholarship eligibility.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "academic_procedures.txt#text:c1",
+          "file": "academic_procedures.txt",
+          "text": "North Quay Institute students submit attendance appeals through the student records portal. Attendance appeal decisions are sent to the student's institutional email address. The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal. Students register for reassessment through the assessment portal. A",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "attendance.txt#text:c1",
+          "file": "attendance.txt",
+          "text": "North Quay Institute requires 75 percent attendance in each taught module. Attendance appeals must reach the registrar within five working days of the attendance notice.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "academic_procedures.txt#text:c2",
+          "file": "academic_procedures.txt",
+          "text": "a complete appeal. Students register for reassessment through the assessment portal. A reassessment registration requires the module code and the assessment component. The assessment office publishes reassessment room allocations two working days before the reassessment period. Reassessment marks for taught modules are capped at the pass threshold.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false
+    },
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal."
+    },
+    "status": "failed",
+    "failure": "wrong refusal",
+    "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal. Failed checks: correct, refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E003",
+      "question": "Within what timeframe does the registrar issue an attendance appeal decision after receiving a complete appeal?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "academic_procedures.txt#text",
+          "document": "academic_procedures.txt",
+          "fact": "The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The query asks about attendance appeal decision timeframe, which is outside the allowed topics (minimum attendance, reassessment attempts, scholarship eligibility).",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "academic_procedures.txt#text:c1",
+          "file": "academic_procedures.txt",
+          "text": "North Quay Institute students submit attendance appeals through the student records portal. Attendance appeal decisions are sent to the student's institutional email address. The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal. Students register for reassessment through the assessment portal. A",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "attendance.txt#text:c1",
+          "file": "attendance.txt",
+          "text": "North Quay Institute requires 75 percent attendance in each taught module. Attendance appeals must reach the registrar within five working days of the attendance notice.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "offices.csv#r1:c1",
+          "file": "offices.csv",
+          "text": "office=Registrar | location=Harbor Hall | hours=09:00 to 16:00",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "office": "Registrar",
+            "location": "Harbor Hall",
+            "hours": "09:00 to 16:00"
+          }
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false
+    },
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal."
+    },
+    "status": "failed",
+    "failure": "wrong refusal",
+    "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal. Failed checks: correct, refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E004",
+      "question": "Through which portal do students register for reassessment?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "academic_procedures.txt#text",
+          "document": "academic_procedures.txt",
+          "fact": "Students register for reassessment through the assessment portal."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Students register for reassessment through the assessment portal.",
+        "citations": [
+          "academic_procedures.txt#text:c2"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "academic_procedures.txt#text:c2",
+          "file": "academic_procedures.txt",
+          "text": "a complete appeal. Students register for reassessment through the assessment portal. A reassessment registration requires the module code and the assessment component. The assessment office publishes reassessment room allocations two working days before the reassessment period. Reassessment marks for taught modules are capped at the pass threshold.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "assessment.txt#text:c1",
+          "file": "assessment.txt",
+          "text": "North Quay Institute permits one reassessment attempt for a failed taught module. The reassessment registration window is ten calendar days after results are published.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "academic_procedures.txt#text:c1",
+          "file": "academic_procedures.txt",
+          "text": "North Quay Institute students submit attendance appeals through the student records portal. Attendance appeal decisions are sent to the student's institutional email address. The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal. Students register for reassessment through the assessment portal. A",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer states the correct portal and cites the exact passage that contains the claim, matching the expected fact."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer states the correct portal and cites the exact passage that contains the claim, matching the expected fact.",
+    "score": 1
+  }
+]

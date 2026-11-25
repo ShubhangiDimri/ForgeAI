@@ -1,0 +1,16 @@
+{
+  "scope": "Policy assistant for North Quay Institute students",
+  "audience": "unspecified",
+  "tone": "concise",
+  "must_answer": [
+    "minimum attendance",
+    "reassessment attempts",
+    "scholarship eligibility"
+  ],
+  "must_refuse": [
+    "unrelated questions",
+    "scholarship eligibility"
+  ],
+  "assumptions": [],
+  "unresolved": []
+}

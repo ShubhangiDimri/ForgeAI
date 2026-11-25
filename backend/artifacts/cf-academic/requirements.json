@@ -1,0 +1,20 @@
+{
+  "scope": "North Quay Institute student policy",
+  "audience": "North Quay Institute students",
+  "tone": "concise",
+  "must_answer": [
+    "minimum attendance",
+    "attendance appeals",
+    "reassessment attempts",
+    "reassessment registration",
+    "scheduling",
+    "scholarship eligibility"
+  ],
+  "must_refuse": [
+    "unrelated questions",
+    "scheduling",
+    "scholarship eligibility"
+  ],
+  "assumptions": [],
+  "unresolved": []
+}

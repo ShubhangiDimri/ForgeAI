@@ -1,10 +1,47 @@
 # ForgeAI
 
-ForgeAI builds a declarative local agent from a brief and a document directory, generates an evaluation dataset and measures targeted configuration changes. A saved run can be moved and opened in a fresh process. Python 3.11 is the target. The current Windows verification used Python 3.13.5.
+ForgeAI builds a declarative, grounded agent from a requester brief and a document directory, generates an evaluation dataset, and measures targeted configuration changes. The repository is organized into a Python FastAPI `backend/` and a React + TypeScript + Tailwind `frontend/`.
+
+## Repository Structure
+
+```text
+ForgeAI/
+├── frontend/          # React + Vite + TypeScript + Tailwind CSS UI
+├── backend/
+│   ├── forgeai/       # Core agent factory pipeline & CLI
+│   ├── api/           # FastAPI wrapper (api/main.py)
+│   ├── tests/         # Unit, integration, and API tests
+│   ├── demo_data/     # Synthetic academic & procurement datasets
+│   ├── artifacts/     # Saved agent runs, scorecards, and reports
+│   └── .env           # Backend-only API credentials (gitignored)
+├── README.md
+└── PROJECT_SPEC.md
+```
+
+## Development Startup
+
+### Backend (FastAPI)
+```powershell
+cd backend
+python -m uvicorn api.main:app --reload --port 8000
+```
+
+### Frontend (React + Vite)
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+### Production Frontend Build
+```powershell
+cd frontend
+npm run build
+```
 
 ## Windows PowerShell setup
 
-From the project directory, with Python 3.11 and Ollama installed:
+From `backend/`, with Python 3.11+ and Ollama installed:
 
 ```powershell
 py -3.11 -m venv .venv

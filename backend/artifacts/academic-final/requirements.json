@@ -1,0 +1,22 @@
+{
+  "scope": "North Quay Institute students",
+  "audience": "North Quay Institute students",
+  "tone": "Formal",
+  "must_answer": [
+    "minimum attendance",
+    "reassessment attempts",
+    "scholarship eligibility",
+    "minimum attendance requirements",
+    "reassessment attempt limits"
+  ],
+  "must_refuse": [
+    "scholarship eligibility"
+  ],
+  "assumptions": [
+    "Inferred tone: Formal"
+  ],
+  "unresolved": [
+    "What is the maximum number of reassessment attempts allowed for a failed taught module at North Quay Institute?",
+    "How long does the attendance appeal process take after receiving an attendance notice?"
+  ]
+}

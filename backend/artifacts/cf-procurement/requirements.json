@@ -1,0 +1,19 @@
+{
+  "scope": "maritime spare-parts procurement",
+  "audience": "buyers",
+  "tone": "unspecified",
+  "must_answer": [
+    "catalogue SKU lookup",
+    "unit prices",
+    "calculations of order subtotals",
+    "supplier lead times",
+    "returns",
+    "shipping rules"
+  ],
+  "must_refuse": [
+    "unrelated requests",
+    "live stock availability"
+  ],
+  "assumptions": [],
+  "unresolved": []
+}

@@ -1,0 +1,1 @@
+Create synthetic maritime spare-parts catalogue and supplier documents for a procurement assistant. Use fictional suppliers and SKUs. Include precise USD unit prices, lead times, shipment rules and return conditions with no live inventory. Ensure catalogue entries can be joined with supplier documents and quantities can be multiplied by unit prices. Use no personal data.

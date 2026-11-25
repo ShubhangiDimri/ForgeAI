@@ -1,0 +1,133 @@
+{
+  "system_prompt": "North Quay Institute student policy assistant.",
+  "settings": {
+    "chunk_words": 180,
+    "overlap": 0,
+    "top_k": 1,
+    "min_score": 0.3
+  },
+  "tools": [],
+  "version": 1,
+  "model": "gemma2:2b",
+  "embedding": "sentence-transformers/all-MiniLM-L6-v2",
+  "requirements": {
+    "scope": "North Quay Institute students",
+    "audience": "North Quay Institute students",
+    "tone": "Formal",
+    "must_answer": [
+      "minimum attendance",
+      "reassessment attempts",
+      "scholarship eligibility",
+      "minimum attendance requirements",
+      "reassessment attempt limits"
+    ],
+    "must_refuse": [
+      "scholarship eligibility"
+    ],
+    "assumptions": [
+      "Inferred tone: Formal"
+    ],
+    "unresolved": [
+      "What is the maximum number of reassessment attempts allowed for a failed taught module at North Quay Institute?",
+      "How long does the attendance appeal process take after receiving an attendance notice?"
+    ]
+  },
+  "coverage": {
+    "minimum attendance": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "attendance.txt#text:c1",
+          "quote": "North Quay Institute requires 75 percent attendance in each taught module."
+        },
+        {
+          "id": "attendance.txt#text:c1",
+          "quote": "Attendance appeals must reach the registrar within five working days of the attendance notice."
+        }
+      ],
+      "limitation": "The document provides information on minimum attendance requirements and the process for appealing attendance.  "
+    },
+    "reassessment attempts": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "assessment.txt#text:c1",
+          "quote": "North Quay Institute permits one reassessment attempt for a failed taught module."
+        },
+        {
+          "id": "assessment.txt#text:c1",
+          "quote": "The reassessment registration window is ten calendar days after results are published."
+        }
+      ],
+      "limitation": "Information on the specific criteria for the reassessment attempt and the process of requesting it is not provided in the given text."
+    },
+    "scholarship eligibility": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "No passage cleared the retrieval cutoff."
+    },
+    "minimum attendance requirements": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "attendance.txt#text:c1",
+          "quote": "North Quay Institute requires 75 percent attendance in each taught module."
+        },
+        {
+          "id": "attendance.txt#text:c1",
+          "quote": "Attendance appeals must reach the registrar within five working days of the attendance notice."
+        }
+      ],
+      "limitation": "The document provides information on minimum attendance requirements and the process for appealing attendance.  "
+    },
+    "reassessment attempt limits": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "assessment.txt#text:c1",
+          "quote": "North Quay Institute permits one reassessment attempt for a failed taught module."
+        },
+        {
+          "id": "assessment.txt#text:c1",
+          "quote": "The reassessment registration window is ten calendar days after results are published."
+        }
+      ],
+      "limitation": "Information on the maximum number of reassessments allowed per student or course is not provided in the given text."
+    }
+  },
+  "document_manifest": {
+    "assessment.txt": "f25f043c6e132600eb5b20d92b454ea220deeca41add5e53533349d988358a44",
+    "attendance.txt": "eb624f66bd45a3685fee512e15ca35c9fa5ca8999e67dcdbe6e385d7d3de3a3e",
+    "offices.csv": "de968e6631e48b361a6a3705b4e1195d46f0be25557d0787209dd432861bbd22"
+  },
+  "output_contract": {
+    "additionalProperties": false,
+    "properties": {
+      "answer": {
+        "minLength": 1,
+        "title": "Answer",
+        "type": "string"
+      },
+      "citations": {
+        "items": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "title": "Citations",
+        "type": "array"
+      },
+      "refused": {
+        "title": "Refused",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "answer",
+      "citations",
+      "refused"
+    ],
+    "title": "Answer",
+    "type": "object"
+  },
+  "corpus_sha256": "30ceeef8e1f89132eab755d55f4356d95ecc4e78bc93d80df618c1e8f6dfbab6"
+}

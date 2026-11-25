@@ -1,0 +1,146 @@
+[
+  {
+    "id": "E001",
+    "question": "How do North Quay Institute students submit attendance appeals?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "academic_procedures.txt#text",
+        "document": "academic_procedures.txt",
+        "fact": "North Quay Institute students submit attendance appeals through the student records portal."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E002",
+    "question": "To what institutional email address are attendance appeal decisions sent?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "academic_procedures.txt#text",
+        "document": "academic_procedures.txt",
+        "fact": "Attendance appeal decisions are sent to the student's institutional email address."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E003",
+    "question": "Within how many working days does the registrar issue an attendance appeal decision after receiving a complete appeal?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "academic_procedures.txt#text",
+        "document": "academic_procedures.txt",
+        "fact": "The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E004",
+    "question": "Through which portal do students register for reassessment?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "academic_procedures.txt#text",
+        "document": "academic_procedures.txt",
+        "fact": "Students register for reassessment through the assessment portal."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E005",
+    "question": "What is the minimum attendance percentage required in each taught module at North Quay Institute?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "assessment.txt#text",
+        "document": "assessment.txt",
+        "fact": "North Quay Institute permits one reassessment attempt for a failed taught module."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E006",
+    "question": "How many calendar days after results are published does the reassessment registration window open?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "assessment.txt#text",
+        "document": "assessment.txt",
+        "fact": "The reassessment registration window is ten calendar days after results are published."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E007",
+    "question": "Within how many working days must an attendance appeal reach the registrar after the attendance notice is issued?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "attendance.txt#text",
+        "document": "attendance.txt",
+        "fact": "Attendance appeals must reach the registrar within five working days of the attendance notice."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E008",
+    "question": "What module code and assessment component are required to submit a reassessment registration?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "academic_procedures.txt#text",
+        "document": "academic_procedures.txt",
+        "fact": "A reassessment registration requires the module code and the assessment component."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E009",
+    "question": "What is the primary focus of astronomy?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E010",
+    "question": "What are the fundamental principles of music theory?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E011",
+    "question": "What defines a wildlife habitat?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E012",
+    "question": "What are the key steps in bread baking?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  }
+]

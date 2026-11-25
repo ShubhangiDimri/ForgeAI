@@ -1,0 +1,57 @@
+{
+  "question": "Use the CSV lookup for SKU MQ-101, then use the calculator to multiply the unit price by 3. What is the subtotal for 3 units in USD?",
+  "expected_subtotal_usd": 127.5,
+  "trace": {
+    "answer": {
+      "answer": "The calculation result is 127.5 USD.",
+      "citations": [
+        "catalogue.csv#r1:c1",
+        "tool:calculator"
+      ],
+      "refused": false
+    },
+    "retrieved": [
+      {
+        "id": "catalogue.csv#r1:c1",
+        "file": "catalogue.csv",
+        "text": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1",
+        "page": null,
+        "row": 1,
+        "cells": {
+          "sku": "MQ-101",
+          "part": "Impeller seal",
+          "supplier": "Quay Marine",
+          "unit_price_usd": "42.50",
+          "pack_quantity": "1"
+        }
+      }
+    ],
+    "tools": [
+      {
+        "name": "csv_lookup",
+        "arguments": {
+          "file": "catalogue.csv",
+          "column": "sku",
+          "value": "MQ-101"
+        },
+        "results": {
+          "catalogue.csv#r1:c1": "sku=MQ-101 | part=Impeller seal | supplier=Quay Marine | unit_price_usd=42.50 | pack_quantity=1"
+        }
+      },
+      {
+        "name": "calculator",
+        "arguments": {
+          "operation": "multiply",
+          "left": 3,
+          "right": 42.5
+        },
+        "results": {
+          "tool:calculator": "127.5"
+        }
+      }
+    ],
+    "error": null,
+    "invalid_citation": false,
+    "invalid_tool_call": false
+  }
+}

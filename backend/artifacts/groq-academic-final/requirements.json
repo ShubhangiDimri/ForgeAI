@@ -1,0 +1,23 @@
+{
+  "scope": "Build a concise policy assistant for North Quay Institute students",
+  "audience": "North Quay Institute students",
+  "tone": "concise",
+  "must_answer": [
+    "minimum attendance",
+    "attendance appeals",
+    "reassessment attempts",
+    "reassessment registration",
+    "scheduling",
+    "scholarship eligibility"
+  ],
+  "must_refuse": [
+    "unrelated questions",
+    "scholarship eligibility"
+  ],
+  "assumptions": [],
+  "unresolved": [
+    "What tone should the assistant use when refusing unrelated questions?",
+    "Is there a preferred format for explaining when the policy does not establish eligibility?",
+    "Do you want the assistant to include the exact policy text in its answers or just summarize?"
+  ]
+}
