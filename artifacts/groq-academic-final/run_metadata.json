@@ -33,7 +33,7 @@
   "stop_reason": "iteration budget reached",
   "selected_version": 0,
   "partial_rerun_cases": 6,
-  "finished": "2026-11-25T18:24:29.895313+00:00",
-  "resumed_at": "2026-11-25T18:22:46.002691+00:00",
+  "finished": "2026-11-25T18:48:53.050108+00:00",
+  "resumed_at": "2026-11-25T18:48:34.750504+00:00",
   "judge_model_resumed": "groq:openai/gpt-oss-120b"
 }

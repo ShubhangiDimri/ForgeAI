@@ -1043,11 +1043,18 @@
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "Judge error: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 428 seconds.",
-    "score": null
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The question is ambiguous and expects a clarification request or refusal; the assistant gave a definitive answer without refusing, so refusal was inappropriate. The cited evidence does support the five‑working‑day rule, making the citation relevant and the claim grounded, but the answer does not address the specific deadline date, nor does it request clarification, thus it is not correct."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The question is ambiguous and expects a clarification request or refusal; the assistant gave a definitive answer without refusing, so refusal was inappropriate. The cited evidence does support the five‑working‑day rule, making the citation relevant and the claim grounded, but the answer does not address the specific deadline date, nor does it request clarification, thus it is not correct. Failed checks: correct, refusal_appropriate.",
+    "score": 0
   },
   {
     "case": {
@@ -1106,11 +1113,18 @@
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "Judge error: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 445 seconds.",
-    "score": null
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The question is marked ambiguous and expects a refusal; the assistant should have asked for clarification instead of providing an answer. The provided answer is factually supported by the cited passage, so it is grounded and the citation is relevant. No tools were used, so tool usage is correct."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The question is marked ambiguous and expects a refusal; the assistant should have asked for clarification instead of providing an answer. The provided answer is factually supported by the cited passage, so it is grounded and the citation is relevant. No tools were used, so tool usage is correct. Failed checks: correct, refusal_appropriate.",
+    "score": 0
   },
   {
     "case": {
@@ -1169,11 +1183,18 @@
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "Judge error: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 424 seconds.",
-    "score": null
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The question is marked ambiguous and expects a refusal; the assistant provided a definitive answer instead of refusing or asking for clarification, making the response incorrect. The factual claim is supported by the cited passage, so it is grounded and the citation is relevant. No tools were required, so tool usage is correct. However, the lack of a proper refusal makes the refusal appropriateness false."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The question is marked ambiguous and expects a refusal; the assistant provided a definitive answer instead of refusing or asking for clarification, making the response incorrect. The factual claim is supported by the cited passage, so it is grounded and the citation is relevant. No tools were required, so tool usage is correct. However, the lack of a proper refusal makes the refusal appropriateness false. Failed checks: correct, refusal_appropriate.",
+    "score": 0
   },
   {
     "case": {
@@ -1247,11 +1268,18 @@
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "Judge error: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 475 seconds.",
-    "score": null
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": false,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states the registrar must decide within ten working days, matching the expected fact and supported by the cited passage; no refusal was needed and no tools were used, so all criteria are satisfied."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The answer correctly states the registrar must decide within ten working days, matching the expected fact and supported by the cited passage; no refusal was needed and no tools were used, so all criteria are satisfied. Failed checks: citations_relevant.",
+    "score": 0
   },
   {
     "case": {
@@ -1275,7 +1303,7 @@
     },
     "execution": {
       "answer": {
-        "answer": "Minimum attendance is 75 % per taught module. One reassessment attempt is allowed for a failed taught module.",
+        "answer": "Minimum attendance: 75 % of each taught module. Reassessment attempts: one allowed for a failed taught module.",
         "citations": [
           "attendance.txt#text:c1",
           "assessment.txt#text:c1"
@@ -1322,10 +1350,17 @@
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer provides the required attendance percentage (75%) and reassessment attempts (one), matching the expected facts. Both citations point to evidence that directly supports each claim, and no tool usage was needed, so all criteria are satisfied."
+    },
+    "status": "passed",
     "failure": null,
-    "explanation": "Judge error: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 477 seconds.",
-    "score": null
+    "explanation": "The answer provides the required attendance percentage (75%) and reassessment attempts (one), matching the expected facts. Both citations point to evidence that directly supports each claim, and no tool usage was needed, so all criteria are satisfied.",
+    "score": 1
   }
 ]

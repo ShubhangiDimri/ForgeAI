@@ -33,32 +33,32 @@
   {
     "version": 1,
     "total": 20,
-    "passed": 9,
-    "failed": 4,
-    "error": 7,
-    "pass_rate": 0.45,
+    "passed": 11,
+    "failed": 9,
+    "error": 0,
+    "pass_rate": 0.55,
     "dimensions": {
       "correct": {
-        "passed": 9,
-        "scored": 11
+        "passed": 13,
+        "scored": 18
       },
       "grounded": {
-        "passed": 10,
-        "scored": 11
+        "passed": 15,
+        "scored": 18
       },
       "citations_relevant": {
-        "passed": 10,
-        "scored": 11
+        "passed": 16,
+        "scored": 18
       },
       "refusal_appropriate": {
-        "passed": 9,
-        "scored": 11
+        "passed": 13,
+        "scored": 18
       },
       "tools_correct": {
-        "passed": 9,
-        "scored": 11
+        "passed": 16,
+        "scored": 18
       }
     },
-    "seconds": 4.89
+    "seconds": 55.56
   }
 ]

@@ -8,7 +8,7 @@
 | Version | Passed | Failed | Errors | Total | Rate | Seconds |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 12 | 7 | 1 | 20 | 60.0% | 277.39 |
-| 1 | 10 | 5 | 5 | 20 | 50.0% | 103.86 |
+| 1 | 11 | 9 | 0 | 20 | 55.0% | 18.25 |
 
 Measured improvement Ãƒâ€š· no
 

@@ -61,60 +61,6 @@
   },
   {
     "case": {
-      "id": "E002",
-      "question": "What is the allowed return period for unused standard parts?",
-      "category": "direct",
-      "expected_refusal": false,
-      "expected_facts": [
-        {
-          "source_id": "beacon_technical.txt#text",
-          "document": "beacon_technical.txt",
-          "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
-        }
-      ],
-      "expected_tools": []
-    },
-    "execution": {
-      "answer": {
-        "answer": "Unused standard parts can be returned within 30 calendar days for Quay Marine and within 14 calendar days for Beacon Technical.",
-        "citations": [
-          "quay_marine.txt#text:c1",
-          "beacon_technical.txt#text:c1"
-        ],
-        "refused": false
-      },
-      "retrieved": [
-        {
-          "id": "quay_marine.txt#text:c1",
-          "file": "quay_marine.txt",
-          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
-          "page": null,
-          "row": null,
-          "cells": null
-        },
-        {
-          "id": "beacon_technical.txt#text:c1",
-          "file": "beacon_technical.txt",
-          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
-          "page": null,
-          "row": null,
-          "cells": null
-        }
-      ],
-      "tools": [],
-      "error": null,
-      "invalid_citation": false,
-      "invalid_tool_call": false,
-      "refusal_code": null
-    },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "Judge error: Groq openai/gpt-oss-20b returned HTTP 429",
-    "score": null
-  },
-  {
-    "case": {
       "id": "E003",
       "question": "Under what circumstance does Beacon Technical waive the restocking fee?",
       "category": "direct",
@@ -1056,6 +1002,67 @@
   },
   {
     "case": {
+      "id": "E002",
+      "question": "What is the allowed return period for unused standard parts?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "beacon_technical.txt#text",
+          "document": "beacon_technical.txt",
+          "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Quay Marine allows returns of unopened standard parts within 30 calendar days of delivery, while Beacon Technical allows returns of unused standard parts within 14 calendar days of delivery.",
+        "citations": [
+          "quay_marine.txt#text:c1",
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "quay_marine.txt#text:c1",
+          "file": "quay_marine.txt",
+          "text": "Quay Marine standard lead time is 5 business days after purchase order acknowledgment. Quay Marine ships domestic orders on Tuesdays and Thursdays. Quay Marine accepts unopened standard parts for return within 30 calendar days of delivery. Quay Marine charges a 10 percent restocking fee on approved returns. Quay Marine requires a return authorization number before any return shipment. Quay Marine does not accept returns on custom-machined parts.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "beacon_technical.txt#text:c1",
+          "file": "beacon_technical.txt",
+          "text": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment. Beacon Technical provides tracking within one business day of dispatch. Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery. Beacon Technical waives the restocking fee when it shipped the wrong part. Beacon Technical charges 22 USD for standard domestic shipping. Beacon Technical requires an approved shipping quote for international orders.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": false,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states Beacon Technical’s 14‑day return period for unused standard parts, but it also adds unrelated information about Quay Marine’s 30‑day period, making the citations partially irrelevant."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The answer correctly states Beacon Technical’s 14‑day return period for unused standard parts, but it also adds unrelated information about Quay Marine’s 30‑day period, making the citations partially irrelevant. Failed checks: citations_relevant.",
+    "score": 0
+  },
+  {
+    "case": {
       "id": "E015",
       "question": "What is the expected delivery date if I place an order for SKU MQ-102 on a Friday, considering lead times and shipping days?",
       "category": "unsupported",
@@ -1064,7 +1071,11 @@
       "expected_tools": []
     },
     "execution": {
-      "answer": null,
+      "answer": {
+        "answer": "Requested SKU MQ-102 is not present in the provided catalogue data, so the lookup cannot be performed",
+        "citations": [],
+        "refused": true
+      },
       "retrieved": [
         {
           "id": "quay_marine.txt#text:c1",
@@ -1112,16 +1123,23 @@
         }
       ],
       "tools": [],
-      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 221 seconds.",
+      "error": null,
       "invalid_citation": false,
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 221 seconds.",
-    "score": null
+    "judgment": {
+      "correct": true,
+      "grounded": false,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The assistant correctly refused, but did not provide citations to support the claim that SKU MQ-102 is absent."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The assistant correctly refused, but did not provide citations to support the claim that SKU MQ-102 is absent. Failed checks: grounded.",
+    "score": 0
   },
   {
     "case": {
@@ -1133,7 +1151,13 @@
       "expected_tools": []
     },
     "execution": {
-      "answer": null,
+      "answer": {
+        "answer": "The unit price for SKU BT-202 is $27.25 USD.",
+        "citations": [
+          "catalogue.csv#r5:c1"
+        ],
+        "refused": false
+      },
       "retrieved": [
         {
           "id": "catalogue.csv#r5:c1",
@@ -1193,16 +1217,23 @@
         }
       ],
       "tools": [],
-      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 254 seconds.",
+      "error": null,
       "invalid_citation": false,
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 254 seconds.",
-    "score": null
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The assistant provided an answer instead of refusing, violating the expected refusal requirement."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The assistant provided an answer instead of refusing, violating the expected refusal requirement. Failed checks: correct, refusal_appropriate.",
+    "score": 0
   },
   {
     "case": {
@@ -1214,7 +1245,14 @@
       "expected_tools": []
     },
     "execution": {
-      "answer": null,
+      "answer": {
+        "answer": "Quay Marine: 5 business days; Beacon Technical: 8 business days.",
+        "citations": [
+          "quay_marine.txt#text:c1",
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
       "retrieved": [
         {
           "id": "quay_marine.txt#text:c1",
@@ -1262,16 +1300,23 @@
         }
       ],
       "tools": [],
-      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 225 seconds.",
+      "error": null,
       "invalid_citation": false,
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 225 seconds.",
-    "score": null
+    "judgment": {
+      "correct": false,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The assistant provided an answer instead of refusing, violating the expected behavior for an ambiguous question. The answer is grounded in the cited evidence, but it is not correct per the task requirements."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The assistant provided an answer instead of refusing, violating the expected behavior for an ambiguous question. The answer is grounded in the cited evidence, but it is not correct per the task requirements. Failed checks: correct, refusal_appropriate.",
+    "score": 0
   },
   {
     "case": {
@@ -1283,7 +1328,14 @@
       "expected_tools": []
     },
     "execution": {
-      "answer": null,
+      "answer": {
+        "answer": "Beacon Technical allows returns within 14 calendar days, while Quay Marine allows returns within 30 calendar days of delivery.",
+        "citations": [
+          "beacon_technical.txt#text:c1",
+          "quay_marine.txt#text:c1"
+        ],
+        "refused": false
+      },
       "retrieved": [
         {
           "id": "quay_marine.txt#text:c1",
@@ -1331,16 +1383,23 @@
         }
       ],
       "tools": [],
-      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 217 seconds.",
+      "error": null,
       "invalid_citation": false,
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
-    "failure": null,
-    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 217 seconds.",
-    "score": null
+    "judgment": {
+      "correct": false,
+      "grounded": false,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The question is ambiguous and the user explicitly expects a refusal. The assistant provided an answer instead of refusing, so the response is incorrect and not appropriate. The citations are relevant to the content but the answer itself is not justified by the question’s requirement for a refusal."
+    },
+    "status": "failed",
+    "failure": "hallucination",
+    "explanation": "The question is ambiguous and the user explicitly expects a refusal. The assistant provided an answer instead of refusing, so the response is incorrect and not appropriate. The citations are relevant to the content but the answer itself is not justified by the question’s requirement for a refusal. Failed checks: correct, grounded, refusal_appropriate.",
+    "score": 0
   },
   {
     "case": {
@@ -1363,7 +1422,14 @@
       "expected_tools": []
     },
     "execution": {
-      "answer": null,
+      "answer": {
+        "answer": "Beacon Technical lead time is 8 business days; Quay Marine lead time is 5 business days after purchase order acknowledgment.",
+        "citations": [
+          "beacon_technical.txt#text:c1",
+          "quay_marine.txt#text:c1"
+        ],
+        "refused": false
+      },
       "retrieved": [
         {
           "id": "quay_marine.txt#text:c1",
@@ -1411,16 +1477,23 @@
         }
       ],
       "tools": [],
-      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 261 seconds.",
+      "error": null,
       "invalid_citation": false,
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states Beacon Technical’s lead time as 8 business days and Quay Marine’s as 5 business days, matching the cited evidence. All required facts are present, citations are relevant, no refusal was needed, and no tools were incorrectly used."
+    },
+    "status": "passed",
     "failure": null,
-    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 261 seconds.",
-    "score": null
+    "explanation": "The answer correctly states Beacon Technical’s lead time as 8 business days and Quay Marine’s as 5 business days, matching the cited evidence. All required facts are present, citations are relevant, no refusal was needed, and no tools were incorrectly used.",
+    "score": 1
   },
   {
     "case": {
@@ -1443,7 +1516,14 @@
       "expected_tools": []
     },
     "execution": {
-      "answer": null,
+      "answer": {
+        "answer": "The return period is 14 calendar days, and the unit price for SKU BT-203 is $14.75 USD.",
+        "citations": [
+          "catalogue.csv#r6:c1",
+          "beacon_technical.txt#text:c1"
+        ],
+        "refused": false
+      },
       "retrieved": [
         {
           "id": "catalogue.csv#r5:c1",
@@ -1497,15 +1577,22 @@
         }
       ],
       "tools": [],
-      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 239 seconds.",
+      "error": null,
       "invalid_citation": false,
       "invalid_tool_call": false,
       "refusal_code": null
     },
-    "judgment": null,
-    "status": "error",
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Answer matches expected facts, citations are relevant, no tools used."
+    },
+    "status": "passed",
     "failure": null,
-    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 239 seconds.",
-    "score": null
+    "explanation": "Answer matches expected facts, citations are relevant, no tools used.",
+    "score": 1
   }
 ]
