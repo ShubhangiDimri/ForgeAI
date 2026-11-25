@@ -63,3 +63,12 @@ def test_coverage_distinguishes_fallback_evidence_from_absence():
     index.passages = [record.model_copy(update={"text": "word " * 2000})]
     uncertain = assess(requirements(), index, model)["dimensions"]
     assert uncertain.inconclusive and uncertain.retrieval_miss
+
+
+def test_tabular_coverage_checks_real_lookup_and_arithmetic_inputs():
+    from forgeai.coverage import tabular_support
+    row = Passage(id="catalog.csv#r1:c1", file="catalog.csv", text="sku=AB1 | price=2.5",
+                  cells={"sku": "AB1", "price": "2.5"})
+    assert tabular_support("SKU lookup", [row]).status == "supported"
+    assert tabular_support("Calculate order subtotals", [row]).status == "partial"
+    assert tabular_support("Customer name lookup", [row]) is None

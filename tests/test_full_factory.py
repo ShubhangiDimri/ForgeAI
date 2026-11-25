@@ -206,7 +206,8 @@ def test_unattended_cli_invokes_full_workflow(tmp_path, monkeypatch, capsys):
     assert "agent_config.json" in capsys.readouterr().out
 
 
-def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch):
+@pytest.mark.parametrize("model_skips_lookup", [False, True])
+def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch, model_skips_lookup):
     from forgeai.schema import Selection
     from forgeai.retrieval import Index
 
@@ -217,7 +218,7 @@ def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch):
     monkeypatch.setattr(runner, "Index", index)
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "catalog.csv").write_text("sku,unit_price\nA1,15", encoding="utf-8")
+    (docs / "catalog.csv").write_text("sku,unit_price\nA101,15", encoding="utf-8")
     model = Scripted()
     monkeypatch.setattr(runner, "Ollama", lambda _: model)
     out = tmp_path / "run"
@@ -228,18 +229,20 @@ def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch):
     def route(stage, payload, schema):
         if stage == "answer":
             return schema(answer="30", citations=["catalog.csv#r1:c1", "tool:calculator"], refused=False)
-        if payload.get("completed_tools"):
-            assert "unit_price=15" in payload["evidence"]["catalog.csv#r1:c1"]
+        if payload.get("completed_tools") or model_skips_lookup:
+            if not model_skips_lookup:
+                assert "unit_price=15" in payload["evidence"]["catalog.csv#r1:c1"]
             return schema(decision="answer", reason="Calculate subtotal", tool="calculator",
                           arguments={"operation": "multiply", "left": 2, "right": 15})
         return schema(decision="answer", reason="Look up unit price", tool="csv_lookup",
-                      arguments={"file": "catalog.csv", "column": "sku", "value": "A1"})
+                      arguments={"file": "catalog.csv", "column": "sku", "value": "A101"})
 
     monkeypatch.setattr(model, "ask", route)
-    trace = agent.trace("What is the subtotal for two A1 units?")
+    trace = agent.trace("Use the CSV lookup for A101 then use the calculator to find the subtotal for 2 units.")
     assert trace.error is None and trace.answer and not trace.answer.refused
     assert [step.name for step in trace.tools] == ["csv_lookup", "calculator"]
     assert trace.tools[1].results == {"tool:calculator": "30.0"}
+    assert trace.answer.answer == "The calculation result is 30.0."
 
 
 def test_judge_error_is_not_a_semantic_failure():

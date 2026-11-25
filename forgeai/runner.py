@@ -95,6 +95,23 @@ class Runner:
             trace.error = f"{type(exc).__name__}: {exc}"
         return trace
 
+    def _explicit_csv_lookup(self, question: str) -> Route | None:
+        if not re.search(r"\b(?:csv lookup|look up|lookup)\b", question, re.I):
+            return None
+        matches = {}
+        for passage in self.corpus:
+            for column, value in (passage.cells or {}).items():
+                if len(value) < 3 or not any(letter.isalpha() for letter in value):
+                    continue
+                if re.search(rf"(?<!\w){re.escape(value)}(?!\w)", question, re.I):
+                    matches.setdefault((passage.file, column, value), set()).add((passage.file, passage.row))
+        rows = set().union(*matches.values())
+        if len(rows) != 1 or not matches:
+            return None
+        file, column, value = next(iter(matches))
+        return Route(decision="answer", reason="Explicit and unambiguous CSV lookup request",
+                     tool="csv_lookup", arguments={"file": file, "column": column, "value": value})
+
     def _answer(self, question: str, trace: Execution) -> Answer:
         config = self.config
         def refuse(reason: str) -> Answer:
@@ -120,6 +137,12 @@ class Runner:
                                "tools": {n: REGISTRY[n].model_json_schema() for n in allowed}}, Route if allowed else DocumentRoute)
         if route.decision == "refuse":
             return refuse(route.reason)
+        deferred_calculation = None
+        if route.tool != "csv_lookup" and "csv_lookup" in allowed:
+            explicit_lookup = self._explicit_csv_lookup(question)
+            if explicit_lookup is not None:
+                deferred_calculation = route if route.tool == "calculator" else None
+                route = explicit_lookup
         unused = allowed.copy()
         for _ in range(2):
             if not route.tool:
@@ -142,12 +165,23 @@ class Runner:
             evidence.update(call.results)
             if route.tool != "csv_lookup" or "calculator" not in unused:
                 break
-            route = self.model.ask("route", {**context, "evidence": evidence, "completed_tools": ["csv_lookup"],
+            route = deferred_calculation or self.model.ask("route", {**context, "evidence": evidence, "completed_tools": ["csv_lookup"],
                                    "tools": {"calculator": REGISTRY["calculator"].model_json_schema()}}, Route)
             if route.decision == "refuse":
                 return refuse(route.reason)
         if not evidence:
             return refuse("No supporting evidence was found.")
+        # Return trusted arithmetic directly for a single explicit calculation request.
+        if ("tool:calculator" in evidence and
+                re.search(r"\b(?:use|with) (?:the )?calculator\b", question, re.I) and
+                not re.search(r"\b(?:also|plus tell me|and what|and when|and where|and why)\b", question, re.I)):
+            ids = [key for call in trace.tools for key in call.results]
+            currency = re.search(r"\b(?:in|currency)\s+(USD|EUR|GBP|INR|JPY|CAD|AUD)\b", question, re.I)
+            known_units = " ".join(value for key, value in evidence.items() if key != "tool:calculator")
+            if not currency or re.search(rf"(?<![A-Z]){currency[1]}(?![A-Z])", known_units, re.I):
+                unit = f" {currency[1].upper()}" if currency else ""
+                return Answer(answer=f"The calculation result is {evidence['tool:calculator']}{unit}.",
+                              citations=list(dict.fromkeys(ids)), refused=False)
         schema = QuotedAnswer if config.evidence_only else Answer
         answer = self.model.ask("answer", {**context, "evidence": evidence}, schema)
         if isinstance(answer, QuotedAnswer) and not answer.refused:

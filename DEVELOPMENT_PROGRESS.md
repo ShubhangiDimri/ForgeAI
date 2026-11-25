@@ -45,3 +45,10 @@
 - Changed generation to source-assigned slots with model-generated questions and independent semantic checks. Added a synthetic academic procedures supplement and a separate synthesis prompt while preserving the original files.
 - The first procurement build selected CSV lookup and calculator. Its initial evaluation was interrupted for the generator change. A separate evaluation from the identical built snapshot started in artifacts/full-procurement-slot and validated 3 of 8 direct cases in its first batch.
 - The fresh academic full run is running under artifacts/full-academic-slot. The expanded regression suite returned 31 passed in 4.34 seconds. Both runs use the same installed Gemma model and MiniLM cache. CPU model response latency has been approximately 30 to 120 seconds during this session.
+
+## Procurement tool execution checkpoint
+
+- The first live tool trace called the calculator with 3 and 42.5. The calculator returned 127.5, but the model skipped the requested CSV lookup, stated 382.50 and used an invalid citation. The runner rejected the response. See artifacts/full-procurement/tool_smoke.json.
+- The patch preserves scope checks, adds exact lookup for a uniquely identified row when explicitly requested and uses the calculator's actual numeric result for an explicit single calculation. The live retest executed both tools and answered 127.5 USD with catalogue.csv#r1:c1 and tool:calculator. See artifacts/full-procurement/tool_smoke_after_fix.json.
+- Added deterministic coverage for lookup fields and arithmetic inputs confirmed by actual CSV cells. The corresponding tests distinguish data-supported arithmetic from an unsupported lookup field.
+- Latest regression suite at this checkpoint returned 33 passed in 6.73 seconds. The live tool smoke is separate from full factory evaluation.
