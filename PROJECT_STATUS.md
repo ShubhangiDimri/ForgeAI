@@ -2,21 +2,21 @@
 
 ## Current development checkpoint
 
-The following table supersedes the earlier Phase A audit retained below. Prototype smoke execution is verified. Full-pipeline live verification is tracked separately from scripted integration tests.
+The following table supersedes the earlier Phase A audit retained below. Prototype smoke execution and procurement tool routing are verified. Evaluation and optimization are implemented and tested with scripted model outputs. The live Gemma attempts stopped before a frozen dataset and produced no baseline or optimization scores.
 
 | OceanAI requirement | Status and evidence |
 | --- | --- |
 | 1 Intake | Implemented. `forgeai/intake.py` filters preference questions, bounds and deduplicates them, records unanswered requests and preserves explicit topics. Existing intake tests and the unattended CLI test passed. Live question relevance remains model-dependent. |
 | 2 Groundability | Implemented before design. `forgeai/coverage.py` and `generator.py` distinguish confirmed out-of-retrieval evidence and inconclusive reviews from unsupported topics. Unit fixtures verify partial and invalid evidence; Phase A saved evidence verifies a true exclusion. |
 | 3 Agent generator | Implemented. `generator.py`, `schema.py` and `tools.py` generate and enforce settings and tool selections. A unit integration test executes CSV lookup followed by the calculator. Direct Open-Meteo call returned a live response. A fresh Gemma trace verified both CSV lookup and calculator, returning the correct 127.5 USD in artifacts/full-procurement/tool_smoke_after_fix.json. |
-| 4 Evaluation generation | Implemented and tested with scripted model outputs. `evaluation.py`, `prompts/eval_generate.txt` and `prompts/eval_validate.txt` generate, verify and freeze 20 cases across five categories. Full live evidence is pending. |
+| 4 Evaluation generation | Implemented and tested with scripted model outputs. `evaluation.py`, `prompts/eval_generate.txt` and `prompts/eval_validate.txt` generate, verify and freeze at least 20 cases across five categories. The model must pass evidence, category and tool-intent checks before freezing. Live attempts validated individual batches but did not complete a dataset. |
 | 5 Judge | Implemented and tested in fixtures. `judge.py` and `prompts/judge.txt` combine independent semantic assessment with deterministic checks. Shared-model bias remains a limitation with the default judge. |
 | 6 Critic and optimization | Implemented. `judge.py`, `optimizer.py`, `runner.py` and `workflow.py` classify all four categories, measure bounded targeted changes, rebuild chunks and index, and roll back regressions. Scripted integration tests measured baseline plus three iterations. |
 | 7 Honest reporting | Implemented. `workflow.py` records per-case results, scores, actual patches and stop reasons. The scripted integration test verifies persisted versions and best selection. Live report artifacts are pending. |
 | 8 Runnable product | Verified on the saved academic agent. `__main__.py` and `runner.py` reload it and answer documented CLI questions. Fresh Gemma rerun passed 3/3 in `artifacts/phase1-smoke/smoke.json`. |
-| 9 Two full demonstrations | Procurement and academic inputs exist. Both full CLI commands were launched. Final evidence must include the generated cases, scorecards and quality report for both runs. |
+| 9 Two full demonstrations | Procurement and academic inputs exist. Both full CLI commands generated runnable agents. Live evaluation retries exposed invalid questions and did not reach the scoring stage. Incomplete attempts and the successful procurement tool probe are retained under artifacts. Two complete demonstrations remain open. |
 
-Regression command `python -B -m pytest -q -p no:cacheprovider` returned **33 passed in 9.70s**. These tests substitute model output and embeddings where appropriate. Full demo commands and artifact descriptions are in README.md. Phase notes are in DEVELOPMENT_PROGRESS.md. Python 3.11 and Qwen remain unverified. No model or dependency downloads were made.
+Regression command `python -B -m pytest -q -p no:cacheprovider` returned **35 passed in 4.24s**. These tests substitute model output and embeddings where appropriate. Full demo commands and artifact descriptions are in README.md. Phase notes are in DEVELOPMENT_PROGRESS.md. Python 3.11 remains unverified. Gemma used pre-existing dependencies and weights. Qwen2.5 3B was selected for a short comparison and is downloading to a writable workspace cache.
 
 ## Historical Phase A audit
 
