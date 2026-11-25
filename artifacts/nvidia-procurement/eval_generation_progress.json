@@ -1,0 +1,134 @@
+[
+  {
+    "id": "E001",
+    "question": "Calculate the total cost for 5 units of SKU MQ-101 at the unit price found in slot 1.",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "beacon_technical.txt#text",
+        "document": "beacon_technical.txt",
+        "fact": "Beacon Technical standard lead time is 8 business days after purchase order acknowledgment."
+      }
+    ],
+    "expected_tools": [
+      "calculator"
+    ]
+  },
+  {
+    "id": "E002",
+    "question": "Within how many calendar days after delivery can unused standard parts be returned to Beacon Technical?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "beacon_technical.txt#text",
+        "document": "beacon_technical.txt",
+        "fact": "Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E003",
+    "question": "What is the unit price in USD for SKU MQ-103?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "catalogue.csv#r3",
+        "document": "catalogue.csv",
+        "fact": "sku=MQ-103 | part=Coupling sleeve | supplier=Quay Marine | unit_price_usd=76.00 | pack_quantity=1"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E004",
+    "question": "What is the unit price in USD for SKU BT-201?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "catalogue.csv#r4",
+        "document": "catalogue.csv",
+        "fact": "sku=BT-201 | part=Strainer basket | supplier=Beacon Technical | unit_price_usd=115.00 | pack_quantity=1"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E005",
+    "question": "What is the unit price in USD for SKU BT-202?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "catalogue.csv#r5",
+        "document": "catalogue.csv",
+        "fact": "sku=BT-202 | part=Valve seat | supplier=Beacon Technical | unit_price_usd=27.25 | pack_quantity=2"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E006",
+    "question": "What is the restocking fee percentage charged by Quay Marine for approved returns?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "quay_marine.txt#text",
+        "document": "quay_marine.txt",
+        "fact": "Quay Marine charges a 10 percent restocking fee on approved returns."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E007",
+    "question": "What authorization is required before returning any shipment to Quay Marine?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "quay_marine.txt#text",
+        "document": "quay_marine.txt",
+        "fact": "Quay Marine requires a return authorization number before any return shipment."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E008",
+    "question": "What is the primary purpose of astronomy?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E009",
+    "question": "What are the fundamental building blocks of music theory?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E010",
+    "question": "What defines a wildlife habitat?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E011",
+    "question": "What are the main ingredients required for bread baking?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  }
+]
