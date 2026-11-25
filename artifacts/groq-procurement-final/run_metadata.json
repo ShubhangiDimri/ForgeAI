@@ -1,5 +1,5 @@
 {
-  "status": "incomplete",
+  "status": "complete_with_errors",
   "started": "2026-11-25T17:10:53.056966+00:00",
   "agent_model": "groq:openai/gpt-oss-120b",
   "judge_model": "groq:openai/gpt-oss-20b",
@@ -30,8 +30,10 @@
     "resumed_at": "2026-11-25T17:25:01.883088+00:00",
     "duration": "Approximate prior active wall time plus measured resumed wall time"
   },
-  "stop_reason": "Groq Free Plan GPT-OSS 120B daily token quota exhausted during the targeted rerun.",
+  "stop_reason": "iteration budget reached",
   "selected_version": 0,
   "partial_rerun_cases": 13,
-  "finished": "2026-11-25T17:33:08.605893+00:00"
+  "finished": "2026-11-25T18:22:56.727588+00:00",
+  "resumed_at": "2026-11-25T18:22:51.818348+00:00",
+  "judge_model_resumed": "groq:openai/gpt-oss-20b"
 }

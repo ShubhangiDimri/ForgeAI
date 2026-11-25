@@ -23,6 +23,8 @@ def main() -> int:
     create.add_argument("--embedding", default=os.getenv("FORGE_EMBEDDING", "sentence-transformers/all-MiniLM-L6-v2"))
     evaluate = commands.add_parser("evaluate")
     evaluate.add_argument("--resume-generation", action="store_true")
+    evaluate.add_argument("--resume-scoring", action="store_true",
+                          help="Resume an interrupted evaluation from saved case results")
     evaluate.add_argument("--run", required=True, type=Path)
     evaluate.add_argument("--max-iterations", type=int, choices=range(4), default=3)
     evaluate.add_argument("--judge-model", default=os.getenv("FORGE_JUDGE_MODEL"))
@@ -39,9 +41,12 @@ def main() -> int:
                 from .workflow import run
                 run(args.out, args.judge_model, max_iterations=args.max_iterations)
         elif args.command == "evaluate":
-            from .workflow import run
-            run(args.run, args.judge_model, max_iterations=args.max_iterations,
-                resume_generation=args.resume_generation)
+            from .workflow import run, resume_scoring
+            if args.resume_scoring:
+                resume_scoring(args.run, args.judge_model)
+            else:
+                run(args.run, args.judge_model, max_iterations=args.max_iterations,
+                    resume_generation=args.resume_generation)
         else:
             runner = Runner(args.config)
             if args.question:

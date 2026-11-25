@@ -175,6 +175,16 @@ def generate(config: Config, sources: list[Passage], model,
                         "previous_questions": context["previous_questions"],
                     }, Batch)
                     questions = dict(enumerate(draft.questions, 1))
+                elif category == "unsupported":
+                    # Dedicated prompt for unsupported cases; pass unsupported topics
+                    # explicitly so weaker models produce domain-relevant questions.
+                    draft = model.ask("eval_unsupported", {
+                        "count": size, "scope": context["scope"], "topics": context["topics"],
+                        "unsupported_topics": context["unsupported_topics"],
+                        "source_cards": all_source_cards if review_full_corpus else context["source_cards"],
+                        "previous_questions": context["previous_questions"],
+                    }, Batch)
+                    questions = dict(enumerate(draft.questions, 1))
                 elif options and size > 1:
                     draft = model.ask("eval_generate", context, IndexedBatch)
                     questions = {item.slot: item.question for item in draft.cases if item.slot <= size}

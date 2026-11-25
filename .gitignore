@@ -32,3 +32,9 @@ htmlcov/
 # Local Groq pilots kept for debugging
 /artifacts/groq-academic/
 /artifacts/groq-procurement/
+
+# Incomplete failed provider runs
+/artifacts/cf-academic/
+/artifacts/cf-procurement/
+/artifacts/nvidia-academic-r2/
+/artifacts/nvidia-procurement-r2/

@@ -40,6 +40,12 @@ class DraftModel:
                 self.count += 1
                 questions.append(f"Fixture ambiguous question {self.count}?")
             return schema(questions=questions)
+        if stage == "eval_unsupported":
+            questions = []
+            for _ in range(payload["count"]):
+                self.count += 1
+                questions.append(f"Fixture unsupported question {self.count}?")
+            return schema(questions=questions)
         questions = []
         for _ in payload["slots"]:
             self.count += 1

@@ -29,5 +29,36 @@
       }
     },
     "seconds": 277.39
+  },
+  {
+    "version": 1,
+    "total": 20,
+    "passed": 10,
+    "failed": 5,
+    "error": 5,
+    "pass_rate": 0.5,
+    "dimensions": {
+      "correct": {
+        "passed": 12,
+        "scored": 15
+      },
+      "grounded": {
+        "passed": 13,
+        "scored": 15
+      },
+      "citations_relevant": {
+        "passed": 12,
+        "scored": 15
+      },
+      "refusal_appropriate": {
+        "passed": 12,
+        "scored": 15
+      },
+      "tools_correct": {
+        "passed": 15,
+        "scored": 15
+      }
+    },
+    "seconds": 103.86
   }
 ]

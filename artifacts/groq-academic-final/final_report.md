@@ -1,6 +1,6 @@
 # ForgeAI quality report
 
-- Stop reason Ãƒâ€š· Groq Free Plan GPT-OSS 120B daily token quota exhausted during the targeted rerun.
+- Stop reason Ãƒâ€š· iteration budget reached
 - Selected version Ãƒâ€š· 0
 - Agent model Ãƒâ€š· groq:openai/gpt-oss-20b
 - Embedding model Ãƒâ€š· sentence-transformers/all-MiniLM-L6-v2
@@ -8,6 +8,7 @@
 | Version | Passed | Failed | Errors | Total | Rate | Seconds |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 12 | 7 | 1 | 20 | 60.0% | 277.39 |
+| 1 | 10 | 5 | 5 | 20 | 50.0% | 103.86 |
 
 Measured improvement Ãƒâ€š· no
 
@@ -32,7 +33,7 @@ Measured improvement Ãƒâ€š· no
 
 ## Targeted iterations
 
-- Version 1 Ãƒâ€š· Require a verified verbatim excerpt for each citation. Outcome unmeasured. The provider interruption left 6/20 case records.
+- Version 1 Ãƒâ€š· Require a verified verbatim excerpt for each citation. Outcome no improvement.
 
 ## Assumptions and limitations
 

@@ -54,6 +54,19 @@ Semantic scope, tool relevance and factual entailment depend on the model. Exact
 The three academic smoke cases are fixed regression checks. Full factory evaluation generates a separate, frozen case set from the supplied documents.
 
 
+## Hosted Providers & Fallback
+
+ForgeAI supports local Ollama as well as free-tier hosted endpoints configured via `.env` (gitignored):
+- **Groq**: `groq:openai/gpt-oss-120b` / `groq:openai/gpt-oss-20b` (`GROQ_API_KEY`)
+- **NVIDIA**: `nvidia:nvidia/nemotron-3.5-lightning-30b-a3b` (`NVIDIA_API_KEY`)
+- **Cloudflare Workers AI**: `cloudflare:@cf/meta/llama-3.3-70b-instruct-fp8-fast` (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`)
+- **Fallback**: Use `--model auto` or `FORGE_FALLBACK_PROVIDERS=groq,cloudflare,nvidia` for automatic provider fallback on infrastructure errors.
+
+To resume an interrupted evaluation from saved case results without re-generating the frozen dataset:
+```powershell
+python -m forgeai evaluate --resume-scoring --run .\artifacts\groq-academic-final
+```
+
 ## Verified local run, 24 November 2026
 
 Python 3.13.5, installed Gemma 2B via Ollama, cached MiniLM embeddings and CPU FAISS. This machine had 15.34 GiB total RAM, about 1.14 GiB free and about 690 GiB free disk at inspection. Python 3.11 and Qwen were unavailable for verification. No model weights were downloaded.
