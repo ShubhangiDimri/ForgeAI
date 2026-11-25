@@ -38,3 +38,12 @@ htmlcov/
 /artifacts/cf-procurement/
 /artifacts/nvidia-academic-r2/
 /artifacts/nvidia-procurement-r2/
+
+# Frontend dependencies and build output
+node_modules/
+frontend/dist/
+backend/uploads/
+backend/artifacts/cf-academic/
+backend/artifacts/cf-procurement/
+backend/artifacts/nvidia-academic-r2/
+backend/artifacts/nvidia-procurement-r2/
