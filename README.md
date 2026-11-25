@@ -61,3 +61,32 @@ Python 3.13.5, installed Gemma 2B via Ollama, cached MiniLM embeddings and CPU F
 The final unit run completed with 14 passed in 6.58 seconds. The final real build used the commands above with the system Python, --model gemma2:2b and the output directory artifacts/academic-final. All three live checks passed after reloading the definition. Attendance was answered as 75% with attendance.txt#text:c1. Scholarship eligibility and the unrelated geography question were refused. Coverage also identified the one-attempt reassessment rule in assessment.txt. No tools were selected. Read artifacts/academic-final/smoke.json for the actual responses.
 
 Earlier development runs remain under artifacts/academic and artifacts/academic-v2. The first wrongly refused attendance and selected the directory CSV. The second missed reassessment coverage and initially requested an unauthorized tool, which the runner blocked. The final factory constrains document-only routing and resolves selected evidence sentences to real source IDs. The intake can still duplicate paraphrased topics and ask factual questions instead of useful preference questions. The inferred formal tone was recorded. English capability matching may omit legitimate tools on unusual briefs. Generalization to a second domain, Qwen, and Python 3.11 remain unverified.
+
+## Full factory on Windows
+
+With an existing Ollama server and cached MiniLM, run the commands below from the project root. A new output directory is required for each build. If using the alternate local server, set FORGE_OLLAMA_URL to its address.
+
+```powershell
+$env:FORGE_OLLAMA_URL = 'http://127.0.0.1:11439'
+$env:OMP_NUM_THREADS = '1'
+$academic = (Get-Content -Raw .\demo_data\brief.txt).Trim()
+$procurement = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
+python -m forgeai build --non-interactive --model gemma2:2b --brief $academic --docs .\demo_data\academic --out .\artifacts\my-full-academic
+python -m forgeai build --non-interactive --model gemma2:2b --brief $procurement --docs .\demo_data\procurement --out .\artifacts\my-full-procurement
+python -m forgeai chat --config .\artifacts\my-full-procurement\agent_config.json
+python -B -m pytest -q -p no:cacheprovider
+```
+
+To start the alternate server in a separate PowerShell terminal:
+
+```powershell
+$env:OLLAMA_HOST = '127.0.0.1:11439'
+$env:OLLAMA_MODELS = 'C:\Users\shubh\.ollama\models'
+ollama serve
+```
+
+Full builds generate and freeze at least 20 cases across five categories, then measure a baseline and up to three targeted iterations. The judge defaults to the agent model. Set --judge-model or FORGE_JUDGE_MODEL to another installed model to assess independently. Keep each run directory intact. Chat loads the selected configuration in the run root. The source snapshot supports actual rechunking. Historical Phase A configs still load without that snapshot.
+
+For a fresh prototype run, add --prototype-only. To evaluate a new prototype with a source snapshot, run python -m forgeai evaluate --run followed by the run path. Evaluation preserves metric files per run and refuses to overwrite an existing evaluation run. Interrupted runs retain available checkpoints.
+
+The keyless weather tool uses the fixed Open-Meteo forecast endpoint. It accepts explicit latitude and longitude and sends only those coordinates and fixed query fields. Its current conditions are in UTC. Calculator and CSV lookup execute locally. See DEVELOPMENT_PROGRESS.md and PROJECT_STATUS.md for observed results and live verification limits.

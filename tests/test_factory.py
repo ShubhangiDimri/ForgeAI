@@ -104,6 +104,8 @@ class Scripted:
         if stage == "design":
             return Design(system_prompt="Explain policies", settings=settings(), tools=self.tool_list)
         if stage == "coverage":
+            if payload["topic"] == "scholarships":
+                return schema(status="unsupported", sentence_numbers=[], limitation="No scholarship policy")
             number = next(iter(payload["sentences"]))
             return schema(status="supported", sentence_numbers=[number], limitation="")
         if stage == "route":

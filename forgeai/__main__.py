@@ -11,13 +11,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(prog="forgeai")
     commands = parser.add_subparsers(dest="command", required=True)
     create = commands.add_parser("build")
-    create.add_argument("--prototype-only", action="store_true", required=True)
+    create.add_argument("--prototype-only", action="store_true")
+    create.add_argument("--judge-model", default=os.getenv("FORGE_JUDGE_MODEL"))
     create.add_argument("--brief", required=True)
     create.add_argument("--docs", required=True, type=Path)
     create.add_argument("--out", required=True, type=Path)
     create.add_argument("--non-interactive", action="store_true")
     create.add_argument("--model", default=os.getenv("FORGE_MODEL", "qwen2.5:3b"))
     create.add_argument("--embedding", default=os.getenv("FORGE_EMBEDDING", "sentence-transformers/all-MiniLM-L6-v2"))
+    evaluate = commands.add_parser("evaluate")
+    evaluate.add_argument("--run", required=True, type=Path)
+    evaluate.add_argument("--judge-model", default=os.getenv("FORGE_JUDGE_MODEL"))
     chat = commands.add_parser("chat")
     chat.add_argument("--config", required=True, type=Path)
     chat.add_argument("--question")
@@ -25,7 +29,13 @@ def main() -> int:
     try:
         if args.command == "build":
             build(args.brief, args.docs, args.out, args.non_interactive, Ollama(args.model), args.embedding)
-            print(args.out / "agent_config.json")
+            print(args.out / "agent_config.json", flush=True)
+            if not args.prototype_only:
+                from .workflow import run
+                run(args.out, args.judge_model)
+        elif args.command == "evaluate":
+            from .workflow import run
+            run(args.run, args.judge_model)
         else:
             runner = Runner(args.config)
             if args.question:
@@ -35,7 +45,10 @@ def main() -> int:
                     question = input("> ").strip()
                     if question in {"", "/quit"}:
                         break
-                    print(runner.answer(question).model_dump_json(indent=2))
+                    try:
+                        print(runner.answer(question).model_dump_json(indent=2))
+                    except (ValueError, RuntimeError, ArithmeticError) as exc:
+                        print(f"Question failed: {exc}", file=sys.stderr)
     except EOFError:
         return 0 if args.command == "chat" else 1
     except Exception as exc:

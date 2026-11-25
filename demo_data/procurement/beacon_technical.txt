@@ -1,0 +1,7 @@
+Beacon Technical standard lead time is 8 business days after purchase order acknowledgment.
+Beacon Technical provides tracking within one business day of dispatch.
+Beacon Technical accepts unused standard parts for return within 14 calendar days of delivery.
+Beacon Technical waives the restocking fee when it shipped the wrong part.
+Beacon Technical charges 22 USD for standard domestic shipping.
+Beacon Technical requires an approved shipping quote for international orders.
+

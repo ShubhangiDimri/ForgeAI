@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
-Tool = Literal["csv_lookup", "calculator", "current_date"]
+Tool = Literal["csv_lookup", "calculator", "current_date", "weather"]
 
 
 class Model(BaseModel):
@@ -65,6 +65,8 @@ class Finding(Model):
     status: Literal["supported", "partial", "unsupported"]
     evidence: list[Quote]
     limitation: str
+    retrieval_miss: bool = False
+    inconclusive: bool = False
 
 
 class Answer(Model):
@@ -88,4 +90,7 @@ class Config(Design):
     document_manifest: dict[str, str]
     output_contract: dict
     corpus_sha256: Text
+    sources_sha256: Text | None = None
+    evidence_only: bool = False
+    verify_scope: bool = False
 

@@ -10,7 +10,11 @@ class Index:
             os.environ.setdefault("USE_TF", "0")
             from sentence_transformers import SentenceTransformer
             encoder = SentenceTransformer(embedding, local_files_only=True, device="cpu", trust_remote_code=False)
-        self.encoder, self.settings, self.passages = encoder, settings, passages
+        self.encoder = encoder
+        self.rebuild(passages, settings)
+
+    def rebuild(self, passages: list[Passage], settings: Settings) -> None:
+        self.settings, self.passages = settings, passages
         vectors = self.encode([p.text for p in passages])
         self.index = faiss.IndexFlatIP(vectors.shape[1])
         self.index.add(vectors)

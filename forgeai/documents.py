@@ -5,6 +5,11 @@ import pymupdf
 from .schema import Passage, Settings
 
 
+def anchor_id(chunk_id: str) -> str:
+    """Return the stable source locator without its version-specific chunk suffix."""
+    return chunk_id.rsplit(":c", 1)[0]
+
+
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 

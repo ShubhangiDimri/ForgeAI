@@ -1,0 +1,4 @@
+# Artifact integrity hashes refer to exact file bytes.
+demo_data/** -text
+artifacts/** -text
+
