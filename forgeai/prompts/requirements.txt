@@ -1,0 +1,2 @@
+Extract the requested scope, audience, tone and individual must-answer and must-refuse topics from the brief and answered interview. Preserve every requested topic even if documents do not cover it. Record unspecified audience or tone as unspecified. Enumerate assumptions and unresolved decisions. A blank interview answer supplies no information.
+Use only the brief and explicit user answers. Copy listed topics as short verbatim phrases, not invented examples. Copy stated audience and tone. Add only exclusions requested by the user.

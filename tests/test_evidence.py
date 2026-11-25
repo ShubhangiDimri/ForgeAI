@@ -1,0 +1,48 @@
+from unittest.mock import Mock
+import pytest
+from forgeai.coverage import Assessment, assess
+from forgeai.intake import interview
+from forgeai.schema import Finding, Passage, Questions, Requirements
+
+
+def requirements():
+    return Requirements(scope="Catalog", audience="Buyers", tone="Brief", must_answer=["dimensions"],
+                        must_refuse=[], assumptions=[], unresolved=[])
+
+
+@pytest.mark.parametrize("number,status", [(1, "partial"), (9, "unsupported")])
+def test_mocked_partial_and_invented_evidence(number, status):
+    passages = [Passage(id="spec#p1:c1", file="spec", text="width 10 cm")]
+    model = Mock()
+    model.ask.return_value = Assessment(status="partial", sentence_numbers=[number],
+                                     limitation="Height is missing")
+    index = Mock()
+    index.search.return_value = passages
+    result = assess(requirements(), index, model)["dimensions"]
+    assert result.status == status
+    assert bool(result.evidence) == (status == "partial")
+
+
+def test_mocked_interactive_clarification(monkeypatch):
+    model = Mock()
+    model.ask.side_effect = [Questions(questions=["Which audience?", "Which audience?"]), requirements()]
+    replies = []
+    def reply(question):
+        replies.append(question)
+        return "Buyers"
+    monkeypatch.setattr("builtins.input", reply)
+    result = interview("Catalog", [Passage(id="1", file="spec", text="width 10 cm")], False, model)
+    assert len(replies) == 1
+    assert model.ask.call_args.args[1]["user_answers"] == {"Which audience?": "Buyers"}
+    assert not result.unresolved
+
+
+
+def test_relevance_filter_needs_brief_capability():
+    from forgeai.schema import Selection
+    from forgeai.tools import select_tools
+    proposals = [Selection(name=n, reason="Proposed by the model") for n in
+                 ["current_date", "calculator", "csv_lookup"]]
+    assert select_tools(proposals, "Explain attendance requirements") == []
+    assert [t.name for t in select_tools(proposals, "Calculate totals from a catalog lookup")] == [
+        "calculator", "csv_lookup"]

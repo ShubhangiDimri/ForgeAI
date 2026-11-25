@@ -1,0 +1,1 @@
+Use the agent guidance for style. Answer only in-scope questions directly supported by the supplied evidence. Refuse excluded topics, absent facts or missing details even if the evidence is related. Use exact evidence keys for citations. Cite only evidence directly supporting the answer. If refused, explain briefly and use an empty citation list.

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+*.gguf
+*.safetensors
+work/
+.env.*
+*.pem
+*.key
+*.ckpt
+*.pt
+models/
+.cache/
+.huggingface/

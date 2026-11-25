@@ -1,0 +1,63 @@
+# ForgeAI Phase A
+
+ForgeAI builds a declarative local agent from a brief and a document directory. The generated run can be moved as a folder and opened in a fresh process. Python 3.11 is the target.
+
+## Windows PowerShell setup
+
+From the project directory, with Python 3.11 and Ollama installed:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt
+$python = ".\.venv\Scripts\python.exe"
+ollama list
+Get-PSDrive C
+Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory
+```
+
+Start Ollama with `ollama serve` in another terminal if necessary. After checking free resources, provision missing models once:
+
+```powershell
+ollama pull qwen2.5:3b
+& $python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+```
+
+## Build, reload and verify
+
+```powershell
+$brief = (Get-Content -Raw .\demo_data\brief.txt).Trim()
+& $python -m forgeai build --prototype-only --brief $brief --docs .\demo_data\academic --out .\artifacts\my-run --non-interactive
+& $python -m forgeai chat --config .\artifacts\my-run\agent_config.json
+& $python -m forgeai chat --config .\artifacts\my-run\agent_config.json --question "What is the minimum attendance?"
+& $python -m pytest -q
+& $python -m tests.smoke_live .\artifacts\my-run\agent_config.json
+```
+
+Use a fresh run directory for every build. Omit `--non-interactive` to answer intake questions. Enter `/quit` to end chat. Override the build model with `--model` or `FORGE_MODEL`. Set `FORGE_OLLAMA_URL` to a trusted local endpoint if using a different port. Use `--embedding` for a locally cached Sentence Transformers model or directory. Build and chat load embedding weights offline.
+
+## Modules and artifacts
+
+- `forgeai/documents.py` reads text-bearing PDF pages, UTF-8 text files and CSV rows, then creates word windows with stable source IDs. CSV row numbers start at 1 after the header.
+- `intake.py` uses excerpts and the brief to generate clarifications. Blank answers are saved as unresolved.
+- `generator.py` generates settings, selects tools and publishes a complete new run after successful validation.
+- `retrieval.py` normalizes embeddings and searches FAISS by cosine score with the generated cutoff and candidate count.
+- `coverage.py` checks requested topics against retrieval results and verifies quoted evidence. Unverified or absent evidence restricts the topic.
+- `tools.py` validates exact CSV lookups, arithmetic and local dates. CSV searches only the run snapshot.
+- `runner.py` reloads the saved definition, enforces restrictions and available tools, and validates answer citations. `llm.py` handles schema-constrained Ollama calls. Templates live under `forgeai/prompts/`.
+- Each completed build writes `requirements.json`, `coverage.json`, `document_manifest.json`, `agent_config.json` and `corpus.json`. Keep these together. Source SHA-256 hashes describe the original files. The corpus digest detects a mismatched snapshot. Chat rebuilds the in-memory vector index once per session.
+- `tests/test_factory.py` runs local unit tests with real parsers and FAISS plus explicit test doubles for generation and embeddings. `tests/smoke_live.py` runs three academic acceptance questions against a real model and stores their results in `smoke.json`.
+
+## Boundaries
+
+Semantic scope, tool relevance and factual entailment depend on the model. Exact citation and quote checks establish provenance but cannot prove every paraphrase. Intake samples two excerpts per file. Large folders, long rows and long conversation inputs can exceed the model context. Chat handles each question independently. Scanned PDFs require external OCR before ingestion. Weather integration is optional and omitted.
+
+Phase B remains pending: at least 20 generated evaluation cases, deterministic grounding checks and bias-mitigated judging, failure classification, up to three targeted optimization iterations with recorded changes, honest scorecards/reports and two full demonstrations on different datasets. The three smoke cases are hand-written Phase A checks.
+
+
+## Verified local run, 24 November 2026
+
+Python 3.13.5, installed Gemma 2B via Ollama, cached MiniLM embeddings and CPU FAISS. This machine had 15.34 GiB total RAM, about 1.14 GiB free and about 690 GiB free disk at inspection. Python 3.11 and Qwen were unavailable for verification. No model weights were downloaded.
+
+The final unit run completed with 14 passed in 6.58 seconds. The final real build used the commands above with the system Python, --model gemma2:2b and the output directory artifacts/academic-final. All three live checks passed after reloading the definition. Attendance was answered as 75% with attendance.txt#text:c1. Scholarship eligibility and the unrelated geography question were refused. Coverage also identified the one-attempt reassessment rule in assessment.txt. No tools were selected. Read artifacts/academic-final/smoke.json for the actual responses.
+
+Earlier development runs remain under artifacts/academic and artifacts/academic-v2. The first wrongly refused attendance and selected the directory CSV. The second missed reassessment coverage and initially requested an unauthorized tool, which the runner blocked. The final factory constrains document-only routing and resolves selected evidence sentences to real source IDs. The intake can still duplicate paraphrased topics and ask factual questions instead of useful preference questions. The inferred formal tone was recorded. English capability matching may omit legitimate tools on unusual briefs. Generalization to a second domain, Qwen, and Python 3.11 remain unverified.
