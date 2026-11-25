@@ -13,3 +13,18 @@ work/
 models/
 .cache/
 .huggingface/
+
+# Local recruitment materials
+/ForgeAI_Requirements.docx
+/ForgeAI_SRS.md
+/OceanAI_Jr_GenAI_Engineer_Campus_Recruitment_Assignment*.pdf
+
+# Local credentials, runtimes and machine-generated files
+.ollama/
+venv/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
