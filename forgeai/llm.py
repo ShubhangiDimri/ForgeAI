@@ -9,7 +9,7 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 PROMPTS = Path(__file__).with_name("prompts")
 OUTPUT_BUDGET = {"questions": 160, "requirements": 320, "coverage": 180, "design": 320,
-                 "route": 150, "answer": 240, "eval_generate": 260, "eval_validate": 72, "judge": 160}
+                 "route": 150, "answer": 240, "eval_generate": 260, "eval_questions": 220, "eval_outside": 160, "eval_validate": 72, "judge": 160}
 
 
 class Ollama:

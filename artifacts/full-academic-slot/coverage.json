@@ -1,0 +1,89 @@
+{
+  "minimum attendance": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "attendance.txt#text",
+        "quote": "North Quay Institute requires 75 percent attendance in each taught module."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "The registrar issues an attendance appeal decision within ten working days of receiving a complete appeal."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "A reassessment registration requires the module code and the assessment component."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "The assessment office publishes reassessment room allocations two working days before the reassessment period."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "Reassessment marks for taught modules are capped at the pass threshold."
+      },
+      {
+        "id": "assessment.txt#text",
+        "quote": "North Quay Institute permits one reassessment attempt for a failed taught module."
+      },
+      {
+        "id": "assessment.txt#text",
+        "quote": "The reassessment registration window is ten calendar days after results are published."
+      },
+      {
+        "id": "offices.csv#r1",
+        "quote": "office=Registrar | location=Harbor Hall | hours=09:00 to 16:00"
+      }
+    ],
+    "limitation": "None",
+    "retrieval_miss": true,
+    "inconclusive": false
+  },
+  "reassessment attempts": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "assessment.txt#text",
+        "quote": "North Quay Institute permits one reassessment attempt for a failed taught module."
+      },
+      {
+        "id": "assessment.txt#text",
+        "quote": "The reassessment registration window is ten calendar days after results are published."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "Students register for reassessment through the assessment portal."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "A reassessment registration requires the module code and the assessment component."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "The assessment office publishes reassessment room allocations two working days before the reassessment period."
+      },
+      {
+        "id": "academic_procedures.txt#text",
+        "quote": "Reassessment marks for taught modules are capped at the pass threshold."
+      },
+      {
+        "id": "attendance.txt#text",
+        "quote": "North Quay Institute requires 75 percent attendance in each taught module."
+      },
+      {
+        "id": "attendance.txt#text",
+        "quote": "Attendance appeals must reach the registrar within five working days of the attendance notice."
+      }
+    ],
+    "limitation": "The provided text does not contain information about the number of reassessment attempts allowed for a failed module.  ",
+    "retrieval_miss": true,
+    "inconclusive": false
+  },
+  "scholarship eligibility": {
+    "status": "unsupported",
+    "evidence": [],
+    "limitation": "The provided sentences do not directly address the topic of scholarship eligibility. They focus on attendance appeals and reassessment procedures at North Quay Institute.",
+    "retrieval_miss": false,
+    "inconclusive": false
+  }
+}

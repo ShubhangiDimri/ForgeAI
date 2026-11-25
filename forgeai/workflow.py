@@ -102,7 +102,8 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
     stop = "evaluation did not finish"
     try:
         print("Generating evaluation cases", flush=True)
-        fingerprint = freeze(generate(runner.config, runner.sources, generator), path)
+        fingerprint = freeze(generate(runner.config, runner.sources, generator,
+            lambda cases: write_json(out / "eval_generation_progress.json", cases)), path)
         metadata["eval_sha256"] = fingerprint
         write_json(out / "run_metadata.json", metadata)
         for iteration in range(max_iterations + 1):

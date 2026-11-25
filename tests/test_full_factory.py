@@ -28,12 +28,20 @@ class DraftModel:
     def ask(self, stage, payload, schema):
         if stage == "eval_validate":
             return schema(accepted=list(range(1, len(payload["candidates"]) + 1)))
-        cases = []
-        for slot in payload["slots"]:
+        if stage == "eval_outside":
+            questions = []
+            for topic in payload["topics"]:
+                self.count += 1
+                questions.append(f"Fixture question about {topic} number {self.count}?")
+            return schema(questions=questions)
+        questions = []
+        for _ in payload["slots"]:
             self.count += 1
             category = payload["category"]
-            cases.append(dict(question=f"Fixture {category} question {self.count}?", slot=slot["slot"]))
-        return schema(cases=cases)
+            questions.append(f"Fixture {category} question {self.count}?")
+        if stage == "eval_generate":
+            return schema(cases=[dict(question=q, slot=i) for i, q in enumerate(questions, 1)])
+        return schema(questions=questions)
 
 
 def saved_config():
@@ -58,9 +66,8 @@ def test_generate_and_freeze(tmp_path):
 
 def test_invalid_model_evidence_is_rejected():
     model = Mock()
-    model.ask.side_effect = lambda stage, payload, schema: schema(cases=[
-        dict(question="Unverified fact?", slot=999)])
-    with pytest.raises(ValueError, match="Generated only"):
+    model.ask.side_effect = lambda stage, payload, schema: schema(questions=[])
+    with pytest.raises(ValueError, match="No valid"):
         generate(saved_config(), FIXTURES, model)
     assert model.ask.call_count == 5
 
@@ -279,3 +286,31 @@ def test_interactive_chat_continues_after_question_error(monkeypatch, capsys):
     assert cli.main() == 0
     captured = capsys.readouterr()
     assert "Question failed" in captured.err and "Second question worked" in captured.out
+
+
+def test_generation_can_fill_total_after_category_shortfall():
+    class SparseReview(DraftModel):
+        allowed_one = False
+
+        def ask(self, stage, payload, schema):
+            if stage == "eval_validate" and payload["category"] == "out_of_scope":
+                accepted = [] if self.allowed_one else [1]
+                self.allowed_one = True
+                return schema(accepted=accepted)
+            return super().ask(stage, payload, schema)
+
+    outcome = generate(saved_config(), FIXTURES, SparseReview())
+    assert len(outcome.cases) == 20
+    assert sum(c.category == "out_of_scope" for c in outcome.cases) == 1
+    assert {c.category for c in outcome.cases} == set(TARGETS)
+
+
+def test_outside_generation_rejects_questions_without_its_topic_seed():
+    class InScopeOnly(DraftModel):
+        def ask(self, stage, payload, schema):
+            if stage == "eval_outside":
+                return schema(questions=["What is the supplier lead time?"])
+            return super().ask(stage, payload, schema)
+
+    with pytest.raises(ValueError, match="No valid out_of_scope"):
+        generate(saved_config(), FIXTURES, InScopeOnly())

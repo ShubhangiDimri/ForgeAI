@@ -8,7 +8,7 @@ The following table supersedes the earlier Phase A audit retained below. Prototy
 | --- | --- |
 | 1 Intake | Implemented. `forgeai/intake.py` filters preference questions, bounds and deduplicates them, records unanswered requests and preserves explicit topics. Existing intake tests and the unattended CLI test passed. Live question relevance remains model-dependent. |
 | 2 Groundability | Implemented before design. `forgeai/coverage.py` and `generator.py` distinguish confirmed out-of-retrieval evidence and inconclusive reviews from unsupported topics. Unit fixtures verify partial and invalid evidence; Phase A saved evidence verifies a true exclusion. |
-| 3 Agent generator | Implemented. `generator.py`, `schema.py` and `tools.py` generate and enforce settings and tool selections. A unit integration test executes CSV lookup followed by the calculator. Direct Open-Meteo call returned a live response. Live procurement routing is pending. |
+| 3 Agent generator | Implemented. `generator.py`, `schema.py` and `tools.py` generate and enforce settings and tool selections. A unit integration test executes CSV lookup followed by the calculator. Direct Open-Meteo call returned a live response. A fresh Gemma trace verified both CSV lookup and calculator, returning the correct 127.5 USD in artifacts/full-procurement/tool_smoke_after_fix.json. |
 | 4 Evaluation generation | Implemented and tested with scripted model outputs. `evaluation.py`, `prompts/eval_generate.txt` and `prompts/eval_validate.txt` generate, verify and freeze 20 cases across five categories. Full live evidence is pending. |
 | 5 Judge | Implemented and tested in fixtures. `judge.py` and `prompts/judge.txt` combine independent semantic assessment with deterministic checks. Shared-model bias remains a limitation with the default judge. |
 | 6 Critic and optimization | Implemented. `judge.py`, `optimizer.py`, `runner.py` and `workflow.py` classify all four categories, measure bounded targeted changes, rebuild chunks and index, and roll back regressions. Scripted integration tests measured baseline plus three iterations. |
@@ -16,7 +16,7 @@ The following table supersedes the earlier Phase A audit retained below. Prototy
 | 8 Runnable product | Verified on the saved academic agent. `__main__.py` and `runner.py` reload it and answer documented CLI questions. Fresh Gemma rerun passed 3/3 in `artifacts/phase1-smoke/smoke.json`. |
 | 9 Two full demonstrations | Procurement and academic inputs exist. Both full CLI commands were launched. Final evidence must include the generated cases, scorecards and quality report for both runs. |
 
-Regression command `python -B -m pytest -q -p no:cacheprovider` returned **28 passed in 5.87s**. These tests substitute model output and embeddings where appropriate. Full demo commands and artifact descriptions are in README.md. Phase notes are in DEVELOPMENT_PROGRESS.md. Python 3.11 and Qwen remain unverified. No model or dependency downloads were made.
+Regression command `python -B -m pytest -q -p no:cacheprovider` returned **33 passed in 9.70s**. These tests substitute model output and embeddings where appropriate. Full demo commands and artifact descriptions are in README.md. Phase notes are in DEVELOPMENT_PROGRESS.md. Python 3.11 and Qwen remain unverified. No model or dependency downloads were made.
 
 ## Historical Phase A audit
 

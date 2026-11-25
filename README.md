@@ -1,6 +1,6 @@
-# ForgeAI Phase A
+# ForgeAI
 
-ForgeAI builds a declarative local agent from a brief and a document directory. The generated run can be moved as a folder and opened in a fresh process. Python 3.11 is the target.
+ForgeAI builds a declarative local agent from a brief and a document directory, generates an evaluation dataset and measures targeted configuration changes. A saved run can be moved and opened in a fresh process. Python 3.11 is the target. The current Windows verification used Python 3.13.5.
 
 ## Windows PowerShell setup
 
@@ -18,7 +18,7 @@ Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,Fre
 Start Ollama with `ollama serve` in another terminal if necessary. After checking free resources, provision missing models once:
 
 ```powershell
-ollama pull qwen2.5:3b
+ollama pull gemma2:2b
 & $python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
 ```
 
@@ -49,9 +49,9 @@ Use a fresh run directory for every build. Omit `--non-interactive` to answer in
 
 ## Boundaries
 
-Semantic scope, tool relevance and factual entailment depend on the model. Exact citation and quote checks establish provenance but cannot prove every paraphrase. Intake samples two excerpts per file. Large folders, long rows and long conversation inputs can exceed the model context. Chat handles each question independently. Scanned PDFs require external OCR before ingestion. Weather integration is optional and omitted.
+Semantic scope, tool relevance and factual entailment depend on the model. Exact citation and quote checks establish provenance but cannot prove every paraphrase. Intake samples two excerpts per file. Large folders, long rows and long conversation inputs can exceed the model context. Chat handles each question independently. Scanned PDFs require external OCR before ingestion. The optional weather capability calls the fixed Open-Meteo endpoint only when selected.
 
-Phase B remains pending: at least 20 generated evaluation cases, deterministic grounding checks and bias-mitigated judging, failure classification, up to three targeted optimization iterations with recorded changes, honest scorecards/reports and two full demonstrations on different datasets. The three smoke cases are hand-written Phase A checks.
+The three academic smoke cases are fixed regression checks. Full factory evaluation generates a separate, frozen case set from the supplied documents.
 
 
 ## Verified local run, 24 November 2026

@@ -1,0 +1,131 @@
+{
+  "system_prompt": "Buyers, I can assist with maritime spare parts procurement. Ask me about catalogue SKU lookup, unit prices, order subtotals, supplier lead times, returns, and shipping rules.",
+  "settings": {
+    "chunk_words": 24,
+    "overlap": 10,
+    "top_k": 1,
+    "min_score": 0.15
+  },
+  "tools": [
+    {
+      "name": "csv_lookup",
+      "reason": "Exact lookup of catalogue SKUs based on provided information."
+    },
+    {
+      "name": "calculator",
+      "reason": "Performing arithmetic operations like unit price calculations and order subtotals."
+    }
+  ],
+  "version": 1,
+  "model": "gemma2:2b",
+  "embedding": "sentence-transformers/all-MiniLM-L6-v2",
+  "requirements": {
+    "scope": "Maritime spare parts procurement",
+    "audience": "Buyers",
+    "tone": "Informative",
+    "must_answer": [
+      "catalogue SKU lookup",
+      "unit prices",
+      "calculations of order subtotals",
+      "supplier lead times",
+      "returns",
+      "shipping rules"
+    ],
+    "must_refuse": [
+      "catalogue SKU lookup",
+      "calculations of order subtotals"
+    ],
+    "assumptions": [
+      "Inferred tone: Informative"
+    ],
+    "unresolved": [
+      "What is the preferred method for handling returns and shipping rules (e.g., specific instructions or a general approach)?",
+      "Document support uncertain: unit prices",
+      "Document support uncertain: supplier lead times",
+      "Document support uncertain: returns",
+      "Document support uncertain: shipping rules"
+    ]
+  },
+  "coverage": {
+    "catalogue SKU lookup": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "The provided sentences do not contain information about SKU lookup. They describe the lead times, shipping policies, and return policies of different suppliers (Beacon Technical and Quay Marine).",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "unit prices": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "Invalid model evidence selection.",
+      "retrieval_miss": false,
+      "inconclusive": true
+    },
+    "calculations of order subtotals": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "The provided sentences do not contain information about order subtotals or calculations. They describe product details, lead times, shipping policies, and return policies for different suppliers (Beacon Technical and Quay Marine).",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "supplier lead times": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "Invalid model evidence selection.",
+      "retrieval_miss": false,
+      "inconclusive": true
+    },
+    "returns": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "Invalid model evidence selection.",
+      "retrieval_miss": false,
+      "inconclusive": true
+    },
+    "shipping rules": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "Invalid model evidence selection.",
+      "retrieval_miss": false,
+      "inconclusive": true
+    }
+  },
+  "document_manifest": {
+    "beacon_technical.txt": "3ade350be1a60e4e94dd30c9c8360ab9d93294e4fc5d929e6befe148511ff8bb",
+    "catalogue.csv": "3ba2421e5c6d46c44b8e4e5c6968a7a4b5e737db3d048719f77945b12f274e9a",
+    "quay_marine.txt": "15cfbdfc66bf59870a6a29b416c8d314a70e7d6c37a776fdb1f02e651ade8124"
+  },
+  "output_contract": {
+    "additionalProperties": false,
+    "properties": {
+      "answer": {
+        "minLength": 1,
+        "title": "Answer",
+        "type": "string"
+      },
+      "citations": {
+        "items": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "title": "Citations",
+        "type": "array"
+      },
+      "refused": {
+        "title": "Refused",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "answer",
+      "citations",
+      "refused"
+    ],
+    "title": "Answer",
+    "type": "object"
+  },
+  "corpus_sha256": "806d5ffbc008fd69e5322d6fc213ea43516619a1d8ab5e73865b31c40b45d186",
+  "sources_sha256": "01fc27852929930150dd1c01e63d6417ef0bc880f936145a28a7bb7fc9b38a95",
+  "evidence_only": false,
+  "verify_scope": false
+}

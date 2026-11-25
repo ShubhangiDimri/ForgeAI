@@ -1,0 +1,1 @@
+Write one distinct standalone factual question per topic. Include the exact topic phrase in its question. The list has one item per supplied topic. Return only structured JSON with a questions array. Do not answer the questions.

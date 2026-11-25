@@ -52,3 +52,12 @@
 - The patch preserves scope checks, adds exact lookup for a uniquely identified row when explicitly requested and uses the calculator's actual numeric result for an explicit single calculation. The live retest executed both tools and answered 127.5 USD with catalogue.csv#r1:c1 and tool:calculator. See artifacts/full-procurement/tool_smoke_after_fix.json.
 - Added deterministic coverage for lookup fields and arithmetic inputs confirmed by actual CSV cells. The corresponding tests distinguish data-supported arithmetic from an unsupported lookup field.
 - Latest regression suite at this checkpoint returned 33 passed in 6.73 seconds. The live tool smoke is separate from full factory evaluation.
+
+## Evaluation and model comparison checkpoint
+
+- The slot-based academic retry validated eight direct and two out-of-scope cases before it was interrupted to free CPU. The original slot-based procurement retry validated eight direct cases and stopped after generating only two of its four preferred out-of-scope cases.
+- The revised generator requires twenty distinct questions across all five categories, with adaptive category counts. It saves accepted cases as progress before freezing any full set. Source-excluded topic seeds are used to improve out-of-scope drafting.
+- A live Gemma diagnostic produced an in-scope supplier lead-time question in the out-of-scope category and its same-model reviewer approved it. A separate seeded diagnostic produced four unrelated questions. The latter is a generation diagnostic, not a measured evaluation.
+- The latest Gemma procurement run saved three candidate cases before being interrupted for model comparison. Audit found an invalid calculator expectation among them. Deterministic checks now reject calculator and lookup cases without explicit corresponding intent.
+- The regression command returned 35 passed in 4.24 seconds under Python 3.13.5. The suite includes category shortfalls, rejection of an in-scope question masquerading as an out-of-scope one and live-independent workflow checks.
+- Qwen2.5 3B was absent from the local model store. Its initial pull to the regular model store failed because the sandbox denied opening a partial blob. An isolated local Ollama server on port 11440 uses a writable workspace cache, with 4.9 GiB RAM free after unloading Gemma. The pull is in progress. No Qwen results have been recorded yet.

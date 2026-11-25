@@ -1,5 +1,6 @@
 """Generate and freeze an evidence-backed evaluation set."""
 from collections import Counter
+from collections.abc import Callable
 from itertools import combinations
 from pathlib import Path
 import re
@@ -11,6 +12,9 @@ from .schema import Config, Model, Passage, Text, Tool
 
 Category = Literal["direct", "out_of_scope", "unsupported", "ambiguous", "multi_document"]
 TARGETS = {"direct": 8, "out_of_scope": 4, "unsupported": 3, "ambiguous": 3, "multi_document": 2}
+DISTRACTOR_TOPICS = ("astronomy", "music theory", "wildlife habitats", "bread baking",
+                     "board games", "geology", "world geography", "gardening",
+                     "film history", "architecture", "ocean currents", "photography")
 
 
 class Anchor(Model):
@@ -19,13 +23,17 @@ class Anchor(Model):
     fact: Text
 
 
-class Draft(Model):
+class Batch(Model):
+    questions: list[Text] = Field(min_length=1, max_length=4)
+
+
+class IndexedQuestion(Model):
     question: Text
     slot: int = Field(ge=1, le=4)
 
 
-class Batch(Model):
-    cases: list[Draft] = Field(max_length=6)
+class IndexedBatch(Model):
+    cases: list[IndexedQuestion] = Field(min_length=1, max_length=4)
 
 
 class Case(Model):
@@ -47,7 +55,7 @@ class Dataset(Model):
     @model_validator(mode="after")
     def validate_set(self):
         counts = Counter(c.category for c in self.cases)
-        if any(counts[k] < count for k, count in TARGETS.items()):
+        if len(self.cases) < 20 or any(not counts[category] for category in TARGETS):
             raise ValueError(f"Incomplete generated evaluation set: {dict(counts)}")
         if len({question_key(c.question) for c in self.cases}) != len(self.cases):
             raise ValueError("Duplicate evaluation question")
@@ -78,14 +86,19 @@ def evidence_cards(sources: list[Passage]) -> list[Anchor]:
     return cards
 
 
-def generate(config: Config, sources: list[Passage], model) -> Dataset:
+def generate(config: Config, sources: list[Passage], model,
+             checkpoint: Callable[[list[dict]], None] | None = None) -> Dataset:
     cards = evidence_cards(sources)
     if len({a.document for a in cards}) < 2:
         raise ValueError("Multi-document evaluations require at least two source documents")
     cases = []
     seen = set()
     available = {t.name for t in config.tools}
-    for category, target in TARGETS.items():
+    scope_terms = set(question_key(" ".join([config.requirements.scope, *config.requirements.must_answer,
+                                           *(a.fact for a in cards)])).split())
+    distractors = [topic for topic in DISTRACTOR_TOPICS if not set(topic.split()) & scope_terms]
+
+    def add_cases(category: str, target: int) -> int:
         print(f"Generating {target} {category} cases", flush=True)
         start = len(cases)
         for attempt in range(5):
@@ -133,22 +146,42 @@ def generate(config: Config, sources: list[Passage], model) -> Dataset:
                           for i, (anchors, expected_tools) in enumerate(slots, 1)],
                 "previous_questions": [c.question for c in cases],
             }
+            if category == "out_of_scope" and distractors:
+                start_topic = attempt * size
+                context["unrelated_topic_seeds"] = [distractors[(start_topic + index) % len(distractors)]
+                                                      for index in range(size)]
+            if category == "ambiguous":
+                context["ambiguity_seeds"] = [a.fact for a in sample[:size]]
             try:
-                draft = model.ask("eval_generate", context, Batch)
+                if category == "out_of_scope" and context.get("unrelated_topic_seeds"):
+                    draft = model.ask("eval_outside", {"topics": context["unrelated_topic_seeds"]}, Batch)
+                    questions = {i: q for i, q in enumerate(draft.questions, 1)
+                                 if any(set(seed.split()) & set(question_key(q).split())
+                                        for seed in context["unrelated_topic_seeds"])}
+                elif options and size > 1:
+                    draft = model.ask("eval_generate", context, IndexedBatch)
+                    questions = {item.slot: item.question for item in draft.cases if item.slot <= size}
+                else:
+                    draft = model.ask("eval_questions", context, Batch)
+                    questions = dict(enumerate(draft.questions, 1))
             except ValueError as exc:
                 print(f"Rejected malformed {category} batch: {exc}", flush=True)
                 continue
             candidates = []
-            used_slots = set()
-            for item in draft.cases:
-                key = question_key(item.question)
+            for position, question in questions.items():
+                if position > len(slots):
+                    continue
+                anchors, expected_tools = slots[position - 1]
+                if "calculator" in expected_tools and not re.search(
+                    r"\b(calculat\w*|comput\w*|multipl\w*|divide|sum|subtotal|total)\b", question, re.I,
+                ):
+                    continue
+                if "csv_lookup" in expected_tools and not re.search(r"\b(csv|lookup|look up)\b", question, re.I):
+                    continue
+                key = question_key(question)
                 if not key or key in seen or any(key == question_key(c.question) for c in candidates):
                     continue
-                if item.slot > len(slots) or item.slot in used_slots:
-                    continue
-                used_slots.add(item.slot)
-                anchors, expected_tools = slots[item.slot - 1]
-                candidates.append(Case(id="candidate", question=item.question, category=category,
+                candidates.append(Case(id="candidate", question=question, category=category,
                                        expected_refusal=not bool(anchors), expected_facts=anchors,
                                        expected_tools=expected_tools))
             if not candidates:
@@ -167,9 +200,19 @@ def generate(config: Config, sources: list[Passage], model) -> Dataset:
                 candidate.id = f"E{len(cases) + 1:03d}"
                 seen.add(question_key(candidate.question))
                 cases.append(candidate)
+            if checkpoint:
+                checkpoint([case.model_dump(mode="json") for case in cases])
             print(f"{category} accepted {len(cases) - start}/{target} after batch {attempt + 1}", flush=True)
-        if len(cases) - start < target:
-            raise ValueError(f"Generated only {len(cases) - start} of {target} required {category} cases")
+        return len(cases) - start
+
+    for category, target in TARGETS.items():
+        if not add_cases(category, target):
+            raise ValueError(f"No valid {category} evaluation cases were generated")
+    # The assignment requires coverage of each category and twenty cases overall.
+    # Smaller corpora and model refusals can make the preferred distribution impractical.
+    for category in ("direct", "multi_document"):
+        if len(cases) < 20:
+            add_cases(category, 20 - len(cases))
     return Dataset(cases=tuple(cases))
 
 
