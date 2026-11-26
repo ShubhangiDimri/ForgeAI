@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 from .documents import digest
 from .schema import Config, Model, Passage, Text, Tool
+from .runner import ChatTurn
 
 Category = Literal["direct", "out_of_scope", "unsupported", "ambiguous", "multi_document"]
 TARGETS = {"direct": 8, "out_of_scope": 4, "unsupported": 3, "ambiguous": 3, "multi_document": 2}
@@ -43,6 +44,16 @@ class Case(Model):
     expected_refusal: bool
     expected_facts: tuple[Anchor, ...]
     expected_tools: tuple[Tool, ...] = ()
+    behavior: Literal["context", "clarification_followup", "false_premise", "mixed_scope", "prompt_injection"] | None = None
+    history: tuple[ChatTurn, ...] = ()
+
+
+class BehavioralDraft(IndexedQuestion):
+    history: list[ChatTurn] = Field(default_factory=list, max_length=2)
+
+
+class BehavioralBatch(Model):
+    cases: list[BehavioralDraft] = Field(min_length=1, max_length=4)
 
 
 def question_key(question: str) -> str:
@@ -123,7 +134,8 @@ def multi_document_pairs(cards: list[Anchor], topics: list[str]) -> list[tuple[A
 
 def generate(config: Config, sources: list[Passage], model,
              checkpoint: Callable[[list[dict]], None] | None = None,
-             resume: tuple[Case, ...] = ()) -> Dataset:
+             resume: tuple[Case, ...] = (), *, reviewer=None) -> Dataset:
+    reviewer = reviewer or model
     cards = evidence_cards(sources)
     if len({a.document for a in cards}) < 2:
         raise ValueError("Multi-document evaluations require at least two source documents")
@@ -206,7 +218,8 @@ def generate(config: Config, sources: list[Passage], model,
                                  if any(set(seed.split()) & set(question_key(q).split())
                                         for seed in context["unrelated_topic_seeds"])}
                 elif category == "ambiguous":
-                    draft = model.ask("eval_ambiguity", {
+                    # Ambiguity drafting requires contrasting two source-backed interpretations.
+                    draft = reviewer.ask("eval_ambiguity", {
                         "count": size, "scope": context["scope"], "topics": context["topics"],
                         "source_cards": all_source_cards if review_full_corpus else context["source_cards"],
                         "previous_questions": context["previous_questions"],
@@ -258,11 +271,13 @@ def generate(config: Config, sources: list[Passage], model,
                 print(f"{category} batch {attempt + 1} had no usable questions", flush=True)
                 continue
             try:
-                stage = {"ambiguous": "eval_review_ambiguity", "out_of_scope": "eval_review_outside"}.get(
+                stage = {"ambiguous": "eval_review_ambiguity", "out_of_scope": "eval_review_outside",
+                         "unsupported": "eval_review_unsupported"}.get(
                     category, "eval_validate")
-                review = model.ask(stage, {
+                review = reviewer.ask(stage, {
                     "category": category, "scope": context["scope"], "topics": context["topics"],
-                    "restricted_topics": context["restricted_topics"],
+                    **({"unsupported_topics": context["unsupported_topics"]} if category == "unsupported"
+                       else {"restricted_topics": context["restricted_topics"]}),
                     "candidates": [c.model_dump() for c in candidates],
                     "source_cards": (all_source_cards if review_full_corpus else context["source_cards"])
                                     if category in {"unsupported", "ambiguous"} else [],
@@ -293,6 +308,49 @@ def generate(config: Config, sources: list[Passage], model,
     # The non-multi-document category counts can vary, but retain both cross-source cases.
     if len(cases) < 20:
         add_cases("direct", 20 - len(cases))
+    if config.behavioral_evaluation:
+        types = ("context", "clarification_followup", "false_premise", "mixed_scope", "prompt_injection")
+        anchors = [c.expected_facts for c in cases if c.category == "direct" and not c.behavior]
+        for attempt in range(4):
+            missing = [kind for kind in types if not any(c.behavior == kind for c in cases)]
+            if not missing:
+                break
+            slots = [(kind, () if kind == "prompt_injection" else anchors[(i + attempt) % len(anchors)])
+                     for i, kind in enumerate(missing[:4])]
+            draft = model.ask("eval_behavior", {"scope": config.requirements.scope,
+                "slots": [{"slot": i, "behavior": kind, "facts": [a.model_dump() for a in facts]}
+                          for i, (kind, facts) in enumerate(slots, 1)],
+                "previous_questions": [case.question for case in cases]}, BehavioralBatch)
+            candidates = []
+            for item in draft.cases:
+                if item.slot > len(slots):
+                    continue
+                kind, facts = slots[item.slot - 1]
+                if bool(item.history) != (kind in {"context", "clarification_followup"}):
+                    continue
+                if kind == "clarification_followup" and not item.history[-1].clarification:
+                    continue
+                if question_key(item.question) in seen or any(c.behavior == kind for c in candidates):
+                    continue
+                candidates.append(Case(id="candidate", question=item.question,
+                    category="direct" if facts else "out_of_scope", expected_refusal=not facts,
+                    expected_facts=facts, behavior=kind, history=tuple(item.history)))
+            if not candidates:
+                continue
+            review = reviewer.ask("eval_review_behavior", {"scope": config.requirements.scope,
+                "candidates": [c.model_dump() for c in candidates]}, Validation)
+            for i in dict.fromkeys(review.accepted):
+                if 1 <= i <= len(candidates):
+                    case = candidates[i - 1]
+                    key = question_key(case.question)
+                    if key not in seen:
+                        seen.add(key)
+                        cases.append(case.model_copy(update={"id": f"E{len(cases) + 1:03d}"}))
+            if checkpoint:
+                checkpoint([case.model_dump(mode="json") for case in cases])
+        missing = [kind for kind in types if not any(c.behavior == kind for c in cases)]
+        if missing:
+            raise ValueError(f"Behavioral evaluation cases still need validation: {', '.join(missing)}")
     return Dataset(cases=tuple(cases))
 
 

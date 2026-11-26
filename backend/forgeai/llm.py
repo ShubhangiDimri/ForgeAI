@@ -1,6 +1,9 @@
 import json
 import os
 import time
+import random
+from email.utils import parsedate_to_datetime
+from threading import Lock
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -33,7 +36,7 @@ class ModelClient:
             try:
                 return schema.model_validate_json(self.complete(messages, schema, budget))
             except (URLError, TimeoutError) as exc:
-                raise RuntimeError(f"{type(self).__name__} {self.model} at {self.url}: {exc}") from exc
+                raise RuntimeError(f"{type(self).__name__} {self.model}: provider offline or connection failed") from exc
             except (ValueError, KeyError, IndexError, TypeError) as exc:
                 if attempt:
                     raise ValueError(f"Invalid {stage} output after two attempts: {str(exc)[:400]}") from exc
@@ -80,23 +83,87 @@ def provider_key(variable: str) -> str:
     raise RuntimeError(f"Set {variable} in the environment or in the project-root .env")
 
 
-def groq_key() -> str:
-    """Pick a credential name once for this client so its requests use one account."""
+def groq_credentials() -> list[tuple[str, str]]:
     try:
         slot = provider_key("FORGE_GROQ_KEY_SLOT")
     except RuntimeError:
         slot = ""
-    if slot not in {"", "1", "2", "3"}:
-        raise RuntimeError("FORGE_GROQ_KEY_SLOT must be 1, 2 or 3")
-    names = (f"GROQ_API_KEY_{slot}",) if slot else (
-        "GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2", "GROQ_API_KEY_3",
-    )
+    if slot not in {"", "1", "2", "3", "4"}:
+        raise RuntimeError("FORGE_GROQ_KEY_SLOT must be 1, 2, 3 or 4")
+    names = ["GROQ_API_KEY", *(f"GROQ_API_KEY_{i}" for i in range(1, 5))]
+    if slot:
+        preferred = f"GROQ_API_KEY_{slot}"
+        names.remove(preferred)
+        names.insert(0, preferred)
+    credentials = []
+    seen = set()
     for name in names:
         try:
-            return provider_key(name)
+            key = provider_key(name)
+            if key not in seen:
+                credentials.append((name, key))
+                seen.add(key)
         except RuntimeError:
             continue
-    raise RuntimeError(f"Set {' or '.join(names)} in backend/.env or the environment")
+    if not credentials:
+        raise RuntimeError(f"Set {' or '.join(names)} in backend/.env or the environment")
+    return credentials
+
+
+def groq_key() -> str:
+    return groq_credentials()[0][1]
+
+
+class ProviderError(RuntimeError):
+    def __init__(self, model: str, status: int, delay: float = 0):
+        self.status = status
+        self.retry_after = delay
+        suffix = f". Retry after {delay:.0f} seconds." if delay else ""
+        super().__init__(f"{model} returned HTTP {status}{suffix}")
+
+
+_COOLDOWNS: dict[tuple[str, int], float] = {}
+_COOLDOWN_LOCK = Lock()
+
+
+def provider_response(request: Request, model: str, credential: str, timeout: int, *, wait_for_rate_limit: bool = True) -> dict:
+    key = (model, hash(credential))
+    for attempt in range(3):
+        with _COOLDOWN_LOCK:
+            remaining = _COOLDOWNS.get(key, 0) - time.monotonic()
+        if remaining > 0:
+            raise ProviderError(model, 429, remaining)
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                return json.load(response)
+        except HTTPError as exc:
+            status = exc.code
+            header = exc.headers.get("Retry-After", "")
+            exc.close()
+            if status == 400:
+                raise ValueError(f"{model} rejected the request or could not produce JSON") from None
+            try:
+                requested = float(header)
+            except ValueError:
+                try:
+                    requested = parsedate_to_datetime(header).timestamp() - time.time()
+                except (ValueError, TypeError, OverflowError):
+                    requested = 0
+            minimum = (4 if status == 429 else 1) * 2 ** attempt
+            delay = max(minimum, requested) + (random.uniform(0, 0.5) if attempt else 0)
+            deadline = time.monotonic() + delay
+            if status == 429:
+                with _COOLDOWN_LOCK:
+                    _COOLDOWNS[key] = max(_COOLDOWNS.get(key, 0), deadline)
+            if ((status == 429 and not wait_for_rate_limit) or attempt == 2
+                    or status not in {429, 500, 502, 503, 504} or delay > 12):
+                raise ProviderError(model, status, delay if status in {429, 503} else 0) from None
+            time.sleep(delay)
+            if status == 429:
+                with _COOLDOWN_LOCK:
+                    if _COOLDOWNS.get(key) == deadline:
+                        _COOLDOWNS.pop(key, None)
+    raise AssertionError("unreachable")
 
 
 class HostedClient(ModelClient):
@@ -116,32 +183,17 @@ class HostedClient(ModelClient):
                 "temperature": 0, "response_format": {"type": "json_object"}}
 
     def complete(self, messages: list[dict], schema: type[T], budget: int) -> str:
+        return self._complete_with_key(messages, budget, self._key)
+
+    def _complete_with_key(self, messages: list[dict], budget: int, key: str, *, wait_for_rate_limit: bool = True) -> str:
         body = self.payload(messages, budget)
         provider = type(self).__name__
         print(f"[ForgeAI] {provider} {body['model']} budget={budget}", flush=True)
         request = Request(self.url, data=json.dumps(body).encode(), headers={
             "Content-Type": "application/json", "User-Agent": "ForgeAI/1.0",
-            "Authorization": f"Bearer {self._key}"})
-        for attempt in range(6):
-            try:
-                with urlopen(request, timeout=45) as response:
-                    return json.load(response)["choices"][0]["message"]["content"]
-            except HTTPError as exc:
-                status = exc.code
-                retry_after = exc.headers.get("Retry-After", "")
-                exc.close()
-                if status == 400:
-                    raise ValueError(f"{provider} rejected the request or could not produce JSON") from None
-                if attempt == 5 or status not in {429, 500, 502, 503, 504}:
-                    raise RuntimeError(f"{provider} {body['model']} returned HTTP {status}") from None
-                try:
-                    delay = float(retry_after)
-                except ValueError:
-                    delay = 0
-                if status == 429 and delay > 65:
-                    raise RuntimeError(f"{provider} {body['model']} returned HTTP 429. Retry after {delay:g} seconds.") from None
-                minimum = min(40, 4 * 2 ** attempt) if status == 429 else 2 ** attempt
-                time.sleep(min(65, max(minimum, delay)))
+            "Authorization": f"Bearer {key}"})
+        data = provider_response(request, self.model, key, 45, wait_for_rate_limit=wait_for_rate_limit)
+        return data["choices"][0]["message"]["content"]
 
 
 class Groq(HostedClient):
@@ -150,7 +202,42 @@ class Groq(HostedClient):
 
     def __init__(self, model: str):
         self.model = model
-        self._key = groq_key()
+        self._credentials = groq_credentials()
+        self._key = self._credentials[0][1]
+        self._preferred = 0
+        self._rejected: set[int] = set()
+        self.credential_slots_used: set[str] = set()
+
+    def complete(self, messages: list[dict], schema: type[T], budget: int) -> str:
+        for wait_attempt in range(2):
+            order = list(range(len(self._credentials)))
+            preferred = self._preferred
+            order.remove(preferred)
+            failures = []
+            for index in [preferred, *order]:
+                if index in self._rejected:
+                    continue
+                name, key = self._credentials[index]
+                try:
+                    value = self._complete_with_key(messages, budget, key, wait_for_rate_limit=len(order) == 0)
+                except ProviderError as exc:
+                    if exc.status not in {401, 403, 429}:
+                        raise
+                    failures.append(exc)
+                    if exc.status in {401, 403}:
+                        self._rejected.add(index)
+                    continue
+                self._preferred = index
+                self.credential_slots_used.add(name)
+                return value
+            limited = [exc for exc in failures if exc.status == 429]
+            if not limited:
+                raise failures[-1] if failures else ProviderError(self.model, 401)
+            earliest = min(limited, key=lambda exc: exc.retry_after)
+            if wait_attempt or len(order) == 0 or earliest.retry_after > 8:
+                raise earliest
+            time.sleep(earliest.retry_after + 0.1)
+        raise AssertionError("unreachable")
 
     def payload(self, messages: list[dict], budget: int) -> dict:
         body = super().payload(messages, budget)
@@ -200,30 +287,10 @@ class Cloudflare(ModelClient):
             "User-Agent": "ForgeAI/1.0",
             "Authorization": f"Bearer {self._key}",
         })
-        for attempt in range(6):
-            try:
-                with urlopen(request, timeout=60) as response:
-                    data = json.load(response)
-                    # Cloudflare may return errors in the response body even with 200
-                    if "errors" in data and data["errors"]:
-                        raise RuntimeError(f"{provider} API error: {data['errors']}")
-                    return data["choices"][0]["message"]["content"]
-            except HTTPError as exc:
-                status = exc.code
-                retry_after = exc.headers.get("Retry-After", "")
-                exc.close()
-                if status == 400:
-                    raise ValueError(f"{provider} rejected the request or could not produce JSON") from None
-                if attempt == 5 or status not in {429, 500, 502, 503, 504}:
-                    raise RuntimeError(f"{provider} {self._model_name} returned HTTP {status}") from None
-                try:
-                    delay = float(retry_after)
-                except ValueError:
-                    delay = 0
-                if status == 429 and delay > 65:
-                    raise RuntimeError(f"{provider} {self._model_name} returned HTTP 429. Retry after {delay:g} seconds.") from None
-                minimum = min(40, 4 * 2 ** attempt) if status == 429 else 2 ** attempt
-                time.sleep(min(65, max(minimum, delay)))
+        data = provider_response(request, self.model, self._key, 60)
+        if data.get("errors"):
+            raise RuntimeError("Cloudflare returned an API error.")
+        return data["choices"][0]["message"]["content"]
 
 
 # Ordered fallback chain: each entry is a (prefix, class) pair.
@@ -261,6 +328,8 @@ class FallbackClient(ModelClient):
     def __init__(self, model: str, chain: list[ModelClient]):
         self.model = model
         self._chain = chain
+        self.models_used: set[str] = set()
+        self.last_model = chain[0].model
 
     def output_budget(self, stage: str, attempt: int) -> int:
         return self._chain[0].output_budget(stage, attempt)
@@ -272,11 +341,15 @@ class FallbackClient(ModelClient):
                 result = client.complete(messages, schema, budget)
                 if client is not self._chain[0]:
                     print(f"[ForgeAI] Fell back to {type(client).__name__} {client.model}", flush=True)
+                self.last_model = client.model
+                self.models_used.add(client.model)
                 return result
-            except RuntimeError as exc:
+            except (RuntimeError, URLError, TimeoutError) as exc:
                 print(f"[ForgeAI] {type(client).__name__} failed: {exc}", flush=True)
                 last_exc = exc
-        raise RuntimeError(f"All providers exhausted. Last error: {last_exc}") from last_exc
+        if isinstance(last_exc, ProviderError):
+            raise last_exc
+        raise RuntimeError("All configured providers exhausted.") from last_exc
 
     def ask(self, stage: str, payload: dict, schema: type[T]) -> T:
         # Delegate to first client's ask(), which calls complete(), which we override.

@@ -26,6 +26,15 @@ class DraftModel:
         self.count = 0
 
     def ask(self, stage, payload, schema):
+        if stage == "eval_behavior":
+            items = []
+            for slot in payload["slots"]:
+                kind = slot["behavior"]
+                history = [] if kind not in {"context", "clarification_followup"} else [
+                    {"question": "What is the rule?", "clarification": "Which rule?" if kind == "clarification_followup" else None}
+                ]
+                items.append({"slot": slot["slot"], "question": f"Fixture {kind} question?", "history": history})
+            return schema(cases=items)
         if stage == "eval_validate" or stage.startswith("eval_review_"):
             return schema(accepted=list(range(1, len(payload["candidates"]) + 1)))
         if stage == "eval_outside":
@@ -164,7 +173,7 @@ def test_rechunk_and_run_four_versions(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="between"):
         workflow.run(run, max_iterations=4)
     cards = workflow.run(run)
-    assert len(cards) == 4 and all(c["failed"] == 20 for c in cards)
+    assert len(cards) == 4 and all(c["failed"] == 25 for c in cards)
     metadata = json.loads((run / "run_metadata.json").read_text())
     assert metadata["selected_version"] == 0
     assert len(json.loads((run / "iteration_logs.json").read_text())) == 3
@@ -270,7 +279,8 @@ def test_csv_then_calculator_actual_runtime_dispatch(tmp_path, monkeypatch, mode
     assert trace.error is None and trace.answer and not trace.answer.refused
     assert [step.name for step in trace.tools] == ["csv_lookup", "calculator"]
     assert trace.tools[1].results == {"tool:calculator": "30.0"}
-    assert trace.answer.answer == "The calculation result is 30.0."
+    assert trace.answer.answer == "30"
+    assert trace.answer.outcome == "tool_assisted"
 
     if not model_skips_lookup:
         # A bare record lookup consumes only one tool call.

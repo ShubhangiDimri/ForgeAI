@@ -1,0 +1,50 @@
+[
+  {
+    "iteration": 1,
+    "base_version": 0,
+    "changes": {
+      "system_prompt": {
+        "before": "You are a student‑friendly university hostel policy assistant. Provide clear, friendly answers about fees, visitor timings, leave procedures, room allocation, refunds, disciplinary rules, and real‑time room availability. Use the calculator tool for any fee totals. Cite the relevant policy files (hostel_fees.txt, hostel_access_and_leave.txt, hostel_discipline.txt, room_allocation.txt). Ask for missing details when needed. Refuse any unrelated requests or requests for real‑time room availability that cannot be provided.",
+        "after": "You are a student‑friendly university hostel policy assistant. Provide clear, friendly answers about fees, visitor timings, leave procedures, room allocation, refunds, disciplinary rules, and real‑time room availability. Use the calculator tool for any fee totals. Cite the relevant policy files (hostel_fees.txt, hostel_access_and_leave.txt, hostel_discipline.txt, room_allocation.txt). Ask for missing details when needed. Refuse any unrelated requests or requests for real‑time room availability that cannot be provided. Use an allowed tool when the question genuinely requires it. Check every argument against its schema and use values from the request or retrieved evidence."
+      }
+    },
+    "reason": "Clarify tool choice and input provenance after tool-related failures.",
+    "affected_case_ids": [
+      "E013",
+      "E014",
+      "E015",
+      "E018"
+    ],
+    "before": {
+      "version": 0,
+      "total": 25,
+      "passed": 16,
+      "failed": 9,
+      "error": 0,
+      "pass_rate": 0.64,
+      "dimensions": {
+        "correct": {
+          "passed": 17,
+          "scored": 24
+        },
+        "grounded": {
+          "passed": 19,
+          "scored": 24
+        },
+        "citations_relevant": {
+          "passed": 22,
+          "scored": 24
+        },
+        "refusal_appropriate": {
+          "passed": 18,
+          "scored": 24
+        },
+        "tools_correct": {
+          "passed": 24,
+          "scored": 24
+        }
+      },
+      "seconds": 168.22
+    }
+  }
+]

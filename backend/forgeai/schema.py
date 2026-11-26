@@ -17,6 +17,9 @@ class Requirements(Model):
     must_refuse: list[Text]
     assumptions: list[Text]
     unresolved: list[Text]
+    original_brief: str = ""
+    requester_answers: dict[str, str] = Field(default_factory=dict)
+    behavior: list[Text] = Field(default_factory=list)
 
 
 class Questions(Model):
@@ -67,17 +70,25 @@ class Finding(Model):
     limitation: str
     retrieval_miss: bool = False
     inconclusive: bool = False
+    tool: Tool | None = None
 
 
 class Answer(Model):
     answer: Text
     citations: list[Text]
     refused: bool
+    outcome: Literal["grounded", "clarification", "insufficient_evidence", "out_of_scope", "partial", "tool_assisted", "ungrounded"] | None = None
 
     @model_validator(mode="after")
     def grounded(self):
-        if not self.refused and not self.citations:
+        if not self.refused and not self.citations and self.outcome != "clarification":
             raise ValueError("Answers require evidence")
+        if self.outcome == "clarification" and (self.refused or self.citations):
+            raise ValueError("A clarification has no refusal or citations")
+        if self.outcome in {"grounded", "partial", "tool_assisted"} and self.refused:
+            raise ValueError("An answer outcome cannot be marked refused")
+        if self.outcome in {"insufficient_evidence", "out_of_scope", "ungrounded"} and not self.refused:
+            raise ValueError("This outcome requires an abstention")
         return self
 
 
@@ -94,4 +105,7 @@ class Config(Design):
     evidence_only: bool = False
     precise_citations: bool = False
     verify_scope: bool = False
+    requested_model: str | None = None
+    generation_models: list[str] = Field(default_factory=list)
+    behavioral_evaluation: bool = False
 

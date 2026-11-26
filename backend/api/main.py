@@ -85,10 +85,13 @@ def _get_runner(run_id: str, model: str | None) -> runner_mod.Runner:
         paths = (config_path, run_path / "corpus.json", run_path / "sources.json")
         revision = tuple(path.stat().st_mtime_ns if path.is_file() else None for path in paths)
         key = (run_id, model)
-        cached = _RUNNERS.get(key)
+        cached = _RUNNERS.pop(key, None)
         if cached is None or cached[0] != revision:
-            _RUNNERS[key] = revision, runner_mod.Runner(config_path, model_override=model)
-        return _RUNNERS[key][1]
+            cached = revision, runner_mod.Runner(config_path, model_override=model)
+        _RUNNERS[key] = cached
+        if len(_RUNNERS) > 4:
+            del _RUNNERS[next(iter(_RUNNERS))]
+        return cached[1]
 
 
 # ---------------------------------------------------------------------------
@@ -118,6 +121,9 @@ class ApproveRequirementsRequest(BaseModel):
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     model: str | None = Field(default=None, max_length=160)
+    grounding: bool = True
+    history: list[runner_mod.ChatTurn] = Field(default_factory=list, max_length=6)
+    conversation_id: str | None = Field(default=None, max_length=64)
 
 
 class ResumeRequest(BaseModel):
@@ -428,14 +434,24 @@ def chat(run_id: str, req: ChatRequest) -> dict[str, Any]:
         for provider in providers()["providers"]
     ):
         raise HTTPException(status_code=422, detail="Choose an available chat model.")
+    if not req.grounding:
+        config = _read_json_if_exists(_run_dir(run_id) / "agent_config.json")
+        if not config:
+            raise HTTPException(status_code=404, detail="Agent configuration not found")
+        # An ungrounded request must not load the document index or dispatch a tool.
+        answer = runner_mod.Answer(answer="Document grounding is disabled. Enable Grounding to verify this request against the agent's sources.",
+                                  citations=[], refused=True, outcome="ungrounded")
+        return runner_mod.Execution(answer=answer).model_dump(mode="json") | {
+            "model": req.model or config["model"], "conversation_id": req.conversation_id, "grounding": False}
     try:
         runner = _get_runner(run_id, req.model)
     except (OSError, RuntimeError, ValueError) as exc:
         raise HTTPException(status_code=503, detail=f"Could not load agent. {exc}") from exc
-    trace = runner.trace(question)
+    trace = runner.trace(question, history=req.history) if req.history else runner.trace(question)
     if trace.error:
         raise HTTPException(status_code=502, detail=trace.error)
-    return trace.model_dump(mode="json") | {"model": runner.model.model}
+    return trace.model_dump(mode="json") | {"model": getattr(runner.model, "last_model", runner.model.model), "conversation_id": req.conversation_id,
+                                            "grounding": True}
 
 
 # ---------------------------------------------------------------------------
@@ -475,7 +491,12 @@ def _init_stages() -> list[dict[str, Any]]:
 def _set_stage(build_id: str, index: int, status: str, detail: str = "") -> None:
     with _BUILDS_LOCK:
         b = _BUILDS[build_id]
-        b["stages"][index]["status"] = status
+        stage = b["stages"][index]
+        if status in {"running", "retrying"}:
+            stage.setdefault("_started", time.monotonic())
+        if status in {"completed", "failed", "skipped"} and "_started" in stage:
+            stage["elapsed_seconds"] = round(time.monotonic() - stage["_started"], 2)
+        stage["status"] = status
         if detail:
             b["stages"][index]["detail"] = detail
         b["current_stage"] = PIPELINE_STAGES[index]
@@ -490,11 +511,14 @@ def _execute_build(build_id: str, req: BuildRequest, docs_path: Path, out_dir: P
                 event = build["_event"]
                 event.clear()
                 build.update(data, status=status)
+                stage = 1 if status == "waiting_intake" else 2
+                build["stages"][stage].update(status="awaiting_review", detail="Waiting for requester")
             if not event.wait(timeout=1800):
                 raise TimeoutError("Build checkpoint expired after 30 minutes")
             with _BUILDS_LOCK:
                 build = _BUILDS[build_id]
                 build["status"] = "running"
+                build["stages"][stage].update(status="running", detail="Applying requester input")
                 return build[reply]
 
         def answer_questions(questions: list[str]) -> dict[str, str]:
@@ -518,18 +542,21 @@ def _execute_build(build_id: str, req: BuildRequest, docs_path: Path, out_dir: P
             req.brief, docs_path, out_dir, True, llm_mod.make_model(req.model), embedding,
             answer_questions=answer_questions if req.interactive else None,
             approve=approve if req.interactive else None, progress=progress,
+            checkpoint=_BUILDS[build_id]["_checkpoint"],
         )
+        with _BUILDS_LOCK:
+            _BUILDS[build_id]["_checkpoint"].clear()
 
         if not req.prototype_only:
             _set_stage(build_id, 4, "running", "Generating and freezing evaluation cases")
-            cards = workflow_mod.run(out_dir, req.judge_model, max_iterations=req.max_iterations)
-            _set_stage(build_id, 4, "completed", f"{cards[0]['total']} cases frozen")
-            _set_stage(build_id, 5, "completed", "Baseline scored")
-            _set_stage(build_id, 6, "completed", "Optimization complete")
+            cards = workflow_mod.run(out_dir, req.judge_model, max_iterations=req.max_iterations,
+                                     progress=lambda index, state, notice: _set_stage(build_id, index, state, notice))
+            if not cards:
+                raise RuntimeError("Evaluation produced no scorecards")
             _set_stage(build_id, 7, "completed", "Final report written")
         else:
             for idx in range(4, 8):
-                _set_stage(build_id, idx, "completed", "Skipped (prototype-only)")
+                _set_stage(build_id, idx, "skipped", "Prototype-only build")
 
         with _BUILDS_LOCK:
             _BUILDS[build_id]["status"] = "completed"
@@ -539,9 +566,11 @@ def _execute_build(build_id: str, req: BuildRequest, docs_path: Path, out_dir: P
             b = _BUILDS[build_id]
             b["status"] = "failed"
             b["error"] = f"{type(exc).__name__}: {exc}"
+            if isinstance(exc, llm_mod.ProviderError):
+                b["_retry_at"] = time.monotonic() + exc.retry_after
             b["elapsed_seconds"] = round(time.monotonic() - start_ts, 2)
             for s in b["stages"]:
-                if s["status"] == "running":
+                if s["status"] in {"running", "awaiting_review", "retrying"}:
                     s["status"] = "failed"
                     s["detail"] = str(exc)[:200]
 
@@ -577,6 +606,11 @@ def start_build(req: BuildRequest) -> dict[str, Any]:
             "coverage": None,
             "error": None,
             "elapsed_seconds": 0.0,
+            "_started": time.monotonic(),
+            "_checkpoint": {},
+            "_request": req,
+            "_docs": docs_path,
+            "_out": out_dir,
             "_event": threading.Event(),
         }
     t = threading.Thread(target=_execute_build, args=(build_id, req, docs_path, out_dir), daemon=True)
@@ -590,7 +624,35 @@ def get_build(build_id: str) -> dict[str, Any]:
         b = _BUILDS.get(build_id)
         if not b:
             raise HTTPException(status_code=404, detail="Build not found")
-        return deepcopy({k: v for k, v in b.items() if k != "_event"})
+        state = deepcopy({k: v for k, v in b.items() if not k.startswith("_")})
+        if b["status"] not in {"completed", "failed"} and "_started" in b:
+            state["elapsed_seconds"] = round(time.monotonic() - b["_started"], 2)
+        for stage in state["stages"]:
+            started = stage.pop("_started", None)
+            if started is not None and "elapsed_seconds" not in stage:
+                stage["elapsed_seconds"] = round(time.monotonic() - started, 2)
+        return state
+
+
+@app.post("/api/builds/{build_id}/retry")
+def retry_build(build_id: str) -> dict[str, Any]:
+    with _BUILDS_LOCK:
+        build = _BUILDS.get(build_id)
+        if not build:
+            raise HTTPException(status_code=404, detail="Build not found")
+        if build["status"] != "failed" or build["_out"].exists():
+            raise HTTPException(status_code=409, detail="Retry is only for failed builds before agent generation. Resume evaluation for a saved agent.")
+        remaining = build.get("_retry_at", 0) - time.monotonic()
+        if remaining > 0:
+            raise HTTPException(status_code=429, detail=f"Provider cooldown. Retry in {int(remaining) + 1} seconds.",
+                                headers={"Retry-After": str(int(remaining) + 1)})
+        build.update(status="retrying", error=None)
+        for stage in build["stages"]:
+            if stage["status"] == "failed":
+                stage.update(status="retrying", detail="Resuming build from completed checkpoints")
+        args = (build_id, build["_request"], build["_docs"], build["_out"])
+    threading.Thread(target=_execute_build, args=args, daemon=True).start()
+    return {"build_id": build_id, "status": "retrying"}
 
 
 @app.post("/api/builds/{build_id}/intake")
@@ -601,6 +663,8 @@ def submit_intake(build_id: str, req: IntakeAnswersRequest) -> dict[str, Any]:
             raise HTTPException(status_code=404, detail="Build not found")
         if b["status"] != "waiting_intake":
             raise HTTPException(status_code=409, detail="Build is not waiting for intake answers")
+        if len(req.answers) != len(b["questions"]):
+            raise HTTPException(status_code=422, detail="Submit one answer per intake question. Blank answers are allowed.")
         b["answers"] = req.answers
         b["status"] = "running"
         b["_event"].set()
@@ -627,6 +691,11 @@ def resume_run(run_id: str, req: ResumeRequest) -> dict[str, Any]:
     metadata = _read_json_if_exists(folder / "run_metadata.json") or {}
     if metadata.get("status") != "incomplete":
         raise HTTPException(status_code=409, detail="Only incomplete runs can be resumed.")
+    if (delay := re.search(r"Retry after (\d+) seconds", metadata.get("stop_reason", ""))) and metadata.get("finished"):
+        remaining = int(delay[1]) - (datetime.now(timezone.utc) - datetime.fromisoformat(metadata["finished"])).total_seconds()
+        if remaining > 0:
+            raise HTTPException(status_code=429, detail=f"Provider cooldown. Retry in {int(remaining) + 1} seconds.",
+                                headers={"Retry-After": str(int(remaining) + 1)})
     if req.mode == "scoring" and not (folder / "eval_dataset.json").is_file():
         raise HTTPException(status_code=409, detail="Scoring requires a frozen dataset.")
     if req.mode == "generation" and (
@@ -637,19 +706,42 @@ def resume_run(run_id: str, req: ResumeRequest) -> dict[str, Any]:
         if run_id in _RECOVERIES:
             raise HTTPException(status_code=409, detail="This run is already resuming.")
         _RECOVERIES.add(run_id)
+        tracked_build = next((key for key, build in _BUILDS.items() if build["run_id"] == run_id), None)
+        if tracked_build:
+            build = _BUILDS[tracked_build]
+            build.update(status="retrying", error=None)
+            for stage in build["stages"]:
+                if stage["status"] == "failed":
+                    stage.update(status="retrying", detail="Resuming saved evaluation")
+
+    def progress(index: int, state: str, detail: str) -> None:
+        if tracked_build:
+            _set_stage(tracked_build, index, state, detail)
 
     def worker() -> None:
         try:
             if req.mode == "scoring":
-                workflow_mod.resume_scoring(folder, req.judge_model)
+                workflow_mod.resume_scoring(folder, req.judge_model, progress=progress)
             else:
                 workflow_mod.run(folder, req.judge_model, max_iterations=metadata.get("max_iterations", 3),
-                                 resume_generation=True)
+                                 resume_generation=True, progress=progress)
+            progress(7, "completed", "Final report written")
+            if tracked_build:
+                with _BUILDS_LOCK:
+                    build = _BUILDS[tracked_build]
+                    build.update(status="completed", elapsed_seconds=round(time.monotonic() - build["_started"], 2))
         except Exception as exc:
             current = _read_json_if_exists(folder / "run_metadata.json") or metadata
             if current.get("status") not in {"complete", "complete_with_errors"}:
                 current.update(status="incomplete", stop_reason=f"{type(exc).__name__}: {exc}")
                 workflow_mod.write_json(folder / "run_metadata.json", current)
+            if tracked_build:
+                with _BUILDS_LOCK:
+                    build = _BUILDS[tracked_build]
+                    build.update(status="failed", error=str(exc), elapsed_seconds=round(time.monotonic() - build["_started"], 2))
+                    for stage in build["stages"]:
+                        if stage["status"] in {"retrying", "running"}:
+                            stage.update(status="failed", detail=str(exc))
         finally:
             with _BUILDS_LOCK:
                 _RECOVERIES.discard(run_id)

@@ -1,4 +1,6 @@
 import os
+from functools import lru_cache
+from threading import Lock
 import re
 from calendar import month_name
 from datetime import date
@@ -74,12 +76,21 @@ def prose_queries(question: str, rows: list[Passage]) -> list[str]:
     return [part for part in parts if not any(_contains(part, value) for value in identifiers)]
 
 
+_ENCODER_LOCK = Lock()
+
+
+@lru_cache(maxsize=2)
+def load_encoder(embedding: str):
+    os.environ.setdefault("USE_TF", "0")
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer(embedding, local_files_only=True, device="cpu", trust_remote_code=False)
+
+
 class Index:
     def __init__(self, passages: list[Passage], settings: Settings, embedding: str, encoder=None):
         if encoder is None:
-            os.environ.setdefault("USE_TF", "0")
-            from sentence_transformers import SentenceTransformer
-            encoder = SentenceTransformer(embedding, local_files_only=True, device="cpu", trust_remote_code=False)
+            with _ENCODER_LOCK:
+                encoder = load_encoder(embedding)
         self.encoder = encoder
         self.rebuild(passages, settings)
 
@@ -95,7 +106,8 @@ class Index:
             self._prose_index.add(vectors[self._prose])
 
     def encode(self, texts: list[str]) -> np.ndarray:
-        vectors = np.ascontiguousarray(self.encoder.encode(texts), dtype="float32")
+        with _ENCODER_LOCK:
+            vectors = np.ascontiguousarray(self.encoder.encode(texts), dtype="float32")
         faiss.normalize_L2(vectors)
         return vectors
 

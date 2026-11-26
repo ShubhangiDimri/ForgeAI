@@ -3,6 +3,7 @@ from collections import Counter
 from html import escape
 from pathlib import Path
 from urllib.parse import urlencode
+from uuid import uuid4
 
 import streamlit as st
 
@@ -195,9 +196,9 @@ def render_stepper(stages: list[dict], build_status: str):
         badge_cls = st_name if st_name in {"completed", "running", "failed"} else ""
         num_label = "✓" if st_name == "completed" else f"{idx:02d}"
         detail = escape(stage.get("detail") or "")
+        if seconds := stage.get("elapsed_seconds"):
+            detail += f" · {seconds:.1f}s"
         label = st_name.replace("_", " ").capitalize()
-        if build_status in {"waiting_intake", "waiting_approval"} and st_name == "completed" and idx in (2, 3):
-            label = "Awaiting review"
         items.append(
             f'<div class="forge-step">'
             f'  <div class="forge-step-left">'
@@ -230,7 +231,7 @@ def build_progress(build_id: str):
     st.caption(f'Run ID: {build["run_id"]} · Model: {build["model"]} · Elapsed: {build.get("elapsed_seconds", 0)}s')
     if stages:
         render_stepper(stages, status)
-    if status == "running":
+    if status in {"running", "retrying"}:
         return
     st.session_state["build_snapshot"] = build
     if status in {"failed", "completed"}:
@@ -259,10 +260,21 @@ def show_checkpoint(build: dict):
     elif status == "waiting_approval":
         req = build["requirements"]
         st.subheader("Human checkpoint: Review requirements & groundability")
+        if req.get("requester_answers") or req.get("unresolved") or req.get("assumptions"):
+            with st.expander("Intake decisions and open questions"):
+                for question, answer in req.get("requester_answers", {}).items():
+                    st.text(f"{question}\n{answer}")
+                for item in req.get("assumptions", []):
+                    st.caption(f"Assumption · {item}")
+                for item in req.get("unresolved", []):
+                    st.caption(f"Unresolved · {item}")
         if cov := build.get("coverage"):
             cov_rows = [
                 f'<tr><td><strong>{escape(topic)}</strong></td><td>{status_pill(f["status"])}</td>'
-                f'<td style="color:#73736C">{escape(f.get("limitation", ""))}</td></tr>'
+                '<td style="color:#73736C">'
+                + "".join(f'<div><code>{escape(e["id"])}</code> · {escape(e["quote"][:260])}</div>'
+                          for e in f.get("evidence", []))
+                + escape(f.get("limitation", "")) + '</td></tr>'
                 for topic, f in cov.items()
             ]
             st.html(
@@ -271,6 +283,11 @@ def show_checkpoint(build: dict):
                 f'<tbody>{"".join(cov_rows)}</tbody></table></div>'
             )
         with st.form(f"{build_id}-approval"):
+            if req.get("original_brief"):
+                st.caption("Original requester brief")
+                st.text(req["original_brief"])
+            if req.get("behavior"):
+                st.caption("Requested behavior · " + " · ".join(req["behavior"]))
             scope = st.text_area("Scope", req["scope"])
             col1, col2 = st.columns(2)
             audience = col1.text_input("Audience", req["audience"])
@@ -278,7 +295,7 @@ def show_checkpoint(build: dict):
             col3, col4 = st.columns(2)
             allowed = col3.text_area("Must answer (one topic per line)", "\n".join(req["must_answer"]))
             refused = col4.text_area("Must refuse (one topic per line)", "\n".join(req["must_refuse"]))
-            if st.form_submit_button("Approve requirements & generate agent", type="primary"):
+            if st.form_submit_button("Accept limitations & generate agent", type="primary"):
                 revised = req | {
                     "scope": scope.strip() or req["scope"],
                     "audience": audience,
@@ -291,6 +308,18 @@ def show_checkpoint(build: dict):
                 st.rerun()
     elif status == "failed":
         st.error(build.get("error") or "Build failed.")
+        if build["stages"][3]["status"] == "completed":
+            detail = api("runs", build["run_id"])
+            if (detail.get("run_metadata") or {}).get("status") == "incomplete":
+                mode = "scoring" if detail.get("eval_dataset") else "generation"
+                if st.button("Resume failed evaluation stage", type="primary"):
+                    api("runs", build["run_id"], "resume", json={"mode": mode})
+                    st.session_state.pop("build_snapshot", None)
+                    st.rerun()
+        elif st.button("Retry failed build stage", type="primary"):
+            api("builds", build_id, "retry", json={})
+            st.session_state.pop("build_snapshot", None)
+            st.rerun()
         st.page_link(evaluations_page, label="Open Evaluations")
     elif status == "completed":
         st.success(f'Agent ready: {build["run_id"]}')
@@ -393,8 +422,12 @@ def build_form():
 def show_trace(trace: dict, *, show_evidence: bool = True):
     answer = trace.get("answer") or {}
     st.write(answer.get("answer", trace.get("error") or "No answer was returned."))
-    if answer.get("refused"):
-        st.html('<span class="forge-pill forge-pill-warn">Out-of-scope or insufficient evidence refusal</span>')
+    outcome = answer.get("outcome") or ("insufficient_evidence" if answer.get("refused") else "grounded")
+    labels = {"grounded": "Grounded answer", "clarification": "Clarification required",
+              "insufficient_evidence": "Insufficient evidence", "out_of_scope": "Out of scope",
+              "partial": "Partial answer", "tool_assisted": "Tool-assisted answer", "ungrounded": "Grounding off"}
+    if answer:
+        st.caption(labels.get(outcome, outcome))
     if answer.get("citations"):
         chips = "".join(f'<span class="forge-source-chip">{escape(c)}</span>' for c in answer["citations"])
         st.html(f'<div style="margin-top:0.35rem"><span style="font-size:0.75rem;color:#73736C;margin-right:0.4rem">Sources:</span>{chips}</div>')
@@ -418,10 +451,15 @@ def playground():
     detail = api("runs", run_id)
     config = detail["agent_config"]
     conversations = st.session_state.setdefault("conversations", {})
-    history = conversations.setdefault(run_id, [])
-    if actions.button("New chat", use_container_width=True):
-        history.clear()
-        st.rerun()
+    if isinstance(conversations.get(run_id), list):
+        conversations[run_id] = {"id": uuid4().hex, "messages": conversations[run_id]}
+    conversation = conversations.setdefault(run_id, {"id": uuid4().hex, "messages": []})
+
+    def reset_chat():
+        conversations[run_id] = {"id": uuid4().hex, "messages": []}
+
+    actions.button("New chat", use_container_width=True, on_click=reset_chat)
+    history = conversation["messages"]
     show_grounding = actions.toggle("Grounding", value=True, key="chat-grounding")
     st.divider()
 
@@ -438,9 +476,9 @@ def playground():
             st.markdown(f'**Retrieved sources ({len(sources)})**')
             if sources:
                 for passage in sources:
-                    with st.container(border=True):
-                        st.markdown(f'`{passage["id"]}`')
-                        st.caption(passage["text"][:220] + ("…" if len(passage["text"]) > 220 else ""))
+                    cited = passage["id"] in (latest.get("answer") or {}).get("citations", [])
+                    with st.expander(f'{passage["id"]} · {"Cited" if cited else "Retrieved"}'):
+                        st.text(passage["text"])
             else:
                 st.caption("Send a message to inspect retrieved passages and citations.")
             if latest.get("tools"):
@@ -453,9 +491,11 @@ def playground():
                 st.json({"settings": config["settings"], "tools": [t["name"] for t in config.get("tools", [])]})
     else:
         chat = st.container()
+        st.info("Document grounding is off. Current questions will not be checked against policy documents.")
 
     with chat:
         st.markdown(f'**{run_id}**')
+        st.caption(f'Model · {model or config["model"]}')
         st.html(f'<div class="forge-subtitle" style="margin-bottom:0.75rem">{escape(config["requirements"]["scope"])}</div>')
         with st.container(height=360, border=False):
             if not history:
@@ -464,18 +504,53 @@ def playground():
                 st.chat_message("user").write(question)
                 with st.chat_message("assistant"):
                     show_trace(trace, show_evidence=not show_grounding)
-        if prompt := st.chat_input("Ask a question...", max_chars=2000):
+        if prompt := st.chat_input("Ask a question...", max_chars=2000, key=f'chat-{conversation["id"]}'):
             question = prompt.strip()
             if question:
                 with st.spinner("Retrieving evidence and generating response..."):
-                    trace = api("runs", run_id, "chat", json={"question": question, "model": model}, timeout=240)
-                history.append((question, trace))
-                st.rerun()
+                    previous = [{"question": q, "clarification": (t["answer"]["answer"][:1000]
+                                 if (t.get("answer") or {}).get("outcome") == "clarification" else None)}
+                                for q, t in history[-6:] if t.get("grounding", True)]
+                    trace = api("runs", run_id, "chat", json={"question": question, "model": model,
+                                "history": previous, "conversation_id": conversation["id"], "grounding": show_grounding},
+                                timeout=240)
+                if conversations[run_id]["id"] == trace.get("conversation_id"):
+                    history.append((question, trace))
+                    st.rerun()
 
 
 # ---------------------------------------------------------------------------
 # 4. Evaluations
 # ---------------------------------------------------------------------------
+
+def _dim_pill(label: str, ok: bool | None) -> str:
+    if ok is True:
+        return f'<span class="forge-pill forge-pill-success">✓ {escape(label)}</span>'
+    if ok is False:
+        return f'<span class="forge-pill forge-pill-red">✗ {escape(label)}</span>'
+    return f'<span class="forge-pill forge-pill-neutral">— {escape(label)}</span>'
+
+
+def _breakdown_bar(passed: int, failed: int, error: int, total: int) -> str:
+    if total <= 0:
+        return ""
+    p_w = (passed / total) * 100
+    f_w = (failed / total) * 100
+    e_w = (error / total) * 100
+    return (
+        '<div style="margin:0.5rem 0 0.35rem">'
+        '<div style="display:flex;height:14px;border-radius:6px;overflow:hidden;border:1px solid #E3DFD6;background:#F2F0E9">'
+        f'<div style="width:{p_w:.2f}%;background:#357A57" title="Passed: {passed}"></div>'
+        f'<div style="width:{f_w:.2f}%;background:#B43C32" title="Failed: {failed}"></div>'
+        f'<div style="width:{e_w:.2f}%;background:#8C8982" title="Infrastructure error: {error}"></div>'
+        '</div>'
+        '<div style="display:flex;gap:1.25rem;font-size:0.76rem;color:#73736C;margin-top:0.35rem">'
+        f'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#357A57;margin-right:4px"></span>Passed: {passed}</span>'
+        f'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#B43C32;margin-right:4px"></span>Failed: {failed}</span>'
+        f'<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#8C8982;margin-right:4px"></span>Infrastructure errors: {error}</span>'
+        '</div></div>'
+    )
+
 
 def evaluations():
     heading, control = st.columns([3.2, 1.3], vertical_alignment="center")
@@ -484,12 +559,25 @@ def evaluations():
         st.html('<div class="forge-subtitle">Automated tests to verify accuracy, grounding, and refusal adherence.</div>')
     with control:
         run_id = choose_run("evaluation-run")
+    st.query_params["run"] = run_id
 
     detail = api("runs", run_id)
     metadata = detail.get("run_metadata") or {}
     status = metadata.get("status", "prototype")
+    is_replay = bool(metadata.get("source_run"))
+    run_kind_label = (
+        f'Frozen replay experiment (source: {metadata["source_run"]})'
+        if is_replay
+        else "Autonomous optimization run"
+    )
+    st.html(
+        f'<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem">'
+        f'{status_pill("neutral" if is_replay else "completed", run_kind_label)}'
+        f'{status_pill(status, readable_status(status))}'
+        f'</div>'
+    )
     if reason := metadata.get("stop_reason"):
-        st.caption(f"Run status: {status} · {reason}")
+        st.caption(f"Stop reason: {reason}")
     if status == "incomplete":
         mode = "scoring" if detail.get("eval_dataset") else "generation"
         if st.button(f"Resume {mode}", type="primary"):
@@ -497,18 +585,20 @@ def evaluations():
             st.success(f'Resume requested · {result["status"]}')
 
     cards = detail["scorecards"]
+    results = detail.get("case_results") or {}
+    selected_v = metadata.get("selected_version")
     if cards:
-        selected_v = metadata.get("selected_version")
         card = next((c for c in cards if c["version"] == selected_v), cards[0])
         grounded = card.get("dimensions", {}).get("grounded")
         g_rate = f'{grounded["passed"] / grounded["scored"]:.0%}' if grounded and grounded["scored"] else "—"
         g_sub = f'{grounded["passed"]}/{grounded["scored"]} scored cases' if grounded and grounded["scored"] else "No scored cases"
+        ver_label = f'Selected version (v{card["version"]})' if selected_v is not None else f'Baseline version (v{card["version"]})'
 
         left, right = st.columns(2)
         left.html(
             f'<div class="forge-metric-card">'
             f'  <div>'
-            f'    <div class="forge-metric-label">Selected version (v{card["version"]})</div>'
+            f'    <div class="forge-metric-label">{escape(ver_label)}</div>'
             f'    <div class="forge-metric-value">{card["passed"]} / {card["total"]} tests passed</div>'
             f'    <div class="forge-metric-sub">{card["failed"]} failed · {card["error"]} infrastructure errors</div>'
             f'  </div>'
@@ -518,7 +608,7 @@ def evaluations():
         right.html(
             f'<div class="forge-metric-card">'
             f'  <div>'
-            f'    <div class="forge-metric-label">Grounding</div>'
+            f'    <div class="forge-metric-label">Grounding ({escape(ver_label)})</div>'
             f'    <div class="forge-metric-value">{g_rate} grounded</div>'
             f'    <div class="forge-metric-sub">{g_sub}</div>'
             f'  </div>'
@@ -528,14 +618,23 @@ def evaluations():
     cases_tab, metrics_tab, optimization_tab = st.tabs(["Test cases", "Metrics", "Optimization log"])
 
     with cases_tab:
-        if results := detail["case_results"]:
-            f1, f2, f3, f4 = st.columns([1, 1, 1, 1.5])
-            version = f1.selectbox("Iteration", list(results), key=f"version-{run_id}")
+        if results:
+            version_keys = list(results)
+            default_vk = f"v{selected_v}" if selected_v is not None and f"v{selected_v}" in results else version_keys[0]
+            f1, f2, f3, f4 = st.columns([1.1, 1, 1, 1.5])
+            version = f1.selectbox(
+                "Agent version",
+                version_keys,
+                index=version_keys.index(default_vk),
+                format_func=lambda k: f"Version {k.removeprefix('v')}" + (" (Selected)" if selected_v is not None and k == f"v{selected_v}" else ""),
+                key=f"version-{run_id}",
+            )
             outcome_filter = f2.selectbox("Status", ["All", "passed", "failed", "error"])
             categories = sorted({item["case"]["category"] for item in results[version]})
             category_filter = f3.selectbox("Category", ["All", *categories])
             search_q = f4.text_input("Search", placeholder="Search test cases...", label_visibility="collapsed")
 
+            st.caption(f'Showing test cases for **Version {version.removeprefix("v")}**')
             rows_shown = 0
             for item in results[version]:
                 case = item["case"]
@@ -544,42 +643,148 @@ def evaluations():
                 if search_q.strip() and search_q.strip().lower() not in f'{case["id"]} {case["question"]}'.lower():
                     continue
                 rows_shown += 1
-                grounded_flag = (item.get("judgment") or {}).get("grounded")
+                judgment = item.get("judgment") or {}
+                grounded_flag = judgment.get("grounded")
                 g_text = "Grounded" if grounded_flag else (item.get("failure") or "Ungrounded")
                 with st.expander(f'{case["id"]} · {case["category"]} · {item["status"].upper()} · {case["question"]}'):
-                    c1, c2 = st.columns([1, 3])
-                    c1.html(f'{status_pill(item["status"])}<div style="margin-top:0.4rem">{status_pill(g_text)}</div>')
-                    c2.markdown(f'**Judge explanation:** {item["explanation"]}')
-                    show_trace(item["execution"])
-                    with st.expander("Expected facts & raw judgment"):
-                        st.json({"expected": case, "judgment": item.get("judgment")})
+                    # 1. Judge summary & dimension pills
+                    top_l, top_r = st.columns([1, 3])
+                    top_l.html(f'{status_pill(item["status"], item["status"].capitalize())}<div style="margin-top:0.35rem">{status_pill(g_text)}</div>')
+                    top_r.markdown(f'**Judge explanation:** {item["explanation"]}')
+                    if judgment:
+                        dims = "".join([
+                            _dim_pill("Correct", judgment.get("correct")),
+                            _dim_pill("Grounded", judgment.get("grounded")),
+                            _dim_pill("Citations", judgment.get("citations_relevant")),
+                            _dim_pill("Refusal", judgment.get("refusal_appropriate")),
+                            _dim_pill("Tools", judgment.get("tools_correct")),
+                        ])
+                        st.html(f'<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.35rem 0 0.6rem">{dims}</div>')
+
+                    # 2. Expected vs Actual readable columns
+                    exp_col, act_col = st.columns(2)
+                    with exp_col.container(border=True):
+                        st.markdown("**Expected**")
+                        expected = ("Clarification" if case.get("category") == "ambiguous" else
+                                    "Partial answer" if case.get("behavior") == "mixed_scope" else
+                                    "Refusal" if case.get("expected_refusal") else "Grounded answer")
+                        st.caption(f'Expected outcome: {expected}' + (f' · Tools: {", ".join(case["expected_tools"])}' if case.get("expected_tools") else ""))
+                        for turn in case.get("history", []):
+                            st.text(f'Previous question: {turn["question"]}')
+                            if turn.get("clarification"):
+                                st.text(f'Clarification: {turn["clarification"]}')
+                        if case.get("expected_facts"):
+                            for fact in case["expected_facts"]:
+                                st.markdown(f'- `{fact["source_id"]}`: {fact["fact"]}')
+                        else:
+                            st.caption("No factual claims expected (should refuse or ask for clarification).")
+
+                    with act_col.container(border=True):
+                        st.markdown("**Actual response**")
+                        execution = item.get("execution") or {}
+                        ans = execution.get("answer") or {}
+                        st.write(ans.get("answer") or execution.get("error") or "No answer produced.")
+                        if ans.get("refused"):
+                            st.caption("Agent refused / requested clarification")
+                        if ans.get("citations"):
+                            chips = "".join(f'<span class="forge-source-chip">{escape(c)}</span>' for c in ans["citations"])
+                            st.html(f'<div><span style="font-size:0.75rem;color:#73736C">Citations:</span> {chips}</div>')
+
+                    # 3. Tool execution (inputs & outputs) + Retrieved document evidence
+                    execution = item.get("execution") or {}
+                    tools_used = execution.get("tools") or []
+                    retrieved = execution.get("retrieved") or []
+                    if tools_used or retrieved:
+                        t_col, r_col = st.columns(2)
+                        with t_col:
+                            st.markdown("**Tool execution**")
+                            if tools_used:
+                                for tool in tools_used:
+                                    with st.container(border=True):
+                                        st.markdown(f'**`{tool["name"]}`**')
+                                        st.caption(f'Inputs: `{tool.get("arguments", {})}`')
+                                        for rk, rv in (tool.get("results") or {}).items():
+                                            st.markdown(f'Output (`{rk}`): `{rv}`')
+                            else:
+                                st.caption("No tools called.")
+                        with r_col:
+                            st.markdown(f'**Retrieved evidence ({len(retrieved)})**')
+                            if retrieved:
+                                for passage in retrieved:
+                                    with st.container(border=True):
+                                        st.markdown(f'`{passage["id"]}`')
+                                        st.caption(passage["text"][:260] + ("…" if len(passage["text"]) > 260 else ""))
+                            else:
+                                st.caption("No passages retrieved.")
+
+                    # 4. Technical raw JSON (collapsed by default)
+                    with st.expander("Raw JSON (expected, execution, judgment)"):
+                        st.json({"expected": case, "execution": execution, "judgment": judgment})
             if not rows_shown:
                 st.info("No test cases match the current filters.")
         else:
             st.info("No scored cases yet.")
         if dataset := detail.get("eval_dataset"):
-            with st.expander("Frozen evaluation dataset"):
+            with st.expander("Frozen evaluation dataset (raw JSON)"):
                 st.json(dataset, expanded=False)
 
     with metrics_tab:
         if cards:
-            st.subheader("Baseline vs optimization iterations")
-            st.dataframe(
-                [{k: v for k, v in card.items() if k != "dimensions"} for card in cards],
-                hide_index=True,
-                use_container_width=True,
-            )
-            chart_rows = [{"Version": f'v{c["version"]}', "Passed": c["passed"], "Failed": c["failed"], "Error": c["error"]} for c in cards]
-            st.bar_chart(chart_rows, x="Version", y=["Passed", "Failed", "Error"], color=["#B43C32", "#D6D1C7", "#E6B800"])
-            st.json({f'v{c["version"]}': c["dimensions"] for c in cards}, expanded=False)
+            st.subheader("Evaluation breakdown")
+            if len(cards) == 1:
+                c = cards[0]
+                st.caption(f'Version v{c["version"]} ({c["total"]} total cases)')
+                st.html(_breakdown_bar(c["passed"], c["failed"], c["error"], c["total"]))
+            else:
+                st.caption(f'Baseline (v{cards[0]["version"]}) vs optimization iterations ({len(cards)} versions)')
+                chart_rows = [
+                    {
+                        "Version": f'v{c["version"]}',
+                        "Passed": c["passed"],
+                        "Failed": c["failed"],
+                        "Infrastructure errors": c["error"],
+                    }
+                    for c in cards
+                ]
+                st.bar_chart(
+                    chart_rows,
+                    x="Version",
+                    y=["Passed", "Failed", "Infrastructure errors"],
+                    color=["#357A57", "#B43C32", "#8C8982"],
+                )
+
+            table_rows = [
+                {
+                    "Agent Version": f'v{c["version"]}' + (" (Selected)" if selected_v == c["version"] else ""),
+                    "Passed": c["passed"],
+                    "Failed": c["failed"],
+                    "Infra Errors": c["error"],
+                    "Total Cases": c["total"],
+                    "Pass Rate": f'{c["pass_rate"]:.0%}',
+                    "Duration (s)": round(c.get("seconds", 0), 1),
+                }
+                for c in cards
+            ]
+            st.dataframe(table_rows, hide_index=True, use_container_width=True)
+
+            dim_rows = []
+            for c in cards:
+                row = {"Agent Version": f'v{c["version"]}'}
+                for dk, dv in (c.get("dimensions") or {}).items():
+                    label = dk.replace("_", " ").capitalize()
+                    row[label] = f'{dv["passed"]}/{dv["scored"]} ({dv["passed"]/dv["scored"]:.0%})' if dv.get("scored") else "—"
+                dim_rows.append(row)
+            if dim_rows:
+                st.markdown("**Dimension breakdown**")
+                st.dataframe(dim_rows, hide_index=True, use_container_width=True)
         else:
             st.info("No scorecards yet.")
 
     with optimization_tab:
-        st.subheader("Failure classification summary")
-        if results := detail["case_results"]:
-            v0_key = next(iter(results))
-            counts = Counter(item.get("failure") for item in results[v0_key] if item.get("failure"))
+        if results:
+            opt_v = next(iter(results))
+            st.subheader(f'Failure classification (Version {opt_v.removeprefix("v")})')
+            counts = Counter(item.get("failure") for item in results[opt_v] if item.get("failure"))
             cols = st.columns(4)
             for col, cat in zip(cols, FAILURE_CATEGORIES):
                 col.html(
@@ -591,20 +796,44 @@ def evaluations():
         if logs := detail["iteration_logs"]:
             st.subheader("Targeted optimization iterations")
             for step in logs:
+                base_k = f'v{step["base_version"]}'
+                iter_k = f'v{step["iteration"]}'
                 with st.container(border=True):
                     top_l, top_r = st.columns([3, 1], vertical_alignment="center")
-                    top_l.markdown(f'**Iteration {step["iteration"]}** (base `v{step["base_version"]}`)')
+                    top_l.markdown(f'**Iteration {step["iteration"]}** (`{base_k}` → `{iter_k}`)')
                     top_r.html(status_pill(step.get("outcome", "unmeasured")))
                     st.write(step["reason"])
                     before = step.get("before", {})
                     after = step.get("after", {})
                     st.caption(
-                        f'Before: {before.get("passed", "?")}/{before.get("total", "?")} ({before.get("pass_rate", 0):.0%})'
-                        + (f' → After: {after.get("passed", "?")}/{after.get("total", "?")} ({after.get("pass_rate", 0):.0%})' if after else "")
-                        + f' · Affected cases: {", ".join(step.get("affected_case_ids", []))}'
+                        f'Before ({base_k}): {before.get("passed", "?")}/{before.get("total", "?")} ({before.get("pass_rate", 0):.0%})'
+                        + (f' → After ({iter_k}): {after.get("passed", "?")}/{after.get("total", "?")} ({after.get("pass_rate", 0):.0%})' if after else "")
+                        + f' · Targeted cases: {", ".join(step.get("affected_case_ids", [])) or "None"}'
                     )
-                    with st.expander("Changed fields"):
-                        st.json(step.get("changes", {}))
+
+                    # Real before/after case comparison when both versions exist
+                    if base_k in results and iter_k in results:
+                        base_map = {r["case"]["id"]: r["status"] for r in results[base_k]}
+                        iter_map = {r["case"]["id"]: r["status"] for r in results[iter_k]}
+                        newly_passed = [cid for cid, st_v in iter_map.items() if st_v == "passed" and base_map.get(cid) != "passed"]
+                        regressions = [cid for cid, st_v in iter_map.items() if st_v != "passed" and base_map.get(cid) == "passed"]
+                        remaining = [cid for cid, st_v in iter_map.items() if st_v != "passed"]
+                        c1, c2, c3 = st.columns(3)
+                        c1.caption(f'**Newly passed ({len(newly_passed)}):** {", ".join(newly_passed) or "None"}')
+                        c2.caption(f'**Regressions ({len(regressions)}):** {", ".join(regressions) or "None"}')
+                        c3.caption(f'**Remaining failures ({len(remaining)}):** {", ".join(remaining) or "None"}')
+
+                    # Before / After prompt or config diff
+                    for field, diff in (step.get("changes") or {}).items():
+                        st.markdown(f'**Changed `{field}`**')
+                        if isinstance(diff, dict) and "before" in diff and "after" in diff:
+                            b_col, a_col = st.columns(2)
+                            b_col.caption("Before")
+                            b_col.code(str(diff["before"]), language=None)
+                            a_col.caption("After")
+                            a_col.code(str(diff["after"]), language=None)
+                        else:
+                            st.json(diff)
         else:
             st.info("No optimization iterations recorded.")
 

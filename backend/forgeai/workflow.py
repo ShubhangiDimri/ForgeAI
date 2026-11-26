@@ -1,8 +1,11 @@
 """Run the full factory and retain evidence for every measured configuration."""
 from datetime import datetime, timezone
 import json
+import re
+from collections.abc import Callable
 from pathlib import Path
 import time
+from collections import Counter
 from pydantic import TypeAdapter
 
 from .documents import digest
@@ -14,6 +17,31 @@ from .runner import Runner
 from .schema import Config, Passage
 
 ITERATION_LIMIT = 3
+
+
+def scoring_code_hashes() -> dict[str, str]:
+    files = ("judge.py", "runner.py", "retrieval.py", "tools.py", "optimizer.py")
+    return {name: digest(Path(__file__).with_name(name).read_bytes()) for name in files}
+
+
+def pause_on_provider_error(result: Result) -> None:
+    if result.status == "error" and re.search(
+        r"HTTP (?:401|403|429|500|502|503|504)\b|provider offline|connection failed|timed out|providers exhausted",
+        result.explanation, re.I,
+    ):
+        raise RuntimeError(f"Provider interrupted {result.case.id}: {result.explanation}")
+
+
+def pin_model(client):
+    return client._chain[0] if hasattr(client, "_chain") else client
+
+
+def record_groq_slots(metadata: dict, **clients) -> None:
+    used = metadata.setdefault("groq_key_slots_used", {})
+    for stage, client in clients.items():
+        slots = getattr(client, "credential_slots_used", None)
+        if isinstance(slots, set) and slots:
+            used[stage] = sorted(set(used.get(stage, [])) | slots)
 
 
 def write_json(path: Path, data) -> None:
@@ -53,7 +81,8 @@ def score(results: list[Result], version: int, seconds: float) -> dict:
 def report(out: Path, cards: list[dict], logs: list[dict], best: int | None, stop: str,
            selected: list[Result], config: Config) -> None:
     lines = ["# ForgeAI quality report", "", f"- Stop reason · {stop}", f"- Selected version · {best}",
-             f"- Agent model · {config.model}", f"- Embedding model · {config.embedding}", "",
+             f"- Agent model · {config.model}", f"- Embedding model · {config.embedding}",
+             "- [Agent definition](agent_config.json) · [Scorecards](scorecards.json) · [Iteration logs](iteration_logs.json)", "",
              "| Version | Passed | Failed | Errors | Total | Rate | Seconds |", "| --- | --- | --- | --- | --- | --- | --- |"]
     for card in cards:
         lines.append(f"| {card['version']} | {card['passed']} | {card['failed']} | {card['error']} | "
@@ -63,32 +92,50 @@ def report(out: Path, cards: list[dict], logs: list[dict], best: int | None, sto
                   "", "## Selected version checks", ""]
         lines += [f"- {key} · {value['passed']}/{value['scored']} scored cases"
                   for key, value in cards[best]["dimensions"].items()]
+        outcomes = Counter(r.execution.answer.outcome for r in selected if r.execution.answer and r.execution.answer.outcome)
+        if outcomes:
+            lines += ["", "## Response outcomes", ""]
+            lines += [f"- {outcome.replace('_', ' ').capitalize()} · {count}" for outcome, count in sorted(outcomes.items())]
         lines += ["", "## Remaining failures and errors", ""]
         lines += [f"- {r.case.id} · {r.failure or r.status} · {r.explanation}"
                   for r in selected if r.status != "passed"] or ["All cases in this run passed."]
     if logs:
         lines += ["", "## Targeted iterations", ""]
-        lines += [f"- Version {log['iteration']} · {log['reason']} Outcome {log.get('outcome', 'unmeasured')}."
-                  for log in logs]
+        for log in logs:
+            fields = ", ".join(log["changes"])
+            affected = ", ".join(log["affected_case_ids"])
+            before, after = log.get("before"), log.get("after")
+            comparison = (f"{before['passed']}/{before['total']} → {after['passed']}/{after['total']}"
+                          if before and after else "awaiting a completed measurement")
+            lines.append(f"- Version {log['iteration']} · {fields}. {log['reason']} Cases {affected}. {comparison}.")
+    limitations = [(topic, finding) for topic, finding in config.coverage.items()
+                   if finding.status != "supported" or finding.inconclusive]
+    if limitations:
+        lines += ["", "## Requirements with limited support", ""]
+        for topic, finding in limitations:
+            state = "inconclusive" if finding.inconclusive else finding.status
+            lines.append(f"- {topic} ({state}) · {finding.limitation or 'No further detail recorded.'}")
     lines += ["", "## Assumptions and limitations", ""]
     lines += [f"- {s}" for s in [*config.requirements.assumptions, *config.requirements.unresolved]]
     lines += ["- Scores measure this frozen dataset only. The judge may share model biases with the agent.",
               "- Exact evidence checks establish provenance. Semantic relevance and unsupported-topic decisions depend on model judgments.",
-              "- Ambiguous cases require a clarifying response, represented by the existing refusal flag.",
+              "- Ambiguous cases require a focused clarification.",
               "- Errors are counted in the denominator and excluded from semantic optimization.", ""]
     (out / "final_report.md").write_text("\n".join(lines), encoding="utf-8")
 
 
 def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATION_LIMIT,
-        *, resume_generation: bool = False) -> list[dict]:
+        *, resume_generation: bool = False,
+        progress: Callable[[int, str, str], None] | None = None) -> list[dict]:
     if not 0 <= max_iterations <= ITERATION_LIMIT:
         raise ValueError(f"Iterations must be between 0 and {ITERATION_LIMIT}")
     runner = Runner(out / "agent_config.json")
     if runner.sources is None:
         raise ValueError("Full evaluation requires a run with original source snapshots")
-    generator = make_model(runner.config.model)
+    runner.model = pin_model(runner.model)
+    generator = make_model(runner.model.model)
     default_judge = GROQ_JUDGE if runner.config.model.startswith("groq:") else runner.config.model
-    judge = make_model(judge_model or default_judge)
+    judge = pin_model(make_model(judge_model or default_judge))
     path = out / "eval_dataset.json"
     metadata_path = out / "run_metadata.json"
     draft_path = out / "eval_generation_progress.json"
@@ -98,9 +145,15 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
         if path.exists() or not metadata_path.is_file() or not draft_path.is_file():
             raise ValueError("Resume requires an incomplete run with saved drafts and no frozen dataset")
         previous = json.loads(metadata_path.read_bytes())
-        if (previous["status"] != "incomplete" or previous["agent_model"] != runner.config.model
+        prior_judge = previous.get("judge_model")
+        if prior_judge and judge_model and judge.model != prior_judge:
+            raise ValueError("Resume requires the original judge model")
+        if prior_judge and not judge_model and judge.model != prior_judge:
+            judge = pin_model(make_model(prior_judge))
+        if (previous["status"] != "incomplete" or previous["agent_model"] != runner.model.model
                 or any(prompt_hashes.get(name) != fingerprint
-                        for name, fingerprint in previous["prompt_hashes"].items())):
+                        for name, fingerprint in previous["prompt_hashes"].items()
+                        if name.startswith("eval_") or name == "boundary.txt")):
             raise ValueError("Resume requires the original agent model and unchanged prompts")
         resume_options["resume"] = TypeAdapter(tuple[Case, ...]).validate_json(draft_path.read_bytes())
         history = out / "generation_resume_history.json"
@@ -112,19 +165,28 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
     best = None
     metadata = {
         "status": "running", "started": datetime.now(timezone.utc).isoformat(),
-        "agent_model": runner.config.model, "judge_model": judge.model,
+        "agent_model": runner.model.model, "judge_model": judge.model,
+        "evaluation_validator_model": judge.model,
+        "ambiguity_draft_model": judge.model,
+        "requested_model": runner.config.requested_model or runner.config.model,
+        "generation_models": runner.config.generation_models,
         "embedding": runner.config.embedding, "max_iterations": max_iterations,
         "prompt_hashes": prompt_hashes,
+        "scoring_code_hashes": scoring_code_hashes(),
         "resumed_drafts": len(resume_options.get("resume", ())),
     }
     write_json(out / "run_metadata.json", metadata)
     stop = "evaluation did not finish"
     try:
+        if not draft_path.exists():
+            write_json(draft_path, [])
         print("Generating evaluation cases", flush=True)
         fingerprint = freeze(generate(runner.config, runner.sources, generator,
-            lambda cases: write_json(draft_path, cases), **resume_options), path)
+            lambda cases: write_json(draft_path, cases), reviewer=judge, **resume_options), path)
         metadata["eval_sha256"] = fingerprint
         write_json(out / "run_metadata.json", metadata)
+        if progress:
+            progress(4, "completed", "Evaluation dataset frozen")
         for iteration in range(max_iterations + 1):
             dataset = read_frozen(path, fingerprint)
             save_version(out / "versions" / str(iteration), runner)
@@ -132,12 +194,19 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
             start = time.monotonic()
             result_path = out / "case_results" / f"v{iteration}.json"
             for case in dataset.cases:
-                result = assess(case, runner.trace(case.question), judge)
+                if progress:
+                    progress(5 if iteration == 0 else 6, "running", f"Waiting for model · v{iteration} · {len(results) + 1}/{len(dataset.cases)}")
+                result = assess(case, runner.trace(case.question, **({"history": list(case.history)} if case.history else {})), judge)
+                pause_on_provider_error(result)
                 results.append(result)
                 write_json(result_path, [item.model_dump(mode="json") for item in results])
                 print(f"Version {iteration} {case.id} {result.status}", flush=True)
             current = score(results, iteration, time.monotonic() - start)
+            if current["error"] == current["total"]:
+                raise RuntimeError(f"Version {iteration} has no semantic judgments. Resume scoring after investigating the errors.")
             cards.append(current)
+            if progress and iteration == 0:
+                progress(5, "completed", "Baseline scored")
             write_json(out / "scorecards.json", cards)
             if iteration:
                 logs[-1]["after"] = current
@@ -148,9 +217,6 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
                 best, selected = iteration, results
             if current["passed"] == current["total"]:
                 stop = "all cases passed"
-                break
-            if current["error"] == current["total"]:
-                stop = "all cases encountered execution or judge errors"
                 break
             if iteration and best != iteration:
                 # Roll back a non-improving change before considering another category.
@@ -173,6 +239,9 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
                          "reason": why, "affected_case_ids": affected, "before": cards[best]})
             write_json(out / "iteration_logs.json", logs)
             runner.reconfigure(candidate)
+        if progress:
+            progress(6, "completed" if len(cards) > 1 else "skipped", "Optimization finished")
+            progress(7, "running", "Writing quality report")
         assert best is not None
         chosen = Config.model_validate_json((out / "versions" / str(best) / "agent_config.json").read_bytes())
         runner.reconfigure(chosen)
@@ -183,6 +252,7 @@ def run(out: Path, judge_model: str | None = None, max_iterations: int = ITERATI
         stop = f"{type(exc).__name__}: {exc}"
         raise
     finally:
+        record_groq_slots(metadata, generator=generator, agent=runner.model, judge=judge)
         metadata.update(stop_reason=stop, selected_version=best, finished=datetime.now(timezone.utc).isoformat())
         write_json(out / "run_metadata.json", metadata)
         write_json(out / "iteration_logs.json", logs)
@@ -199,7 +269,8 @@ def _load_results(path: Path) -> list[Result]:
     return TypeAdapter(list[Result]).validate_python(raw)
 
 
-def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
+def resume_scoring(out: Path, judge_model: str | None = None, *,
+                   progress: Callable[[int, str, str], None] | None = None) -> list[dict]:
     """Resume an interrupted evaluation run, re-scoring only incomplete iterations.
 
     This function:
@@ -229,6 +300,8 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
         raise ValueError("run_metadata.json does not contain eval_sha256; cannot verify dataset integrity")
 
     max_iterations = previous_meta.get("max_iterations", ITERATION_LIMIT)
+    if not 0 <= max_iterations <= ITERATION_LIMIT:
+        raise ValueError(f"Iterations must be between 0 and {ITERATION_LIMIT}")
     agent_model = previous_meta["agent_model"]
     runner = Runner(out / "agent_config.json")
     if runner.sources is None:
@@ -236,7 +309,20 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
 
     # Determine judge model - preserve the original to ensure comparable results
     original_judge = previous_meta.get("judge_model", agent_model)
-    judge = make_model(judge_model or original_judge)
+    if (out / "case_results").is_dir() and any((out / "case_results").glob("v*.json")):
+        recorded = previous_meta.get("prompt_hashes", {})
+        runtime = previous_meta.get("scoring_code_hashes")
+        if runtime and runtime != scoring_code_hashes():
+            raise ValueError("Scoring code changed after this run started. Run a fresh baseline before comparing.")
+        scoring_prompts = {"boundary.txt", "route.txt", "resolve_question.txt", "answer.txt", "answer_precise.txt", "calculate.txt", "judge.txt"}
+        if any(name in recorded and digest((PROMPTS / name).read_bytes()) != recorded[name] for name in scoring_prompts):
+            raise ValueError("Scoring prompts changed after this run started. Run a fresh baseline before comparing.")
+    if judge_model and judge_model != original_judge:
+        raise ValueError("Resume requires the original judge model")
+    runner.model = pin_model(runner.model)
+    if runner.model.model != agent_model:
+        raise ValueError("Resume requires the original agent model")
+    judge = pin_model(make_model(original_judge))
     print(f"Resuming with agent={agent_model} judge={judge.model}", flush=True)
 
     # Load existing scorecards and iteration logs
@@ -317,6 +403,12 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
             if result_path.is_file():
                 # Partial results saved; resume from where we left off
                 existing_results = _load_results(result_path)
+                errored = [row for row in existing_results if row.status == "error"]
+                if errored:
+                    history_path = out / "scoring_retry_history" / f"v{iteration}.json"
+                    history = json.loads(history_path.read_bytes()) if history_path.is_file() else []
+                    write_json(history_path, [*history, [row.model_dump(mode="json") for row in errored]])
+                    existing_results = [row for row in existing_results if row.status != "error"]
                 existing_ids = {r.case.id for r in existing_results}
                 elapsed = previous_meta.get("scoring_recovery", {}).get("elapsed_seconds", 0)
                 start_time -= elapsed  # rough accounting
@@ -330,12 +422,19 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
             for case in dataset.cases:
                 if case.id in existing_ids:
                     continue
-                result = assess(case, runner.trace(case.question), judge)
+                if progress:
+                    progress(5 if iteration == 0 else 6, "running", f"Scoring v{iteration} · {len(results) + 1}/{len(dataset.cases)}")
+                result = assess(case, runner.trace(case.question, **({"history": list(case.history)} if case.history else {})), judge)
+                pause_on_provider_error(result)
                 results.append(result)
                 write_json(result_path, [item.model_dump(mode="json") for item in results])
                 print(f"Version {iteration} {case.id} {result.status}", flush=True)
 
             current = score(results, iteration, time.monotonic() - start)
+            if current["error"] == current["total"]:
+                raise RuntimeError(f"Version {iteration} still has no semantic judgments")
+            if progress and iteration == 0:
+                progress(5, "completed", "Baseline scored")
             if iteration < len(cards):
                 cards[iteration] = current
             else:
@@ -353,9 +452,6 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
 
             if current["passed"] == current["total"]:
                 stop = "all cases passed"
-                break
-            if current["error"] == current["total"]:
-                stop = "all cases encountered execution or judge errors"
                 break
             if iteration and best != iteration:
                 baseline = Config.model_validate_json((out / "versions" / str(best) / "agent_config.json").read_bytes())
@@ -381,6 +477,9 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
                 write_json(logs_path, logs)
             runner.reconfigure(candidate)
 
+        if progress:
+            progress(6, "completed" if len(cards) > 1 else "skipped", "Optimization finished")
+            progress(7, "running", "Writing quality report")
         assert best is not None
         chosen = Config.model_validate_json((out / "versions" / str(best) / "agent_config.json").read_bytes())
         runner.reconfigure(chosen)
@@ -391,6 +490,7 @@ def resume_scoring(out: Path, judge_model: str | None = None) -> list[dict]:
         stop = f"{type(exc).__name__}: {exc}"
         raise
     finally:
+        record_groq_slots(metadata, agent=runner.model, judge=judge)
         metadata.update(stop_reason=stop, selected_version=best, finished=datetime.now(timezone.utc).isoformat())
         write_json(metadata_path, metadata)
         write_json(logs_path, logs)

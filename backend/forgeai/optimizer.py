@@ -32,6 +32,12 @@ def proposed_patch(config: Config, results: list[Result], tried: tuple[dict, ...
                 rule = (" Use an allowed tool when the question genuinely requires it. "
                         "Check every argument against its schema and use values from the request or retrieved evidence.")
                 reason = "Clarify tool choice and input provenance after tool-related failures."
+            elif any(r.case.behavior == "mixed_scope" for r in defects):
+                rule = " Answer independently supported parts and state limits for the remaining parts."
+                reason = "Target whole-question refusal or incomplete coverage in mixed-scope requests."
+            elif any(r.case.history for r in defects):
+                rule = " Preserve context qualifiers in follow-ups and ask only for details still missing."
+                reason = "Target contextual and clarification follow-up failures."
             elif any(r.case.expected_refusal for r in defects):
                 rule = (" Respect the stated scope and evidence limits. "
                         "If a material detail is ambiguous, ask for that detail before giving a factual answer.")

@@ -1,228 +1,161 @@
 # ForgeAI
 
-ForgeAI builds a declarative, grounded agent from a requester brief and a document directory, generates an evaluation dataset, and measures targeted configuration changes. The repository is organized into a Python FastAPI `backend/` and a `streamlit_frontend/`.
+## Project Overview
 
-## Repository Structure
+ForgeAI is an autonomous agent factory. It turns a requester brief and a folder of documents into a configurable, source-grounded agent, generates and freezes an evaluation set, and measures targeted improvements. The generated agent can be loaded in Streamlit or the CLI. Each full run saves the agent definition, evaluation traces, scorecards, and a quality report.
+
+## Core Features
+
+1. **Intake interview.** Ask up to five clarifying questions, or run unattended and record assumptions and unresolved decisions.
+2. **Groundability check.** Review requested capabilities against document evidence and available tools. Flag unsupported requirements, including live data missing from static sources.
+3. **Agent generation.** Save a validated definition with instructions, retrieval settings, an output contract and a tool allowlist.
+4. **Evaluation generation.** Generate at least 20 distinct cases covering direct answers, refusals, ambiguity and cross-document evidence. New runs also exercise contextual follow-ups, false premises, mixed scope and instruction overrides.
+5. **Automated judging.** Combine a fixed semantic rubric with deterministic checks for evidence, citations, numeric provenance and expected behavior.
+6. **Critic and optimizer.** Diagnose failures, apply a targeted change, then score the same frozen cases. Run up to three iterations after baseline and retain the best measured version.
+7. **Reporting.** Save the selected definition, per-case results, iteration changes, scorecards and remaining limitations.
+8. **Runnable agents.** Load any saved definition in Playground or the CLI. Playground shows citations, retrieved passages and tool activity.
+9. **Two end-to-end demonstrations.** Academic policy and spare-parts procurement have independent briefs, datasets and complete run artifacts. A museum collections run adds an unattended rehearsal on a different domain.
+
+The Streamlit interface also supports human approval of requirements, conversation reset, a Grounding switch and artifact downloads. A prototype-only mode saves an agent before evaluation.
+
+## System Architecture
+
+```mermaid
+flowchart LR
+    A["Requester brief"] --> C["Intake"]
+    B["PDF / TXT / CSV"] --> D["Load documents and index evidence"]
+    D --> C
+    C --> E["Groundability review"]
+    D --> E
+    E --> F["Optional human approval"]
+    F --> G["Generate and save agent"]
+    G --> H["Generate and freeze evaluation cases"]
+    H --> I["Run agent and judge baseline"]
+    I --> J{"Targeted change within budget?"}
+    J -->|Yes| K["Patch configuration and rerun frozen cases"]
+    K --> J
+    J -->|No| L["Save best definition, scorecards and report"]
+    G --> M["Playground / CLI chat"]
+    L --> M
+```
+
+## Technology Stack
+
+| Layer | Implementation |
+| --- | --- |
+| Interface and API | Streamlit, FastAPI, Uvicorn, Pydantic |
+| Model providers | Groq (GPT-OSS 20B and 120B), NVIDIA NIM, Cloudflare Workers AI, and local Ollama |
+| Document ingestion | PyMuPDF for text-bearing PDFs, UTF-8 TXT and pandas for CSV |
+| Embeddings and retrieval | Sentence Transformers `all-MiniLM-L6-v2` by default, CPU FAISS with normalized vectors, and exact CSV record matching when applicable |
+| Tool registry | CSV lookup, calculator, current date, and keyless Open-Meteo current weather |
+| Tests | pytest, FastAPI test client, and model and transport fixtures |
+
+## Project Structure
 
 ```text
 ForgeAI/
-├── streamlit_frontend/ # Streamlit UI
 ├── backend/
-│   ├── forgeai/       # Core agent factory pipeline & CLI
-│   ├── api/           # FastAPI wrapper (api/main.py)
-│   ├── tests/         # Unit, integration, and API tests
-│   ├── demo_data/     # Synthetic academic & procurement datasets
-│   ├── artifacts/     # Saved agent runs, scorecards, and reports
-│   └── .env           # Backend-only API credentials (gitignored)
-├── README.md
-└── PROJECT_SPEC.md
+│   ├── api/                FastAPI service
+│   ├── forgeai/            Factory, runner, CLI and versioned prompts
+│   ├── demo_data/          Demo documents, briefs and synthesis prompts
+│   ├── artifacts/          Definitions, frozen evaluations and reports
+│   └── tests/              Automated regression tests
+├── streamlit_frontend/     Streamlit app and API client
+└── .streamlit/             UI configuration
 ```
 
-## Start ForgeAI locally
+## Setup and Installation
 
-Open two PowerShell terminals at the repository root. Install dependencies once.
+The commands below use Windows PowerShell. Install Python 3.13 and make sure `python --version` resolves to it. Access to the private GitHub repository is required for cloning.
 
-### Backend
-
-~~~powershell
-Set-Location backend
-python -m venv .venv
-& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-& .\.venv\Scripts\python.exe -m uvicorn api.main:app --host 127.0.0.1 --port 8000
-~~~
-
-Put provider credentials in backend/.env using backend/.env.example as a guide.
-Groq accepts GROQ_API_KEY or the numbered GROQ_API_KEY_1 through GROQ_API_KEY_3.
-Set FORGE_GROQ_KEY_SLOT to 1, 2 or 3 in backend/.env to select a numbered key, then restart Uvicorn.
-A configured provider must still have a valid key and available quota. RAG uses
-the locally cached MiniLM embedding model.
-
-### Frontend (Streamlit)
-
-Streamlit uses the FastAPI backend for builds, uploads, chats, evaluations and artifacts.
-
-In the second terminal, from the repository root:
+**Terminal 1, backend**
 
 ```powershell
-py -3.11 -m venv .\streamlit_frontend\.venv
+git clone https://github.com/ShubhangiDimri/ForgeAI.git
+Set-Location ForgeAI\backend
+python -m venv .venv
+$python = '.\.venv\Scripts\python.exe'
+& $python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+notepad .env
+& $python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+& $python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+In `backend/.env`, set a valid `GROQ_API_KEY` or one of `GROQ_API_KEY_1` through `GROQ_API_KEY_4`. Optionally set `FORGE_GROQ_KEY_SLOT` to prefer a numbered key. For NVIDIA use `NVIDIA_API_KEY`. For Cloudflare set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`. Keep credentials server-side. The MiniLM command downloads weights on first use. The application then loads them from the local cache. Ollama requires a running server and an installed model tag.
+
+**Terminal 2, frontend, from the repository root**
+
+```powershell
+python -m venv .\streamlit_frontend\.venv
 $uiPython = '.\streamlit_frontend\.venv\Scripts\python.exe'
 & $uiPython -m pip install -r .\streamlit_frontend\requirements.txt
 $env:FORGEAI_API_URL = 'http://127.0.0.1:8000'
 & $uiPython -m streamlit run .\streamlit_frontend\app.py
 ```
 
-For Streamlit Community Cloud, select `streamlit_frontend/app.py` as the entry
-point and set `FORGEAI_API_URL` to the HTTPS URL of the separately hosted
-FastAPI service. Set `FORGEAI_API_TOKEN` only if your backend gateway accepts a
-bearer token. LLM keys belong in the backend environment. Restrict reviewer access
-to the app and protect the backend independently. FastAPI stores runs and
-uploads, so persistence depends on the backend host's storage.
+Open [Streamlit](http://127.0.0.1:8501) or the [FastAPI reference](http://127.0.0.1:8000/docs).
 
-Open http://127.0.0.1:8501. The FastAPI reference is at http://127.0.0.1:8000/docs.
-
-## Windows PowerShell setup
-
-From `backend/`, with Python 3.11+ and Ollama installed:
+**CLI, from `backend/`**
 
 ```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\python -m pip install -r requirements.txt
-$python = ".\.venv\Scripts\python.exe"
-ollama list
-Get-PSDrive C
-Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize,FreePhysicalMemory
+$python = '.\.venv\Scripts\python.exe'
+$brief = (Get-Content -Raw .\demo_data\academic_factory_brief.txt).Trim()
+& $python -m forgeai build --brief $brief --docs .\demo_data\academic --out .\artifacts\my-academic-run --non-interactive --model groq:openai/gpt-oss-20b --judge-model groq:openai/gpt-oss-120b --max-iterations 1
+& $python -m forgeai chat --config .\artifacts\my-academic-run\agent_config.json
 ```
 
-Start Ollama with `ollama serve` in another terminal if necessary. After checking free resources, provision missing models once:
+Use a fresh output directory for each build. Add `--prototype-only` to skip evaluation. To recover an interrupted evaluation, run `python -m forgeai evaluate --run <run-folder> --resume-generation` before the dataset is frozen, or use `--resume-scoring` after it is frozen. Use the backend environment and the run's original models and scoring configuration.
+
+## How to Use
+
+1. Open **Build Agent**. Enter a brief and upload PDF, TXT or CSV documents up to 10 MB per file, or choose a bundled dataset. A full evaluation needs at least two source documents for cross-document cases. Use prototype-only mode for a single document.
+2. Select a model and iteration budget. With interactive intake enabled, answer any clarification questions and review evidence and limitations before approving. Leave it disabled for unattended execution.
+3. Open **Evaluations** to inspect the frozen cases, per-case evidence, metrics and optimization log. An interrupted run can expose a retry or resume action.
+4. Test the saved agent in **Playground**. Expand source passages and inspect tool activity. Use **Grounding OFF** to verify that the agent abstains from document-specific answers.
+5. Open **Reports** to preview the selected definition, requirements, coverage and scorecards. Download individual files or the run ZIP.
+
+## Demonstration Results
+
+| Live run | Baseline | Iteration 1 | Retained | Change |
+| --- | ---: | ---: | --- | --- |
+| [Academic policy](backend/artifacts/groq-academic-final/) | 12/20 | 11/20 | v0 | Required verified citation excerpts |
+| [Spare-parts procurement](backend/artifacts/groq-procurement-final/) | 12/20 | 11/20 | v0 | Tightened tool-selection instructions |
+| [Museum collections](backend/artifacts/groq-museum-rehearsal-r2/) | 13/20 | 14/20 | v1 | Clarified scope and disambiguation instructions |
+
+Academic and Procurement retained their baselines because the candidate versions passed fewer cases on the same frozen questions. Academic baseline recorded one invalid route response. Procurement baseline recorded one judge HTTP 429. Both iteration runs and both museum versions recorded zero infrastructure errors.
+
+Each run folder contains the definition, frozen dataset, raw results, scorecards, iteration log and final report. The [demo inputs and synthesis prompts](backend/demo_data/) and [evaluation prompts](backend/forgeai/prompts/) are included. See the [assignment verification](ASSIGNMENT_VERIFICATION.md) for the evidence mapped to all nine requirements.
+
+## Evaluation and Reliability
+
+- Generated cases use source anchors and a frozen dataset hash. The judge reviews one anonymous response at a time using a consistent rubric. Deterministic citation, numeric and response checks limit reliance on the semantic judge.
+- The critic classifies semantic failures as retrieval miss, prompt defect, hallucination or wrong refusal. It records the changed fields, rationale, affected cases and measured scores. Infrastructure errors are tracked separately.
+- Hosted clients apply bounded retries and respect cooldowns. Configured Groq keys can rotate on the same model. Automatic provider selection is available for compatible calls. Agent and judge model IDs stay pinned within scored comparisons.
+- Checkpoints preserve accepted drafts and per-case results. Resume checks protect comparison integrity against changes to the frozen dataset and recorded scoring setup.
+
+## Testing
+
+From `backend/`:
 
 ```powershell
-ollama pull gemma2:2b
-& $python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+& .\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider
 ```
 
-## Build, reload and verify
+**83 passed**, with one Starlette test-client deprecation warning. Automated tests use fixtures for model and provider behavior. The demonstration scores above come from saved live executions.
 
-```powershell
-$brief = (Get-Content -Raw .\demo_data\brief.txt).Trim()
-& $python -m forgeai build --prototype-only --brief $brief --docs .\demo_data\academic --out .\artifacts\my-run --non-interactive
-& $python -m forgeai chat --config .\artifacts\my-run\agent_config.json
-& $python -m forgeai chat --config .\artifacts\my-run\agent_config.json --question "What is the minimum attendance?"
-& $python -m pytest -q
-& $python -m tests.smoke_live .\artifacts\my-run\agent_config.json
-```
+## Known Limitations
 
-Use a fresh run directory for every build. Omit `--non-interactive` to answer intake questions. Enter `/quit` to end chat. Override the build model with `--model` or `FORGE_MODEL`. Set `FORGE_OLLAMA_URL` to a trusted local endpoint if using a different port. Use `--embedding` for a locally cached Sentence Transformers model or directory. Build and chat load embedding weights offline.
+- Provider rate limits can pause an evaluation. Keep the run directory intact for recovery.
+- Clarification and mixed-scope answers can still fail. Citation validation verifies provenance, while factual entailment and relevance still depend partly on the model.
+- Small local models can be configured through Ollama. Full current factory performance on a small local model remains unverified.
+- Historical scores predate the latest judge safeguards. Use a fresh pinned baseline to measure changes under the current rubric.
+- Image-only PDFs require OCR before ingestion.
 
-## Modules and artifacts
+## Demo Video and Deployment
 
-- `forgeai/documents.py` reads text-bearing PDF pages, UTF-8 text files and CSV rows, then creates word windows with stable source IDs. CSV row numbers start at 1 after the header.
-- `intake.py` uses excerpts and the brief to generate clarifications. Blank answers are saved as unresolved.
-- `generator.py` generates settings, selects tools and publishes a complete new run after successful validation.
-- `retrieval.py` normalizes embeddings and searches FAISS by cosine score with the generated cutoff and candidate count.
-- `coverage.py` checks requested topics against retrieval results and verifies quoted evidence. Unverified or absent evidence restricts the topic.
-- `tools.py` validates exact CSV lookups, arithmetic and local dates. CSV searches only the run snapshot.
-- `runner.py` reloads the saved definition, enforces restrictions and available tools, and validates answer citations. `llm.py` handles schema-constrained Ollama calls. Templates live under `forgeai/prompts/`.
-- Each completed build writes `requirements.json`, `coverage.json`, `document_manifest.json`, `agent_config.json` and `corpus.json`. Keep these together. Source SHA-256 hashes describe the original files. The corpus digest detects a mismatched snapshot. Chat rebuilds the in-memory vector index once per session.
-- `tests/test_factory.py` runs local unit tests with real parsers and FAISS plus explicit test doubles for generation and embeddings. `tests/smoke_live.py` runs three academic acceptance questions against a real model and stores their results in `smoke.json`.
+- **Demo video:** link pending.
+- **Hosted Streamlit app:** link pending.
+- **Hosted API:** link pending.
 
-## Boundaries
-
-Semantic scope, tool relevance and factual entailment depend on the model. Exact citation and quote checks establish provenance but cannot prove every paraphrase. Intake samples two excerpts per file. Large folders, long rows and long conversation inputs can exceed the model context. Chat handles each question independently. Scanned PDFs require external OCR before ingestion. The optional weather capability calls the fixed Open-Meteo endpoint only when selected.
-
-The three academic smoke cases are fixed regression checks. Full factory evaluation generates a separate, frozen case set from the supplied documents.
-
-
-## Hosted Providers & Fallback
-
-ForgeAI supports local Ollama as well as free-tier hosted endpoints configured via `.env` (gitignored):
-- **Groq**: `groq:openai/gpt-oss-120b` / `groq:openai/gpt-oss-20b` (`GROQ_API_KEY`)
-- **NVIDIA**: `nvidia:nvidia/nemotron-3.5-lightning-30b-a3b` (`NVIDIA_API_KEY`)
-- **Cloudflare Workers AI**: `cloudflare:@cf/meta/llama-3.3-70b-instruct-fp8-fast` (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`)
-- **Fallback**: Use `--model auto` or `FORGE_FALLBACK_PROVIDERS=groq,cloudflare,nvidia` for automatic provider fallback on infrastructure errors.
-
-To resume an interrupted evaluation from saved case results without re-generating the frozen dataset:
-```powershell
-python -m forgeai evaluate --resume-scoring --run .\artifacts\groq-academic-final
-```
-
-## Verified local run, 24 November 2026
-
-Python 3.13.5, installed Gemma 2B via Ollama, cached MiniLM embeddings and CPU FAISS. This machine had 15.34 GiB total RAM, about 1.14 GiB free and about 690 GiB free disk at inspection. Python 3.11 and Qwen were unavailable for verification. No model weights were downloaded.
-
-The final unit run completed with 14 passed in 6.58 seconds. The final real build used the commands above with the system Python, --model gemma2:2b and the output directory artifacts/academic-final. All three live checks passed after reloading the definition. Attendance was answered as 75% with attendance.txt#text:c1. Scholarship eligibility and the unrelated geography question were refused. Coverage also identified the one-attempt reassessment rule in assessment.txt. No tools were selected. Read artifacts/academic-final/smoke.json for the actual responses.
-
-Earlier development runs remain under artifacts/academic and artifacts/academic-v2. The first wrongly refused attendance and selected the directory CSV. The second missed reassessment coverage and initially requested an unauthorized tool, which the runner blocked. The final factory constrains document-only routing and resolves selected evidence sentences to real source IDs. The intake can still duplicate paraphrased topics and ask factual questions instead of useful preference questions. The inferred formal tone was recorded. English capability matching may omit legitimate tools on unusual briefs. Generalization to a second domain, Qwen, and Python 3.11 remain unverified.
-
-## Full factory on Windows
-
-With an existing Ollama server and cached MiniLM, run the commands below from the project root. A new output directory is required for each build. If using the alternate local server, set FORGE_OLLAMA_URL to its address.
-
-```powershell
-$env:FORGE_OLLAMA_URL = 'http://127.0.0.1:11439'
-$env:OMP_NUM_THREADS = '1'
-$academic = (Get-Content -Raw .\demo_data\brief.txt).Trim()
-$procurement = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
-python -m forgeai build --non-interactive --model gemma2:2b --brief $academic --docs .\demo_data\academic --out .\artifacts\my-full-academic
-python -m forgeai build --non-interactive --model gemma2:2b --brief $procurement --docs .\demo_data\procurement --out .\artifacts\my-full-procurement
-python -m forgeai chat --config .\artifacts\my-full-procurement\agent_config.json
-python -B -m pytest -q -p no:cacheprovider
-```
-
-To start the alternate server in a separate PowerShell terminal:
-
-```powershell
-$env:OLLAMA_HOST = '127.0.0.1:11439'
-$env:OLLAMA_MODELS = 'C:\Users\shubh\.ollama\models'
-ollama serve
-```
-
-Full builds generate and freeze at least 20 cases across five categories, then measure a baseline and up to three targeted iterations. New builds default to the installed Gemma 2B model. Use --model or FORGE_MODEL to select another installed model. The judge defaults to the agent model. Set --judge-model or FORGE_JUDGE_MODEL to another installed model to assess independently. Keep each run directory intact. Chat loads the selected configuration in the run root. The source snapshot supports actual rechunking. Historical Phase A configs still load without that snapshot.
-
-For a fresh prototype run, add --prototype-only. To evaluate a new prototype with a source snapshot, run python -m forgeai evaluate --run followed by the run path. Evaluation preserves metric files per run and refuses to overwrite an existing evaluation run. Interrupted runs retain available checkpoints.
-
-The keyless weather tool uses the fixed Open-Meteo forecast endpoint. It accepts explicit latitude and longitude and sends only those coordinates and fixed query fields. Its current conditions are in UTC. Calculator and CSV lookup execute locally. See DEVELOPMENT_PROGRESS.md and PROJECT_STATUS.md for observed results and live verification limits.
-
-
-## Groq Cloud on the Free Plan
-
-ForgeAI can use Groq for chat completions while keeping ingestion, embeddings, retrieval
-and tools local. Groq receives the brief, relevant document text and evaluation payloads.
-Use synthetic or approved documents. Groq's Free Plan covers both configured GPT-OSS
-models within its limits. Use a key from a Free Plan organization for zero usage charges.
-Create a project-root .env containing GROQ_API_KEY=your-key. The file is ignored by Git.
-
-From the project root in PowerShell, using a Python environment with the project dependencies
-and the cached MiniLM embedding model:
-
-~~~powershell
-$academic = (Get-Content -Raw .\demo_data\academic_factory_brief.txt).Trim()
-$procurement = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
-python -m forgeai build --groq --non-interactive --brief $academic --docs .\demo_data\academic --out .\artifacts\my-groq-academic
-python -m forgeai build --groq --non-interactive --brief $procurement --docs .\demo_data\procurement --out .\artifacts\my-groq-procurement
-python -m forgeai chat --config .\artifacts\my-groq-academic\agent_config.json
-~~~
-
-The default Groq agent and case generator use openai/gpt-oss-120b. The judge uses
-openai/gpt-oss-20b. Override with --model groq:<model-id> or --judge-model groq:<model-id>.
-Choose fresh output directories for each run. A saved agent remembers its backend through
-its model name. Local Ollama builds still use their existing model tags.
-
-If the Free Plan rate limit interrupts evaluation before the dataset is frozen and
-the run saved accepted drafts, it can resume in the same folder with unchanged prompts:
-
-~~~powershell
-python -m forgeai evaluate --resume-generation --run .\artifacts\my-groq-academic
-~~~
-
-Run the two demos sequentially because they share the same account quotas.
-
-Use --max-iterations 1 for a shorter baseline and optimization run. The default allows three iterations.
-
-### NVIDIA Free Endpoint
-
-Set NVIDIA_API_KEY in the same project-root .env, then select the model explicitly.
-This uses a separate run folder and sends model payloads to NVIDIA.
-
-~~~powershell
-$brief = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
-python -m forgeai build --non-interactive --max-iterations 1 --model nvidia:nvidia/nemotron-3.5-lightning-30b-a3b --brief $brief --docs .\demo_data\procurement --out .\artifacts\my-nvidia-procurement
-~~~
-
-
-## Replay the citation precision experiment
-
-From backend/ in PowerShell, use the existing Groq Free Plan credentials:
-
-~~~powershell
-$env:HF_HUB_OFFLINE = '1'
-$env:OMP_NUM_THREADS = '2'
-& .\.venv\Scripts\python.exe -m scripts.measure_citation_precision --run artifacts/groq-academic-final --out artifacts/citation-precision-academic-r1
-& .\.venv\Scripts\python.exe -m scripts.measure_citation_precision --run artifacts/groq-procurement-final --out artifacts/citation-precision-procurement-r1
-~~~
-
-Use a new output folder for an independent repetition. To resume an interrupted
-experiment, rerun its exact command with the same output path, credentials slot,
-code and prompts. It resumes from saved case results and keeps the original
-models, judge and frozen cases. Historical runs are never overwritten. The
-corrected audit datasets under backend/eval_datasets/corrected-v1 require their
-own baseline and should not be compared directly to these runs.
+For Streamlit Community Cloud, use `streamlit_frontend/app.py` as the entry point and set `FORGEAI_API_URL` to the hosted FastAPI HTTPS URL. On the backend host, configure provider credentials, protect reviewer access and persist uploads and run artifacts across restarts.

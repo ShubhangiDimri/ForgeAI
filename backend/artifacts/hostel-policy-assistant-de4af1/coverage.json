@@ -1,0 +1,182 @@
+{
+  "hostel fees": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Single room: 60000 per semester."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Double sharing: 42000 per semester."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Triple sharing: 30000 per semester."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Mess fee: 18000 per semester for every resident."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Refundable security deposit: 5000, paid once on first admission."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Late payment attracts a flat 500 fee after the payment deadline of 15 July 2026."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "For cancellation before move-in, 90% of the room fee is refunded."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Cancellation within 15 calendar days after move-in receives 50% of the room fee."
+      }
+    ],
+    "limitation": "",
+    "retrieval_miss": false,
+    "inconclusive": false
+  },
+  "visitor timings": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "hostel_access_and_leave.txt#text",
+        "quote": "FICTIONAL UNIVERSITY — VISITOR AND LEAVE POLICY (synthetic test data) Visitors are permitted from 4 PM to 7 PM Monday through Friday, and 10 AM to 6 PM Saturday and Sunday."
+      }
+    ],
+    "limitation": "",
+    "retrieval_miss": false,
+    "inconclusive": false
+  },
+  "leave procedures": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "hostel_access_and_leave.txt#text",
+        "quote": "The warden must approve the request before departure."
+      },
+      {
+        "id": "hostel_access_and_leave.txt#text",
+        "quote": "Emergency leave may be requested immediately by contacting the warden; prior 24-hour notice is waived, but approval is still required."
+      },
+      {
+        "id": "hostel_access_and_leave.txt#text",
+        "quote": "Overnight leave requires a request submitted to the warden at least 24 hours before departure, with destination, emergency contact and expected return date."
+      },
+      {
+        "id": "hostel_access_and_leave.txt#text",
+        "quote": "The warden must approve the request before departure."
+      },
+      {
+        "id": "hostel_access_and_leave.txt#text",
+        "quote": "Emergency leave may be requested immediately by contacting the warden; prior 24-hour"
+      }
+    ],
+    "limitation": "",
+    "retrieval_miss": false,
+    "inconclusive": false
+  },
+  "room allocation": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "FICTIONAL UNIVERSITY — ROOM ALLOCATION POLICY (synthetic test data) Room allocation is managed by the hostel office."
+      },
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "First-year students are normally allocated triple-sharing rooms."
+      },
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "Returning students may request single or double-sharing rooms, subject to availability."
+      },
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "Approved accessibility accommodations take priority over ordinary room preferences."
+      },
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "Room change requests may be submitted after the first 14 calendar days of the semester."
+      },
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "A room change requires written approval from the warden."
+      },
+      {
+        "id": "room_allocation.txt#text",
+        "quote": "Residents must not exchange rooms without approval."
+      }
+    ],
+    "limitation": "",
+    "retrieval_miss": false,
+    "inconclusive": false
+  },
+  "refunds": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "after move-in receives 50% of the room fee."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "After that, no room fee refund is available."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Security deposit is refunded within 30 days of checkout, less documented damage charges."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Mess fee refund rules are not specified in this policy."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "For cancellation before move-in, 90% of the room fee is refunded."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "Cancellation within 15 calendar days after move-in receives 50% of the room fee."
+      },
+      {
+        "id": "hostel_fees.txt#text",
+        "quote": "After that, no room fee refund is available."
+      }
+    ],
+    "limitation": "",
+    "retrieval_miss": false,
+    "inconclusive": false
+  },
+  "disciplinary rules": {
+    "status": "supported",
+    "evidence": [
+      {
+        "id": "hostel_discipline.txt#text",
+        "quote": "FICTIONAL UNIVERSITY — DISCIPLINARY AND SAFETY POLICY (synthetic test data) Quiet hours are 10 PM to 6 AM daily."
+      },
+      {
+        "id": "hostel_discipline.txt#text",
+        "quote": "Smoking, alcohol consumption and unauthorized electrical cooking appliances are prohibited in hostel rooms."
+      },
+      {
+        "id": "hostel_discipline.txt#text",
+        "quote": "For a first quiet-hours violation, the warden issues a written warning."
+      },
+      {
+        "id": "hostel_discipline.txt#text",
+        "quote": "A second quiet-hours violation attracts a 500 INR fine."
+      },
+      {
+        "id": "hostel_discipline.txt#text",
+        "quote": "Further violations are referred to the disciplinary committee; no fixed additional fine is specified."
+      }
+    ],
+    "limitation": "",
+    "retrieval_miss": false,
+    "inconclusive": false
+  }
+}

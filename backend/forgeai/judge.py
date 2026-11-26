@@ -1,12 +1,11 @@
 """Blinded per-case judgment with deterministic evidence checks."""
-from decimal import Decimal
-import re
 from typing import Literal
 from pydantic import computed_field
 from .documents import anchor_id
 from .evaluation import Case
 from .runner import Execution
 from .schema import Model, Text
+from .tools import numeric_values as numeric_literals
 
 Failure = Literal["retrieval miss", "prompt defect", "hallucination", "wrong refusal"]
 
@@ -34,11 +33,6 @@ class Result(Model):
         return None if self.status == "error" else int(self.status == "passed")
 
 
-def numeric_literals(text: str) -> set[Decimal]:
-    return {Decimal(value.replace(",", "")) for value in re.findall(
-        r"(?<![\w.])[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?!\w)", text)}
-
-
 def matching_facts(case: Case, chunks: dict[str, str]) -> set[int]:
     return {i for i, fact in enumerate(case.expected_facts)
             if any(anchor_id(key) == fact.source_id and fact.fact in " ".join(text.split())
@@ -48,6 +42,8 @@ def matching_facts(case: Case, chunks: dict[str, str]) -> set[int]:
 def classify(case: Case, execution: Execution, judgment: Judgment, evidence_gap: bool) -> Failure:
     answer = execution.answer
     assert answer is not None
+    if answer.outcome == "clarification":
+        return "prompt defect" if case.category == "ambiguous" else "wrong refusal"
     if case.expected_refusal and not answer.refused:
         return "hallucination" if not judgment.grounded else "prompt defect"
     if evidence_gap and (answer.refused or not judgment.correct or not judgment.grounded):
@@ -71,39 +67,42 @@ def assess(case: Case, execution: Execution, model) -> Result:
     evidence = {p.id: p.text for p in execution.retrieved}
     for call in execution.tools:
         evidence.update(call.results)
-    cited = {key: evidence[key] for key in answer.citations if key in evidence}
-    membership = len(cited) == len(set(answer.citations)) and (answer.refused or bool(cited))
+    cited = {key: evidence[key] for key in sorted(set(answer.citations)) if key in evidence}
+    membership = len(cited) == len(set(answer.citations)) and (answer.refused or answer.outcome == "clarification" or bool(cited))
     expected = set(range(len(case.expected_facts)))
     evidence_gap = matching_facts(case, evidence) != expected
     # All expected source documents should be represented by at least one relevant citation.
-    covered_sources = {anchor_id(key) for key in cited}
     expected_documents = {a.document for a in case.expected_facts}
     # Guard against a judge accepting an unrelated numeric value on simple numeric evidence.
-    numeric_sources = " ".join(evidence.values())
+    numeric_sources = "\n".join([*cited.values(), *(value for call in execution.tools
+                              for key, value in call.results.items() if key.startswith("tool:"))])
     source_values = numeric_literals(numeric_sources)
     answer_values = numeric_literals(answer.answer)
     expected_values = numeric_literals(" ".join(fact.fact for fact in case.expected_facts))
-    numeric_conflict = bool(expected_values and answer_values and not answer_values.issubset(
-        source_values | numeric_literals(case.question)))
-    cited_documents = {a.document for a in case.expected_facts if a.source_id in covered_sources}
+    user_values = numeric_literals("\n".join([case.question, *(turn.question for turn in case.history)]))
+    numeric_conflict = bool(expected_values and answer_values - (source_values | user_values))
+    cited_documents = {case.expected_facts[i].document for i in matching_facts(case, cited)}
     tool_names = {tool.name for tool in execution.tools if tool.results}
     tools_correct = set(case.expected_tools) <= tool_names and (not case.expected_refusal or not tool_names)
-    if (case.category in {"out_of_scope", "unsupported"} and case.expected_refusal
-            and answer.refused and execution.refusal_code and not answer.citations and not execution.tools):
-        judgment = Judgment(correct=True, grounded=True, citations_relevant=True,
-                            refusal_appropriate=True, tools_correct=True,
-                            explanation=f"Agent refused without factual claims ({execution.refusal_code}).")
-    elif not membership or (not case.expected_refusal and answer.refused) or (evidence_gap and not case.expected_refusal):
+    clarification = answer.outcome == "clarification"
+    matched_behavior = (clarification or (answer.outcome is None and answer.refused)) if case.category == "ambiguous" else (
+        answer.refused if case.expected_refusal else not answer.refused and not clarification)
+    if case.behavior == "mixed_scope":
+        matched_behavior &= answer.outcome == "partial"
+    if not membership or (not case.expected_refusal and answer.refused) or (evidence_gap and not case.expected_refusal):
         judgment = Judgment(correct=False, grounded=membership and not evidence_gap, citations_relevant=membership,
-                            refusal_appropriate=answer.refused == case.expected_refusal, tools_correct=tools_correct,
+                            refusal_appropriate=matched_behavior, tools_correct=tools_correct,
                             explanation="Deterministic check found missing expected evidence, invalid citations or wrong refusal.")
     else:
         try:
             judgment = model.ask("judge", {
-                "question": case.question, "category": case.category,
-                "expect_refusal": case.expected_refusal, "expected_facts": [a.model_dump() for a in case.expected_facts],
+                "question": case.question, "category": case.category, "behavior": case.behavior,
+                "history": [turn.model_dump() for turn in case.history],
+                "expected_clarification": case.category == "ambiguous",
+                "expect_refusal": case.expected_refusal and case.category != "ambiguous",
+                "expected_facts": [a.model_dump() for a in case.expected_facts],
                 "expected_tools": case.expected_tools, "answer": answer.model_dump(),
-                "cited_evidence": cited, "retrieved_evidence": evidence,
+                "cited_evidence": cited, "retrieved_evidence": dict(sorted(evidence.items())),
                 "tool_trace": [tool.model_dump() for tool in execution.tools],
             }, Judgment)
         except (RuntimeError, ValueError, OSError) as exc:
@@ -111,12 +110,12 @@ def assess(case: Case, execution: Execution, model) -> Result:
         judgment.correct &= not numeric_conflict
         judgment.grounded &= not numeric_conflict
         judgment.citations_relevant &= membership and (answer.refused or expected_documents <= cited_documents)
-        if case.expected_refusal:
-            judgment.refusal_appropriate &= answer.refused
-            if answer.refused and not answer.citations:
-                judgment.citations_relevant = True
+        if not case.expected_refusal and case.behavior != "mixed_scope":
+            judgment.refusal_appropriate = matched_behavior
         else:
-            judgment.refusal_appropriate = not answer.refused
+            judgment.refusal_appropriate &= matched_behavior
+        if (answer.refused or clarification) and not answer.citations:
+            judgment.citations_relevant = True
         if not execution.tools:
             judgment.tools_correct = tools_correct
         else:

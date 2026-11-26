@@ -12,6 +12,10 @@ class Assessment(Model):
     limitation: str
 
 
+class AssessmentBatch(Model):
+    findings: dict[int, Assessment]
+
+
 def tabular_support(topic: str, passages: list[Passage]) -> Finding | None:
     """Recognize document-backed lookup and subtotal inputs using actual table cells."""
     words = set(re.findall(r"[a-z0-9]+", topic.casefold()))
@@ -36,7 +40,22 @@ def tabular_support(topic: str, passages: list[Passage]) -> Finding | None:
 
 def assess(requirements: Requirements, index: Index, model: ModelClient) -> dict[str, Finding]:
     results = {}
+    pending = {}
     for topic in requirements.must_answer:
+        if re.fullmatch(r"(?:provide |report )?(?:the )?(?:current date|today.s date)", topic, re.I):
+            results[topic] = Finding(status="supported", evidence=[], tool="current_date",
+                                     limitation="The current-date tool supplies the date in UTC.")
+            continue
+        if re.fullmatch(r"(?:provide |report )?(?:current |live |real.time )?weather(?: conditions)?", topic, re.I):
+            results[topic] = Finding(status="partial", evidence=[], tool="weather",
+                                     limitation="Open-Meteo can supply current conditions when coordinates are supplied. Forecasts or other live data need separate support.")
+            continue
+        if (re.search(r"\b(?:real[\s\-\u2010-\u2015]?time|live|up[ -]to[ -]date)\b", topic, re.I)
+                and not re.search(r"\b(?:weather|forecast|current date|today.s date)\b", topic, re.I)):
+            results[topic] = Finding(status="unsupported", evidence=[], limitation=(
+                "Static documents cannot verify live state. Connect an authoritative live data API "
+                "for this requirement or limit the answer to dated records and policies."))
+            continue
         passages = getattr(index, "passages", None)
         tabular = tabular_support(topic, passages) if isinstance(passages, list) else None
         if tabular:
@@ -59,7 +78,34 @@ def assess(requirements: Requirements, index: Index, model: ModelClient) -> dict
                                      limitation="No candidate cleared retrieval and an exhaustive review did not fit.")
             continue
         numbered = {i: q.quote for i, q in enumerate(candidates, 1)}
-        assessment = model.ask("coverage", {"topic": topic, "sentences": numbered}, Assessment)
+        pending[topic] = (candidates, numbered, retrieved, exhaustive)
+
+    batched = {}
+    exhaustive_topics = [topic for topic, (_, _, _, exhaustive) in pending.items() if exhaustive]
+    if isinstance(model, ModelClient) and len(exhaustive_topics) > 1:
+        canonical = [Quote(id=p.id, quote=sentence) for p in index.passages
+                     for sentence in re.split(r"(?<=[.!?])\s+", p.text) if sentence.strip()]
+        numbered = {i: q.quote for i, q in enumerate(canonical, 1)}
+        labelled = {i: q.model_dump() for i, q in enumerate(canonical, 1)}
+        for start in range(0, len(exhaustive_topics), 4):
+            group = exhaustive_topics[start:start + 4]
+            try:
+                batch = model.ask("coverage_batch", {"topics": dict(enumerate(group, 1)), "sentences": labelled}, AssessmentBatch)
+            except ValueError:
+                continue
+            for index_in_group, topic in enumerate(group, 1):
+                finding = batch.findings.get(index_in_group)
+                if not finding:
+                    continue
+                words = {word.rstrip("s") for word in re.findall(r"[a-z]{3,}", topic.casefold())}
+                relevant = [n for n in finding.sentence_numbers if n in numbered and words &
+                            {word.rstrip("s") for word in re.findall(r"[a-z]{3,}", numbered[n].casefold())}]
+                if finding.status != "unsupported" and not relevant:
+                    continue
+                batched[topic] = finding.model_copy(update={"sentence_numbers": relevant})
+                pending[topic] = (canonical, numbered, pending[topic][2], True)
+    for topic, (candidates, numbered, retrieved, exhaustive) in pending.items():
+        assessment = batched.get(topic) or model.ask("coverage", {"topic": topic, "sentences": numbered}, Assessment)
         numbers = list(dict.fromkeys(assessment.sentence_numbers))
         if assessment.status == "unsupported":
             results[topic] = Finding(status="unsupported", evidence=[],
@@ -72,5 +118,5 @@ def assess(requirements: Requirements, index: Index, model: ModelClient) -> dict
             results[topic] = Finding(status=assessment.status, evidence=evidence,
                                      retrieval_miss=not any(e.id in retrieved for e in evidence),
                                      limitation=assessment.limitation)
-    return results
+    return {topic: results[topic] for topic in requirements.must_answer}
 

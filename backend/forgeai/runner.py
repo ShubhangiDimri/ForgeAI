@@ -1,17 +1,21 @@
 from pathlib import Path
+from decimal import Decimal
 import re
 from typing import Literal
-from pydantic import TypeAdapter
+from pydantic import Field, TypeAdapter
 from .documents import chunk, digest
 from .llm import make_model
 from .retrieval import Index, exact_rows, prose_queries
 from .schema import Answer, Config, Model, Passage, Quote, Text, Tool
-from .tools import REGISTRY, execute
+from .tools import Arithmetic, REGISTRY, SumPlan, execute, numeric_values, verified_sum
+
+CALCULATOR_SCHEMA = TypeAdapter(Arithmetic | SumPlan).json_schema()
 
 
 class Route(Model):
-    decision: Literal["answer", "refuse"]
+    decision: Literal["answer", "refuse", "clarify"]
     reason: Text
+    refusal_type: Literal["out_of_scope", "insufficient_evidence"] | None = None
     tool: Tool | None = None
     arguments: dict = {}
 
@@ -62,6 +66,22 @@ class QuotedAnswer(Answer):
     evidence_quotes: list[Quote]
 
 
+class ChatTurn(Model):
+    question: str = Field(min_length=1, max_length=2000)
+    clarification: str | None = Field(default=None, max_length=1000)
+
+
+class ResolvedQuestion(Model):
+    question: str = Field(min_length=1, max_length=2000)
+
+
+def clarification_answer(reason: str) -> Answer:
+    if not reason.endswith("?"):
+        detail = re.sub(r"^(?:I (?:need|would need) to know|Need to know|Need)\s+", "", reason, flags=re.I)
+        reason = f"Could you clarify {detail.rstrip('.')}?"
+    return Answer(answer=reason, citations=[], refused=False, outcome="clarification")
+
+
 class Runner:
     def __init__(self, path: Path, *, model_override: str | None = None):
         self.config = Config.model_validate_json(path.read_bytes())
@@ -76,7 +96,6 @@ class Runner:
             if digest(raw) != self.config.sources_sha256:
                 raise ValueError("Source snapshot does not match saved definition")
             self.sources = adapter.validate_json(raw)
-            self.corpus = chunk(self.sources, self.config.settings)
         self.model = make_model(model_override or self.config.model)
         self.index = Index(self.corpus, self.config.settings, self.config.embedding)
 
@@ -95,9 +114,20 @@ class Runner:
     def answer(self, question: str) -> Answer:
         return self._answer(question, Execution())
 
-    def trace(self, question: str) -> Execution:
+    def trace(self, question: str, *, history: list[ChatTurn] | None = None, grounding: bool = True) -> Execution:
         trace = Execution()
         try:
+            if not grounding:
+                trace.answer = Answer(answer="Document grounding is disabled. Enable Grounding to verify this request against the agent's sources.",
+                                      citations=[], refused=True, outcome="ungrounded")
+                return trace
+            if history:
+                question = self.model.ask("resolve_question", {"question": question,
+                    "history": [turn.model_dump() for turn in history[-6:]]}, ResolvedQuestion).question
+            elif re.fullmatch(r"what (?:was|is) my (?:last|previous) (?:question|message)\??", question, re.I):
+                trace.answer = Answer(answer="There is no previous question in this conversation.", citations=[],
+                                      refused=True, outcome="insufficient_evidence")
+                return trace
             trace.answer = self._answer(question, trace)
         except InvalidCitationError as exc:
             trace.invalid_citation = True
@@ -128,14 +158,14 @@ class Runner:
 
     def _answer(self, question: str, trace: Execution) -> Answer:
         config = self.config
-        def refuse(reason: str, code: Literal["restricted", "no_evidence"] | None = None) -> Answer:
+        def refuse(reason: str, code: Literal["restricted", "no_evidence"] | None = None,
+                   outcome: Literal["out_of_scope", "insufficient_evidence"] = "insufficient_evidence") -> Answer:
             trace.refusal_code = code
-            return Answer(answer=reason, citations=[], refused=True)
-        banned = [*config.requirements.must_refuse, *(t for t, f in config.coverage.items() if f.status == "unsupported" and not f.inconclusive)]
-        if any(t.casefold() in question.casefold() for t in banned):
-            return refuse("This topic is restricted by the agent definition.", "restricted")
+            return Answer(answer=reason, citations=[], refused=True, outcome=outcome)
+        if re.search(r"\b(?:ignore|override|disregard) (?:all |any |the )?(?:previous |prior |system )?instructions\b", question, re.I):
+            return refuse("I can help with questions within the agent's scope.", "restricted", "out_of_scope")
         allowed = {t.name for t in config.tools}
-        context = {"question": question, "requirements": config.requirements.model_dump(),
+        context = {"question": question, "requirements": config.requirements.model_dump(exclude={"original_brief", "requester_answers"}),
                    "coverage": {t: ["inconclusive" if f.inconclusive else f.status, f.limitation]
                                 for t, f in config.coverage.items()},
                    "agent_guidance": config.system_prompt}
@@ -177,17 +207,24 @@ class Runner:
             if notes:
                 context["retrieval_note"] = " ".join(notes)
         else:
-            trace.retrieved = self.index.search(question)
+            parts = [part for part in re.split(r"[?;]+\s*|\b(?:and|also)\s+(?=(?:what|when|where|how|who|which|can|is|are|do)\b)", question, flags=re.I) if part.strip()]
+            if len(parts) > 1:
+                groups = [self.index.search(part) for part in parts[:config.settings.top_k]]
+                trace.retrieved = list({p.id: p for i in range(config.settings.top_k)
+                                        for group in groups for p in group[i:i+1]}.values())[:config.settings.top_k]
+            else:
+                trace.retrieved = self.index.search(question)
         evidence = {p.id: p.text for p in trace.retrieved}
-        if not evidence and not allowed:
-            return refuse("No supporting evidence was found.", "no_evidence")
         if config.verify_scope:
             context["scope_review"] = ("Refuse only when the question is outside the declared scope, restricted, "
                                        "or lacks relevant evidence. A paraphrase of a supported topic is in scope.")
         route = self.model.ask("route", {**context, "evidence": evidence,
-                               "tools": {n: REGISTRY[n].model_json_schema() for n in allowed}}, Route if allowed else DocumentRoute)
+                               "tools": {n: CALCULATOR_SCHEMA if n == "calculator" else REGISTRY[n].model_json_schema()
+                                         for n in allowed}}, Route if allowed else DocumentRoute)
+        if route.decision == "clarify":
+            return clarification_answer(route.reason)
         if route.decision == "refuse":
-            return refuse(route.reason)
+            return refuse(route.reason, outcome=route.refusal_type or "insufficient_evidence")
         deferred_calculation = None
         if route.tool != "csv_lookup" and "csv_lookup" in allowed:
             explicit_lookup = self._explicit_csv_lookup(question)
@@ -195,6 +232,7 @@ class Runner:
                 deferred_calculation = route if route.tool == "calculator" else None
                 route = explicit_lookup
         unused = allowed.copy()
+        calculation = None
         for _ in range(2):
             if not route.tool:
                 break
@@ -207,7 +245,24 @@ class Runner:
                     if isinstance(value, bool) or not isinstance(value, (int, float)) or not any(float(n) == value for n in numbers):
                         raise InvalidToolCall("Weather needs explicit coordinates from the question")
             try:
-                call.results = execute(route.tool, route.arguments, unused, self.corpus)
+                if route.tool == "calculator" and "calculator" in unused:
+                    if route.arguments.get("operation") == "sum":
+                        try:
+                            calculation, value = verified_sum(route.arguments, evidence)
+                        except ValueError as exc:
+                            repaired = self.model.ask("calculate", {"question": question, "evidence": evidence,
+                                                                     "validation_error": str(exc)}, SumPlan)
+                            calculation, value = verified_sum(repaired.model_dump(), evidence)
+                            call.arguments = repaired.model_dump(mode="json")
+                        call.results = {"tool:calculator": value}
+                    else:
+                        values = numeric_values("\n".join([question, *evidence.values()]))
+                        args = Arithmetic.model_validate(route.arguments)
+                        if not {Decimal(str(args.left)), Decimal(str(args.right))} <= values:
+                            raise ValueError("Calculator inputs must appear in the question or source evidence")
+                        call.results = execute(route.tool, route.arguments, unused, self.corpus)
+                else:
+                    call.results = execute(route.tool, route.arguments, unused, self.corpus)
             except (ValueError, ArithmeticError) as exc:
                 raise InvalidToolCall(str(exc)) from exc
             unused.remove(route.tool)
@@ -218,25 +273,17 @@ class Runner:
                     or (deferred_calculation is None and not requests_calculation(question))):
                 break
             route = deferred_calculation or self.model.ask("route", {**context, "evidence": evidence, "completed_tools": ["csv_lookup"],
-                                   "tools": {"calculator": REGISTRY["calculator"].model_json_schema()}}, CalculatorRoute)
+                                   "tools": {"calculator": CALCULATOR_SCHEMA}}, CalculatorRoute)
+            if route.decision == "clarify":
+                return clarification_answer(route.reason)
             if route.decision == "refuse":
-                return refuse(route.reason)
+                return refuse(route.reason, outcome=route.refusal_type or "insufficient_evidence")
         if not evidence:
             return refuse("No supporting evidence was found.", "no_evidence")
-        # Return trusted arithmetic directly for a single explicit calculation request.
-        if ("tool:calculator" in evidence and
-                re.search(r"\b(?:use|with) (?:the )?calculator\b", question, re.I) and
-                not re.search(r"\b(?:also|plus tell me|and what|and when|and where|and why)\b", question, re.I)):
-            ids = [key for call in trace.tools for key in call.results]
-            currency = re.search(r"\b(?:in|currency)\s+(USD|EUR|GBP|INR|JPY|CAD|AUD)\b", question, re.I)
-            known_units = " ".join(value for key, value in evidence.items() if key != "tool:calculator")
-            if not currency or re.search(rf"(?<![A-Z]){currency[1]}(?![A-Z])", known_units, re.I):
-                unit = f" {currency[1].upper()}" if currency else ""
-                return Answer(answer=f"The calculation result is {evidence['tool:calculator']}{unit}.",
-                              citations=list(dict.fromkeys(ids)), refused=False)
         schema = QuotedAnswer if config.evidence_only else Answer
         stage = "answer_precise" if config.precise_citations else "answer"
-        answer = self.model.ask(stage, {**context, "evidence": evidence}, schema)
+        answer = self.model.ask(stage, {**context, "evidence": evidence,
+                                       "tool_activity": [tool.model_dump() for tool in trace.tools]}, schema)
         if isinstance(answer, QuotedAnswer) and not answer.refused:
             verified = {q.id for q in answer.evidence_quotes
                         if q.id in evidence and q.quote in evidence[q.id]}
@@ -245,5 +292,21 @@ class Runner:
         if not set(answer.citations).issubset(evidence):
             trace.answer = Answer(answer=answer.answer, citations=answer.citations, refused=answer.refused)
             raise InvalidCitationError("Model cited a source outside retrieved evidence")
-        return Answer(answer=answer.answer, citations=answer.citations, refused=answer.refused)
+        if calculation and not answer.refused and answer.outcome != "clarification" and answer.outcome != "partial":
+            numbers = [format(c.value, ",f") for c in calculation.components]
+            units = f" {calculation.unit}" if calculation.unit else ""
+            breakdown = "\n".join(f"- {c.label}: {value}{units}" for c, value in zip(calculation.components, numbers))
+            return Answer(answer=f"{breakdown}\n\n**Calculation:** {' + '.join(numbers)} = {evidence['tool:calculator']}{units}",
+                          citations=list(dict.fromkeys(c.source for c in calculation.components)),
+                          refused=False, outcome="tool_assisted")
+        if ("tool:calculator" in evidence and not answer.refused and answer.outcome != "clarification"
+                and any(not key.startswith("tool:") for key in evidence)
+                and not any(not key.startswith("tool:") for key in answer.citations)):
+            raise InvalidCitationError("Calculated answers must cite the source of their inputs")
+        outcome = answer.outcome or ("insufficient_evidence" if answer.refused else
+                                     "tool_assisted" if trace.tools else "grounded")
+        citations = answer.citations
+        if "tool:calculator" in evidence and any(not source.startswith("tool:") for source in citations):
+            citations = [source for source in citations if source != "tool:calculator"]
+        return Answer(answer=answer.answer, citations=citations, refused=answer.refused, outcome=outcome)
 

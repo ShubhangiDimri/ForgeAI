@@ -96,6 +96,8 @@ class Scripted:
     model = "mock"
     tool_list = []
     def ask(self, stage, payload, schema):
+        if stage == "resolve_question":
+            return schema(question=payload["question"])
         if stage == "questions":
             return Questions(questions=["Preferred format?"])
         if stage == "requirements":

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 import json
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, build_opener
@@ -23,6 +24,19 @@ class Arithmetic(Model):
     right: float = Field(allow_inf_nan=False)
 
 
+class Component(Model):
+    label: Text
+    value: Decimal = Field(max_digits=16, decimal_places=6, allow_inf_nan=False)
+    source: Text
+    quote: Text
+
+
+class SumPlan(Model):
+    operation: Literal["sum"]
+    components: list[Component] = Field(min_length=2, max_length=12)
+    unit: str = Field(default="", max_length=20)
+
+
 class NoArgs(Model):
     pass
 
@@ -44,6 +58,28 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 REGISTRY = {"csv_lookup": Lookup, "calculator": Arithmetic, "current_date": NoArgs, "weather": Weather}
+
+
+def numeric_values(text: str) -> set[Decimal]:
+    return {Decimal(match.replace(",", "")) for match in re.findall(
+        r"(?<![\w.])[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?!\w|\.\d)", text)}
+
+
+def verified_sum(arguments: dict, evidence: dict[str, str]) -> tuple[SumPlan, str]:
+    plan = SumPlan.model_validate(arguments)
+    seen = set()
+    for component in plan.components:
+        key = (component.source, component.quote, component.value)
+        quote = " ".join(component.quote.split())
+        if (key in seen or component.source.startswith("tool:")
+                or quote not in " ".join(evidence.get(component.source, "").split())
+                or component.value not in numeric_values(component.quote)):
+            raise ValueError("A calculation component lacks a distinct supporting source quotation")
+        seen.add(key)
+    if plan.unit and not any(re.search(rf"(?<!\w){re.escape(plan.unit)}(?!\w)", text, re.I)
+                             for key, text in evidence.items() if not key.startswith("tool:")):
+        raise ValueError("The calculation unit is not stated in source evidence")
+    return plan, str(sum(c.value for c in plan.components))
 
 
 def current_weather(args: Weather) -> dict[str, str]:
@@ -71,10 +107,11 @@ def execute(name: str, arguments: dict, allowed: set[str], corpus: list[Passage]
                 and p.cells.get(args.column) == args.value}
     if isinstance(args, Arithmetic):
         operations = dict(add=operator.add, subtract=operator.sub, multiply=operator.mul, divide=operator.truediv)
-        result = operations[args.operation](args.left, args.right)
+        result = operations[args.operation](Decimal(str(args.left)), Decimal(str(args.right)))
         if not math.isfinite(result):
             raise ValueError("Result outside numeric range")
-        return {"tool:calculator": str(result)}
+        value = format(result.normalize(), "f")
+        return {"tool:calculator": value if "." in value else value + ".0"}
     if isinstance(args, Weather):
         return current_weather(args)
     return {"tool:current_date": datetime.now(timezone.utc).date().isoformat() + " (UTC)"}

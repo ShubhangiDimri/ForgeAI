@@ -1,0 +1,33 @@
+[
+  {
+    "version": 0,
+    "total": 25,
+    "passed": 16,
+    "failed": 9,
+    "error": 0,
+    "pass_rate": 0.64,
+    "dimensions": {
+      "correct": {
+        "passed": 17,
+        "scored": 24
+      },
+      "grounded": {
+        "passed": 19,
+        "scored": 24
+      },
+      "citations_relevant": {
+        "passed": 22,
+        "scored": 24
+      },
+      "refusal_appropriate": {
+        "passed": 18,
+        "scored": 24
+      },
+      "tools_correct": {
+        "passed": 24,
+        "scored": 24
+      }
+    },
+    "seconds": 168.22
+  }
+]
