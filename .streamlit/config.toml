@@ -1,13 +1,12 @@
 [theme]
 base = "light"
-primaryColor = "#B42332"
+primaryColor = "#B43C32"
 backgroundColor = "#FAF9F5"
-secondaryBackgroundColor = "#F3F1EB"
-textColor = "#292724"
+secondaryBackgroundColor = "#F2F0E9"
+textColor = "#242420"
 
 [server]
 maxUploadSize = 10
 
 [browser]
 gatherUsageStats = false
-

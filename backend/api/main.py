@@ -125,6 +125,14 @@ class ResumeRequest(BaseModel):
     judge_model: str | None = None
 
 
+class SettingsUpdateRequest(BaseModel):
+    fallback_order: list[str] = Field(min_length=1, max_length=4)
+    default_model: str = Field(min_length=1)
+    judge_model: str = Field(min_length=1)
+    max_iterations: int = Field(default=1, ge=0, le=3)
+    request_timeout: int = Field(default=45, ge=10, le=240)
+
+
 # ---------------------------------------------------------------------------
 # Health & Providers
 # ---------------------------------------------------------------------------
@@ -190,6 +198,99 @@ def providers() -> dict[str, Any]:
         ],
         "fallback_order": llm_mod._fallback_chain(),
         "default_embedding": os.getenv("FORGE_EMBEDDING", "sentence-transformers/all-MiniLM-L6-v2"),
+        "default_model": os.getenv("FORGE_MODEL", llm_mod.GROQ_DEFAULT),
+        "judge_model": os.getenv("FORGE_JUDGE_MODEL", llm_mod.GROQ_JUDGE),
+        "max_iterations": int(os.getenv("FORGE_MAX_ITERATIONS", "1")),
+        "request_timeout": int(os.getenv("FORGE_REQUEST_TIMEOUT", "45")),
+    }
+
+
+@app.post("/api/providers/{provider_id}/verify")
+def verify_provider(provider_id: str) -> dict[str, Any]:
+    """Perform a minimal live connectivity check without exposing credentials."""
+    import urllib.request
+    import urllib.error
+
+    start = time.monotonic()
+    try:
+        if provider_id == "groq":
+            key = None
+            for var in ("GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2"):
+                try:
+                    key = llm_mod.provider_key(var)
+                    break
+                except RuntimeError:
+                    continue
+            if not key:
+                return {"ok": False, "message": "GROQ_API_KEY not configured", "latency_ms": 0}
+            req = urllib.request.Request(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {key}", "User-Agent": "ForgeAI/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.load(resp)
+            count = len(data.get("data", []))
+            return {"ok": True, "message": f"Connected ({count} models available)", "latency_ms": int((time.monotonic() - start) * 1000)}
+
+        if provider_id == "nvidia":
+            key = llm_mod.provider_key("NVIDIA_API_KEY")
+            req = urllib.request.Request(
+                "https://integrate.api.nvidia.com/v1/models",
+                headers={"Authorization": f"Bearer {key}", "User-Agent": "ForgeAI/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.load(resp)
+            count = len(data.get("data", []))
+            return {"ok": True, "message": f"Connected ({count} models available)", "latency_ms": int((time.monotonic() - start) * 1000)}
+
+        if provider_id == "cloudflare":
+            key = llm_mod.provider_key("CLOUDFLARE_API_TOKEN")
+            account = llm_mod.provider_key("CLOUDFLARE_ACCOUNT_ID")
+            req = urllib.request.Request(
+                f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/models/search?per_page=5",
+                headers={"Authorization": f"Bearer {key}", "User-Agent": "ForgeAI/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.load(resp)
+            ok = bool(data.get("success", True))
+            return {"ok": ok, "message": "Connected to Cloudflare Workers AI" if ok else "Unexpected response", "latency_ms": int((time.monotonic() - start) * 1000)}
+
+        if provider_id == "ollama":
+            url = os.getenv("FORGE_OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/") + "/api/tags"
+            try:
+                with urllib.request.urlopen(url, timeout=3) as resp:
+                    data = json.load(resp)
+                count = len(data.get("models", []))
+                return {"ok": True, "message": f"Local Ollama running ({count} models)", "latency_ms": int((time.monotonic() - start) * 1000)}
+            except Exception:
+                return {"ok": False, "message": "Local Ollama not running (optional)", "latency_ms": int((time.monotonic() - start) * 1000)}
+
+        raise HTTPException(status_code=404, detail=f"Unknown provider '{provider_id}'")
+    except urllib.error.HTTPError as exc:
+        exc.close()
+        return {"ok": False, "message": f"HTTP {exc.code} from {provider_id}", "latency_ms": int((time.monotonic() - start) * 1000)}
+    except Exception as exc:
+        return {"ok": False, "message": str(exc)[:160], "latency_ms": int((time.monotonic() - start) * 1000)}
+
+
+@app.post("/api/settings")
+def update_settings(req: SettingsUpdateRequest) -> dict[str, Any]:
+    valid_providers = {"groq", "nvidia", "cloudflare"}
+    cleaned_order = [p for p in req.fallback_order if p in valid_providers]
+    if not cleaned_order:
+        raise HTTPException(status_code=400, detail="Select at least one hosted provider in fallback_order")
+    os.environ["FORGE_FALLBACK_PROVIDERS"] = ",".join(cleaned_order)
+    os.environ["FORGE_MODEL"] = req.default_model
+    os.environ["FORGE_JUDGE_MODEL"] = req.judge_model
+    os.environ["FORGE_MAX_ITERATIONS"] = str(req.max_iterations)
+    os.environ["FORGE_REQUEST_TIMEOUT"] = str(req.request_timeout)
+    return {
+        "status": "updated",
+        "fallback_order": cleaned_order,
+        "default_model": req.default_model,
+        "judge_model": req.judge_model,
+        "max_iterations": req.max_iterations,
+        "request_timeout": req.request_timeout,
     }
 
 
