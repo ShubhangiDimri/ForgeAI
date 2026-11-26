@@ -1,0 +1,232 @@
+[
+  {
+    "id": "E001",
+    "question": "What is the required advance notice and information an external researcher must provide to schedule a study appointment?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E002",
+    "question": "Who is required to supervise a study visit according to the policy?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "A staff member must supervise the study visit."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E003",
+    "question": "Where must personal bags be placed during a study session?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "Personal bags stay in the locker."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E004",
+    "question": "Which items are permitted to be brought into the study room?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "Only pencils and approved cameras can enter the study room."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E005",
+    "question": "What is the primary method used in astronomy to measure the distance to faraway galaxies?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E006",
+    "question": "What is the role of the circle of fifths in music theory?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E007",
+    "question": "What type of ecosystem characterizes wildlife habitats in tropical rainforests?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E008",
+    "question": "What is the ideal temperature range for proofing bread dough during baking?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E009",
+    "question": "What is the maximum insurance coverage amount permitted for an incoming loan according to museum policy?",
+    "category": "unsupported",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E010",
+    "question": "What is the specified maximum number of metal objects that may be displayed together in a single case?",
+    "category": "unsupported",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E011",
+    "question": "How long does it typically take for a staff badge to be issued after a reset request is approved?",
+    "category": "unsupported",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E012",
+    "question": "For an incoming loan, should the registrar record the insurance limit before or after logging the loan 30 days prior to arrival?",
+    "category": "ambiguous",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E013",
+    "question": "When scheduling a study appointment, does the external researcher need to provide the object identifiers or the purpose first?",
+    "category": "ambiguous",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E014",
+    "question": "For internal object movements, must the booking include the route details when the object weighs over 20 kilograms or only when it is lighter?",
+    "category": "ambiguous",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E015",
+    "question": "What action must be taken if a visitor discovers damage to a display, and what action is required when water is found near a collection object?",
+    "category": "multi_document",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "If a visitor finds damage, isolate the display and notify the duty conservator immediately."
+      },
+      {
+        "source_id": "environment.txt#text",
+        "document": "environment.txt",
+        "fact": "Water near a collection object requires an immediate call to the duty conservator."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E016",
+    "question": "What information must an external researcher provide when requesting a study appointment, and what details does the registrar record for an incoming loan?",
+    "category": "multi_document",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose."
+      },
+      {
+        "source_id": "loan_intake.txt#text",
+        "document": "loan_intake.txt",
+        "fact": "The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E017",
+    "question": "According to policy, what approval is required for personal reference photography?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "Personal reference photography is allowed when the registrar approves it."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E018",
+    "question": "What documentation is needed for publication photography under the policy?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "Publication photography requires a separate written license."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E019",
+    "question": "What does the policy state about the use of flash?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "Flash is prohibited."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E020",
+    "question": "What immediate steps does the policy require when a visitor discovers damage?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "access_and_incidents.txt#text",
+        "document": "access_and_incidents.txt",
+        "fact": "If a visitor finds damage, isolate the display and notify the duty conservator immediately."
+      }
+    ],
+    "expected_tools": []
+  }
+]

@@ -1,7 +1,7 @@
 """Generate and freeze an evidence-backed evaluation set."""
 from collections import Counter
 from collections.abc import Callable
-from itertools import combinations
+from itertools import combinations, product, zip_longest
 from pathlib import Path
 import re
 from typing import Literal
@@ -81,9 +81,44 @@ def evidence_cards(sources: list[Passage]) -> list[Anchor]:
     for p in sources:
         for sentence in re.split(r"(?<=[.!?])\s+|\n+", p.text):
             clean = " ".join(sentence.split())
-            if clean:
+            # A numbered section marker is an anchor label, not evidence by itself.
+            if clean and (p.cells is not None or not re.fullmatch(r"[A-Za-z]{0,4}\d{1,4}[.)]?", clean)):
                 cards.append(Anchor(source_id=p.id, document=p.file, fact=clean[:350]))
     return cards
+
+
+def multi_document_pairs(cards: list[Anchor], topics: list[str]) -> list[tuple[Anchor, Anchor]]:
+    """Rank evidence within each source, then interleave distinct source pairs."""
+    topic_words = {word for word in question_key(" ".join(topics)).split() if len(word) > 3}
+    groups: dict[str, list[Anchor]] = {}
+    for card in cards:
+        groups.setdefault(card.document, []).append(card)
+
+    def words(card: Anchor) -> set[str]:
+        return {word for word in question_key(card.fact).split() if len(word) > 3}
+
+    def scope_score(card: Anchor) -> int:
+        return len(words(card) & topic_words)
+
+    for document, anchors in groups.items():
+        # A large table must never crowd out the body of a small policy document.
+        # Keep short documents eligible, but favor substantive facts over headings.
+        body = [a for a in anchors if len(question_key(a.fact).split()) >= 5]
+        groups[document] = sorted(body or anchors, key=scope_score, reverse=True)[:8]
+
+    ranked = []
+    for left, right in combinations(groups.values(), 2):
+        options = [(a, b) for a, b in product(left, right)
+                   if question_key(a.fact) != question_key(b.fact)]
+        options.sort(key=lambda pair: (
+            scope_score(pair[0]) + scope_score(pair[1]),
+            len(words(pair[0]) & words(pair[1])),
+        ), reverse=True)
+        if options:
+            ranked.append(options)
+    ranked.sort(key=lambda options: scope_score(options[0][0]) + scope_score(options[0][1]),
+                reverse=True)
+    return [pair for group in zip_longest(*ranked) for pair in group if pair is not None]
 
 
 def generate(config: Config, sources: list[Passage], model,
@@ -92,6 +127,7 @@ def generate(config: Config, sources: list[Passage], model,
     cards = evidence_cards(sources)
     if len({a.document for a in cards}) < 2:
         raise ValueError("Multi-document evaluations require at least two source documents")
+    multi_pairs = multi_document_pairs(cards, config.requirements.must_answer)
     cases = list(resume)
     seen = {question_key(case.question) for case in cases}
     available = {t.name for t in config.tools}
@@ -126,10 +162,10 @@ def generate(config: Config, sources: list[Passage], model,
                 used = {a.fact for c in cases if c.category == category for a in c.expected_facts}
                 options = [(a,) for a in sorted(sample, key=lambda a: a.fact in used)]
             if category == "multi_document":
-                options = [(a, b) for a, b in combinations(sample, 2) if a.document != b.document]
-                options.sort(key=lambda pair: len(set(question_key(pair[0].fact).split()) &
-                                                  set(question_key(pair[1].fact).split())), reverse=True)
-                options = options[attempt:attempt + size] or options
+                if not multi_pairs:
+                    return len(cases) - start
+                shift = attempt * 4 % len(multi_pairs)
+                options = multi_pairs[shift:] + multi_pairs[:shift]
             for position in range(size):
                 anchors = options[position % len(options)] if options else ()
                 requested_tools = ()
@@ -154,7 +190,8 @@ def generate(config: Config, sources: list[Passage], model,
                                        if f.status == "unsupported" and not f.inconclusive],
                 "tools": sorted(available),
                 "source_cards": [[a.document, a.fact] for a in sample] if not options else [],
-                "slots": [{"slot": i, "facts": [a.fact for a in anchors], "tools": expected_tools}
+                "slots": [{"slot": i, "facts": [a.fact for a in anchors], "tools": expected_tools,
+                           **({"documents": [a.document for a in anchors]} if category == "multi_document" else {})}
                           for i, (anchors, expected_tools) in enumerate(slots, 1)],
                 "previous_questions": [c.question for c in cases],
             }
@@ -185,6 +222,12 @@ def generate(config: Config, sources: list[Passage], model,
                         "previous_questions": context["previous_questions"],
                     }, Batch)
                     questions = dict(enumerate(draft.questions, 1))
+                elif category == "multi_document":
+                    draft = model.ask("eval_multi_document", {
+                        "scope": context["scope"], "topics": context["topics"], "category": category,
+                        "slots": context["slots"], "previous_questions": context["previous_questions"],
+                    }, IndexedBatch)
+                    questions = {item.slot: item.question for item in draft.cases if item.slot <= size}
                 elif options and size > 1:
                     draft = model.ask("eval_generate", context, IndexedBatch)
                     questions = {item.slot: item.question for item in draft.cases if item.slot <= size}
@@ -220,7 +263,6 @@ def generate(config: Config, sources: list[Passage], model,
                 review = model.ask(stage, {
                     "category": category, "scope": context["scope"], "topics": context["topics"],
                     "restricted_topics": context["restricted_topics"],
-                    **({"agent_scope_instructions": config.system_prompt} if stage == "eval_validate" else {}),
                     "candidates": [c.model_dump() for c in candidates],
                     "source_cards": (all_source_cards if review_full_corpus else context["source_cards"])
                                     if category in {"unsupported", "ambiguous"} else [],
@@ -242,13 +284,15 @@ def generate(config: Config, sources: list[Passage], model,
 
     for category, target in TARGETS.items():
         prior = sum(case.category == category for case in cases)
-        if prior < target and not add_cases(category, target - prior) and not prior:
-            raise ValueError(f"No valid {category} evaluation cases were generated")
-    # The assignment requires coverage of each category and twenty cases overall.
-    # Smaller corpora and model refusals can make the preferred distribution impractical.
-    for category in ("direct", "multi_document"):
-        if len(cases) < 20:
-            add_cases(category, 20 - len(cases))
+        if prior < target:
+            accepted = prior + add_cases(category, target - prior)
+            if not accepted:
+                raise ValueError(f"No valid {category} evaluation cases were generated")
+            if category == "multi_document" and accepted < target:
+                raise ValueError(f"Only {accepted}/{target} multi-document cases passed review")
+    # The non-multi-document category counts can vary, but retain both cross-source cases.
+    if len(cases) < 20:
+        add_cases("direct", 20 - len(cases))
     return Dataset(cases=tuple(cases))
 
 

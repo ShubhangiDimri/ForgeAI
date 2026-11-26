@@ -1,0 +1,219 @@
+{
+  "system_prompt": "You are an internal museum collections operations assistant for registrars and gallery staff. Answer questions about incoming loans, storage and display limits by material, collection movements, study access, and incident response using the provided policy files. Cite the specific policy for each answer. Ask for clarification if material or purpose is omitted. Refuse unrelated requests and disclose any gaps in the documents. Maintain a concise professional tone.",
+  "settings": {
+    "chunk_words": 60,
+    "overlap": 10,
+    "top_k": 3,
+    "min_score": 0.2
+  },
+  "tools": [],
+  "version": 1,
+  "model": "groq:openai/gpt-oss-120b",
+  "embedding": "sentence-transformers/all-MiniLM-L6-v2",
+  "requirements": {
+    "scope": "Build an internal museum collections operations assistant for registrars and gallery staff to answer questions about loans, storage/display limits, movements, study access, and incident response using policy files.",
+    "audience": "registrars and gallery staff",
+    "tone": "concise professional",
+    "must_answer": [
+      "incoming loans",
+      "storage",
+      "display limits by material",
+      "collection movements",
+      "study access",
+      "incident response",
+      "using the supplied policy files"
+    ],
+    "must_refuse": [
+      "unrelated requests",
+      "valuations",
+      "live shipment status",
+      "insurance quotes",
+      "using the supplied policy files"
+    ],
+    "assumptions": [
+      "policy files will be provided"
+    ],
+    "unresolved": []
+  },
+  "coverage": {
+    "incoming loans": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "loan_intake.txt#text",
+          "quote": "A proposed incoming loan is logged 30 calendar days before its planned arrival."
+        },
+        {
+          "id": "loan_intake.txt#text",
+          "quote": "The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact."
+        }
+      ],
+      "limitation": "",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "storage": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "environment.txt#text",
+          "quote": "Store paper objects at 45 to 55 percent relative humidity."
+        },
+        {
+          "id": "environment.txt#text",
+          "quote": "Store metal objects at 35 to 45 percent."
+        },
+        {
+          "id": "environment.txt#text",
+          "quote": "The wood store has a separate 45 to 60 percent band."
+        }
+      ],
+      "limitation": "",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "display limits by material": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "environment.txt#text",
+          "quote": "Paper displays have a 50-lux lighting limit."
+        },
+        {
+          "id": "environment.txt#text",
+          "quote": "Metal displays have a 150-lux limit."
+        }
+      ],
+      "limitation": "",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "collection movements": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "object_movements.txt#text",
+          "quote": "Book internal movements two working days in advance."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "The booking includes the object identifier, destination, route, time, and names of both handlers."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "Each internal move requires two trained handlers."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "Close the gallery to visitors during a move across a public floor."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "Reopen it after the lead handler confirms the path is clear."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "Outgoing transit uses a rigid crate and an external shock indicator."
+        },
+        {
+          "id": "object_movements.txt#text",
+          "quote": "Record the indicator seal number before dispatch."
+        }
+      ],
+      "limitation": "",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "study access": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "access_and_incidents.txt#text",
+          "quote": "An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose."
+        },
+        {
+          "id": "access_and_incidents.txt#text",
+          "quote": "A staff member must supervise the study visit."
+        }
+      ],
+      "limitation": "",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "incident response": {
+      "status": "supported",
+      "evidence": [
+        {
+          "id": "access_and_incidents.txt#text",
+          "quote": "If a visitor finds damage, isolate the display and notify the duty conservator immediately."
+        },
+        {
+          "id": "access_and_incidents.txt#text",
+          "quote": "The supervisor completes an incident record before shift end."
+        },
+        {
+          "id": "environment.txt#text",
+          "quote": "Water near a collection object requires an immediate call to the duty conservator."
+        },
+        {
+          "id": "environment.txt#text",
+          "quote": "When safe, keep visitors out of the affected space while awaiting instructions."
+        }
+      ],
+      "limitation": "",
+      "retrieval_miss": false,
+      "inconclusive": false
+    },
+    "using the supplied policy files": {
+      "status": "unsupported",
+      "evidence": [],
+      "limitation": "No sentence provides guidance on using the supplied policy files; they describe procedures unrelated to that request.",
+      "retrieval_miss": false,
+      "inconclusive": false
+    }
+  },
+  "document_manifest": {
+    "access_and_incidents.txt": "72543f946ef3c865aae732d783a04d4cf9cbbc43e20814a8ee17942b39cf9971",
+    "environment.txt": "c16922534fc41b58c14ca579140123da9fe7e75ec04dea94dfbf7823c38d5823",
+    "loan_intake.txt": "7dec009b6ff724f1417447f933722027a78484f8781fb098275e393ae852a683",
+    "object_movements.txt": "7cc519f6929ec0668efe2c0de9b9fb1b79435487029273ea3f4faed0a4cf1fde"
+  },
+  "output_contract": {
+    "additionalProperties": false,
+    "properties": {
+      "answer": {
+        "minLength": 1,
+        "title": "Answer",
+        "type": "string"
+      },
+      "citations": {
+        "items": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "title": "Citations",
+        "type": "array"
+      },
+      "refused": {
+        "title": "Refused",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "answer",
+      "citations",
+      "refused"
+    ],
+    "title": "Answer",
+    "type": "object"
+  },
+  "corpus_sha256": "26cc8ebcf4f26fb6e0bc0c23a7683ed6aad357d9218d5b79892145db4f425484",
+  "sources_sha256": "9bd15ebbd3acb3a239093e9ed6840f39177bcadfb53cd171ed4cb6be5fc4721f",
+  "evidence_only": false,
+  "precise_citations": false,
+  "verify_scope": false
+}

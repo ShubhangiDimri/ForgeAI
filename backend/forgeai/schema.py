@@ -92,5 +92,6 @@ class Config(Design):
     corpus_sha256: Text
     sources_sha256: Text | None = None
     evidence_only: bool = False
+    precise_citations: bool = False
     verify_scope: bool = False
 

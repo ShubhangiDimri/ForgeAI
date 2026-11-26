@@ -1,10 +1,37 @@
 # ForgeAI implementation status
 
+## Current frontend
 
-## Full stack verification on 26 November 2026
+Streamlit in `streamlit_frontend/` is the web interface for the FastAPI backend. The React frontend was removed after migration. See README.md for current setup instructions.
 
-ForgeAI now has a Python factory and FastAPI service in backend/, and a React,
-TypeScript and Vite application in frontend/. The CLI and web build share
+## Final live verification on 26 November 2026
+
+| Check | Verified result |
+| --- | --- |
+| Backend | 66 tests passed. Provider transport and credential tests are mocked. |
+| Unseen museum rehearsal | A fresh unattended run generated and froze 20 cases. Live GPT-OSS 120B / GPT-OSS 20B agent and judge scored 13/20 at baseline and 14/20 after one targeted iteration, with zero provider errors in both rounds. Version 1 was retained. |
+| Museum chat | The retained agent passed four independent checks for a direct answer, a two-document answer, an unsupported request, and an out-of-scope request. The two-document answer cited both policies. |
+| Controlled retail replay | The corrected frozen benchmark scored 16/20 with each of the old and new retrieval paths. Both final scorecards have zero provider errors. The new path fixed E017/E018 and lost E004/E016. Retained the retrieval change for better clarification with the same aggregate score. |
+
+The museum report and chat traces are in `backend/artifacts/groq-museum-rehearsal-r2/`.
+The retail comparison is in `backend/artifacts/retail-retrieval-key3-candidate/comparison.md`.
+Both retail runs used identical frozen cases, pinned models and judging.
+The earlier retail 11/20 came from a different benchmark and is preserved.
+Groq slots 3 and 2 were used to complete checkpointed runs. Slot 1 returned
+HTTP 401. The latest results above supersede older test counts and pending
+verification notes below.
+
+The museum report records six remaining scored failures. Saved traces show
+refusal/ambiguity scoring defects and one case missing required evidence from
+a second file. Retail still shows inconsistent execution of an explicitly
+requested CSV lookup and numerical scoring issues on calculator outputs.
+
+
+
+## Historical React verification on 26 November 2026
+
+At the time of this verification, ForgeAI used a Python factory and FastAPI
+service in backend/ and a React/Vite application in frontend/. The CLI and web build used
 the same intake, groundability, agent generation and evaluation pipeline.
 
 | Check | Observed result |

@@ -1,12 +1,12 @@
 # ForgeAI
 
-ForgeAI builds a declarative, grounded agent from a requester brief and a document directory, generates an evaluation dataset, and measures targeted configuration changes. The repository is organized into a Python FastAPI `backend/` and a React + TypeScript + Tailwind `frontend/`.
+ForgeAI builds a declarative, grounded agent from a requester brief and a document directory, generates an evaluation dataset, and measures targeted configuration changes. The repository is organized into a Python FastAPI `backend/` and a `streamlit_frontend/`.
 
 ## Repository Structure
 
 ```text
 ForgeAI/
-├── frontend/          # React + Vite + TypeScript + Tailwind CSS UI
+├── streamlit_frontend/ # Streamlit UI
 ├── backend/
 │   ├── forgeai/       # Core agent factory pipeline & CLI
 │   ├── api/           # FastAPI wrapper (api/main.py)
@@ -32,28 +32,33 @@ python -m venv .venv
 ~~~
 
 Put provider credentials in backend/.env using backend/.env.example as a guide.
-Groq accepts GROQ_API_KEY or the numbered GROQ_API_KEY_1 and GROQ_API_KEY_2.
-Set FORGE_GROQ_KEY_SLOT=2 in backend/.env to select slot 2, then restart Uvicorn.
+Groq accepts GROQ_API_KEY or the numbered GROQ_API_KEY_1 through GROQ_API_KEY_3.
+Set FORGE_GROQ_KEY_SLOT to 1, 2 or 3 in backend/.env to select a numbered key, then restart Uvicorn.
 A configured provider must still have a valid key and available quota. RAG uses
 the locally cached MiniLM embedding model.
 
-### Frontend
+### Frontend (Streamlit)
 
-~~~powershell
-Set-Location frontend
-npm ci
-npm run dev
-~~~
+Streamlit uses the FastAPI backend for builds, uploads, chats, evaluations and artifacts.
 
-Open http://127.0.0.1:5173 for ForgeAI or http://127.0.0.1:8000/docs for API docs.
-The Vite server proxies /api to the backend. Use npm run build in frontend/ to
-produce dist/. For another deployment, route /api to FastAPI or set
-VITE_API_BASE_URL when building and configure CORS for the deployment origin.
+In the second terminal, from the repository root:
 
-Overview lists the two saved Groq demos. Playground uses the saved run model
-by default when its provider is configured. You can select a different model
-for chat without changing the saved agent or evaluation evidence. Reports
-provides individual artifacts and a run ZIP.
+```powershell
+py -3.11 -m venv .\streamlit_frontend\.venv
+$uiPython = '.\streamlit_frontend\.venv\Scripts\python.exe'
+& $uiPython -m pip install -r .\streamlit_frontend\requirements.txt
+$env:FORGEAI_API_URL = 'http://127.0.0.1:8000'
+& $uiPython -m streamlit run .\streamlit_frontend\app.py
+```
+
+For Streamlit Community Cloud, select `streamlit_frontend/app.py` as the entry
+point and set `FORGEAI_API_URL` to the HTTPS URL of the separately hosted
+FastAPI service. Set `FORGEAI_API_TOKEN` only if your backend gateway accepts a
+bearer token. LLM keys belong in the backend environment. Restrict reviewer access
+to the app and protect the backend independently. FastAPI stores runs and
+uploads, so persistence depends on the backend host's storage.
+
+Open http://127.0.0.1:8501. The FastAPI reference is at http://127.0.0.1:8000/docs.
 
 ## Windows PowerShell setup
 
@@ -202,3 +207,22 @@ This uses a separate run folder and sends model payloads to NVIDIA.
 $brief = (Get-Content -Raw .\demo_data\procurement_brief.txt).Trim()
 python -m forgeai build --non-interactive --max-iterations 1 --model nvidia:nvidia/nemotron-3.5-lightning-30b-a3b --brief $brief --docs .\demo_data\procurement --out .\artifacts\my-nvidia-procurement
 ~~~
+
+
+## Replay the citation precision experiment
+
+From backend/ in PowerShell, use the existing Groq Free Plan credentials:
+
+~~~powershell
+$env:HF_HUB_OFFLINE = '1'
+$env:OMP_NUM_THREADS = '2'
+& .\.venv\Scripts\python.exe -m scripts.measure_citation_precision --run artifacts/groq-academic-final --out artifacts/citation-precision-academic-r1
+& .\.venv\Scripts\python.exe -m scripts.measure_citation_precision --run artifacts/groq-procurement-final --out artifacts/citation-precision-procurement-r1
+~~~
+
+Use a new output folder for an independent repetition. To resume an interrupted
+experiment, rerun its exact command with the same output path, credentials slot,
+code and prompts. It resumes from saved case results and keeps the original
+models, judge and frozen cases. Historical runs are never overwritten. The
+corrected audit datasets under backend/eval_datasets/corrected-v1 require their
+own baseline and should not be compared directly to these runs.

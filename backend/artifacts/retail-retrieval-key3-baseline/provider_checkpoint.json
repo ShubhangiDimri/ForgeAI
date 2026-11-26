@@ -1,0 +1,86 @@
+{
+  "case": {
+    "id": "E020",
+    "question": "What is the discount percentage for product P1005 on 2026-01-30? Also, are taxes and shipping fees supplied for this product?",
+    "category": "multi_document",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r1",
+        "document": "inventory.csv",
+        "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+      },
+      {
+        "source_id": "pricing_policy.txt#text",
+        "document": "pricing_policy.txt",
+        "fact": "Taxes and shipping fees are not supplied."
+      }
+    ],
+    "expected_tools": []
+  },
+  "execution": {
+    "answer": null,
+    "retrieved": [
+      {
+        "id": "inventory.csv#r1:c1",
+        "file": "inventory.csv",
+        "text": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48",
+        "page": null,
+        "row": 1,
+        "cells": {
+          "date": "2026-01-30",
+          "product_id": "P1005",
+          "category": "Shoes",
+          "brand": "Adidas",
+          "region": "US",
+          "channel": "mobile",
+          "season": "Winter",
+          "base_price": "17.1",
+          "current_price": "11.12",
+          "price_change_pct": "-34.97",
+          "discount_pct": "35",
+          "promotion_type": "Buy One Get One",
+          "units_sold": "4",
+          "revenue": "44.48",
+          "inventory_level": "408",
+          "stockout_flag": "0",
+          "demand_index": "190.48"
+        }
+      },
+      {
+        "id": "pricing_policy.txt#text:c1",
+        "file": "pricing_policy.txt",
+        "text": "Northstar Retail - fictional pricing policy P1. Inventory CSV rows are historical observations, not live stock or current offers. P2. Identify observations by product ID, date, region and channel. Ask for clarification if multiple rows match. P3. For a specified observation, multiply current_price by requested quantity to calculate merchandise subtotal. Do not apply discount_pct again. P4. Currency is not specified in the source; report amounts in unspecified currency units. Taxes and shipping fees are not supplied. P5. stockout_flag indicates critically low inventory, not necessarily zero stock. Blank promotion_type means no promotion type recorded. P6. Do not infer product names, live availability or promotion eligibility from historical observations.",
+        "page": null,
+        "row": null,
+        "cells": null
+      },
+      {
+        "id": "shipping_policy.txt#text:c1",
+        "file": "shipping_policy.txt",
+        "text": "Northstar Retail - fictional shipping policy S1. Standard shipping takes 3-5 business days after dispatch. S2. Express shipping takes 1-2 business days after dispatch. S3. Delivery dates are estimates, not guarantees. S4. Live tracking and address changes require customer support; no order system is available.",
+        "page": null,
+        "row": null,
+        "cells": null
+      },
+      {
+        "id": "return_policy.pdf#p1:c1",
+        "file": "return_policy.pdf",
+        "text": "Northstar Retail | Fictional rehearsal policy Returns and exchanges R1. Unused shoes and apparel may be returned within 30 calendar days of delivery with proof of purchase. R2. Electronics may be returned within 14 calendar days of delivery if unopened and accompanied by proof of purchase. R3. Opened electronics are not eligible for change-of-mind returns. Defective items are referred to warranty support. R4. Approved refunds are issued to the original payment method within 7 business days after inspection. R5. Discounted items follow the same return rules unless explicitly marked final sale. The inventory CSV does not identify final-sale items.",
+        "page": 1,
+        "row": null,
+        "cells": null
+      }
+    ],
+    "tools": [],
+    "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 311 seconds.",
+    "invalid_citation": false,
+    "invalid_tool_call": false,
+    "refusal_code": null
+  },
+  "judgment": null,
+  "status": "error",
+  "failure": null,
+  "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 311 seconds.",
+  "score": null
+}

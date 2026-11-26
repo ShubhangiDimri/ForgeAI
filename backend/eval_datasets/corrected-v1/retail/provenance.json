@@ -1,0 +1,18 @@
+{
+  "source": "backend/artifacts/retail-support-multidoc-r1/eval_dataset.json",
+  "source_sha256": "67643362de90b83cb322d0feae70bd17894a2422fe089805fede7101798c0e22",
+  "dataset_sha256": "b4693b21b6bc6f2b988238bf26d89db4a8a01220132ad562f3625991fcf95153",
+  "changes": {
+    "E001": "The original question did not identify any product or observation.",
+    "E002": "The original referred to a date it never supplied, and P1009 has three rows.",
+    "E003": "The original did not distinguish multiple historical observations with different inventory quantities.",
+    "E004": "The original key expected one of three matching rows without identifying it in the question.",
+    "E007": "The original did not identify an observation and assumed dollars even though source currency is unspecified.",
+    "E008": "The original used current price without identifying a historical observation, and the two recorded prices differ.",
+    "E014": "The original timeframe is covered conditionally by the return policy. An exact restocking fee is absent from the supplied documents.",
+    "E017": "Both observations use web but differ in region, date and discount. Clarification is required for the observation, not the channel.",
+    "E018": "The original asked about a unique P1038 row. P1009 has three app observations with different demand indexes."
+  },
+  "validation": "Pydantic schema and literal source-anchor matching against the saved corpus. Nine question texts revised, all IDs, categories, facts, tool expectations and refusal flags preserved.",
+  "live_baseline": null
+}

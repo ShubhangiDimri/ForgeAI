@@ -1,0 +1,57 @@
+{
+  "case": {
+    "id": "E002",
+    "question": "What total revenue was recorded for P1009 on 5 March 2026 in the UK app channel?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r3",
+        "document": "inventory.csv",
+        "fact": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1"
+      }
+    ],
+    "expected_tools": []
+  },
+  "execution": {
+    "answer": null,
+    "retrieved": [
+      {
+        "id": "inventory.csv#r3:c1",
+        "file": "inventory.csv",
+        "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+        "page": null,
+        "row": 3,
+        "cells": {
+          "date": "2026-03-05",
+          "product_id": "P1009",
+          "category": "Shoes",
+          "brand": "Nike",
+          "region": "UK",
+          "channel": "app",
+          "season": "Spring",
+          "base_price": "184.74",
+          "current_price": "184.74",
+          "price_change_pct": "0.0",
+          "discount_pct": "0",
+          "promotion_type": "None",
+          "units_sold": "29",
+          "revenue": "5357.46",
+          "inventory_level": "299",
+          "stockout_flag": "0",
+          "demand_index": "140.1"
+        }
+      }
+    ],
+    "tools": [],
+    "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 188 seconds.",
+    "invalid_citation": false,
+    "invalid_tool_call": false,
+    "refusal_code": null
+  },
+  "judgment": null,
+  "status": "error",
+  "failure": null,
+  "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 429. Retry after 188 seconds.",
+  "score": null
+}

@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import TypeAdapter
 from .documents import chunk, digest
 from .llm import make_model
-from .retrieval import Index
+from .retrieval import Index, exact_rows, prose_queries
 from .schema import Answer, Config, Model, Passage, Quote, Text, Tool
 from .tools import REGISTRY, execute
 
@@ -141,7 +141,43 @@ class Runner:
                    "agent_guidance": config.system_prompt}
         if "csv_lookup" in allowed:
             context["csv_columns"] = {p.file: list(p.cells) for p in self.corpus if p.cells is not None}
-        trace.retrieved = self.index.search(question)
+        rows = exact_rows(question, self.corpus) if "csv_lookup" in allowed else []
+        if rows:
+            explicit_lookup = re.search(r"\b(?:csv lookup|look up|lookup)\b", question, re.I)
+            if not explicit_lookup:
+                # Direct record evidence already answers the lookup part.
+                allowed.remove("csv_lookup")
+            first_chunks = [row[0] for row in rows]
+            parts = prose_queries(question, first_chunks)
+            budget = config.settings.top_k
+            prose = []
+            notes = []
+            if parts:
+                groups = [self.index.search(part, prose_only=True) for part in parts[:budget]]
+                prose = list({p.id: p for i in range(budget) for group in groups for p in group[i:i + 1]}.values())
+                notes.append(
+                    "Exact table evidence is supplied for the structured part. Use prose evidence "
+                    "for the other question. Address each separately, citing its own evidence. "
+                    "Include applicable conditions and qualifiers from the source even when asked only "
+                    "for a deadline. State units or currency only if supported by the evidence. "
+                    "If one in-scope part lacks evidence, state that limitation and answer the supported part."
+                )
+            row_budget = budget - int(bool(prose) and budget > 1)
+            remaining_chunks = [part for row in rows[:row_budget] for part in row[1:]]
+            candidates = first_chunks[:row_budget]
+            trace.retrieved = [*candidates, *prose, *remaining_chunks][:budget]
+            if len(rows) > 1:
+                notes.append(
+                    f"Found {len(rows)} exact matching table records and retrieved {len(candidates)}. "
+                    "If the question asks for one observation and the requested values differ, "
+                    "ask a focused clarification using the relevant distinguishing fields. "
+                    "Do not choose a row arbitrarily. If some matching records are omitted, "
+                    "do not assume the displayed rows are exhaustive or prove a unique value."
+                )
+            if notes:
+                context["retrieval_note"] = " ".join(notes)
+        else:
+            trace.retrieved = self.index.search(question)
         evidence = {p.id: p.text for p in trace.retrieved}
         if not evidence and not allowed:
             return refuse("No supporting evidence was found.", "no_evidence")
@@ -199,7 +235,8 @@ class Runner:
                 return Answer(answer=f"The calculation result is {evidence['tool:calculator']}{unit}.",
                               citations=list(dict.fromkeys(ids)), refused=False)
         schema = QuotedAnswer if config.evidence_only else Answer
-        answer = self.model.ask("answer", {**context, "evidence": evidence}, schema)
+        stage = "answer_precise" if config.precise_citations else "answer"
+        answer = self.model.ask(stage, {**context, "evidence": evidence}, schema)
         if isinstance(answer, QuotedAnswer) and not answer.refused:
             verified = {q.id for q in answer.evidence_quotes
                         if q.id in evidence and q.quote in evidence[q.id]}

@@ -12,9 +12,15 @@ from forgeai.schema import Questions
 @pytest.fixture(autouse=True)
 def isolated_credentials(monkeypatch, tmp_path):
     monkeypatch.setattr(llm, "_credential_paths", lambda: (tmp_path / ".env",))
-    for name in ("FORGE_GROQ_KEY_SLOT", "GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2",
+    for name in ("FORGE_GROQ_KEY_SLOT", "GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2", "GROQ_API_KEY_3",
                  "NVIDIA_API_KEY", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"):
         monkeypatch.delenv(name, raising=False)
+
+
+def test_groq_slot_three_uses_the_selected_dotenv_key(tmp_path, monkeypatch):
+    (tmp_path / ".env").write_text("GROQ_API_KEY_1=test-only-first\nGROQ_API_KEY_3=test-only-third\n")
+    monkeypatch.setenv("FORGE_GROQ_KEY_SLOT", "3")
+    assert llm.make_model(llm.GROQ_DEFAULT)._key == "test-only-third"
 
 
 def test_groq_reads_ignored_dotenv_and_routes_model(monkeypatch, tmp_path):

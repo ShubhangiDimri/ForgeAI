@@ -1,0 +1,5 @@
+M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers.
+M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory.
+M3. Close the gallery to visitors during a move across a public floor. Reopen it after the lead handler confirms the path is clear.
+M4. Outgoing transit uses a rigid crate and an external shock indicator. Record the indicator seal number before dispatch.
+M5. The receiving handler verifies the object identifier against the movement log and signs at destination. The registrar updates the location once both signatures are recorded.

@@ -1,0 +1,1195 @@
+[
+  {
+    "case": {
+      "id": "E001",
+      "question": "What is the required advance notice and information an external researcher must provide to schedule a study appointment?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "An external researcher must request a study appointment at least ten working days in advance and supply the researcher’s institution, the object identifiers to be studied, and the purpose of the study.",
+        "citations": [
+          "access_and_incidents.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c1",
+          "file": "loan_intake.txt",
+          "text": "L1. A proposed incoming loan is logged 30 calendar days before its planned arrival. The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact. L2. Complete the condition report before unpacking ends. It includes painted surfaces, mount integrity, and dated photographs. Both receiving staff sign it. L3. Transit damage is photographed and reported to the",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c3",
+          "file": "loan_intake.txt",
+          "text": "loan needs registrar approval only. L5. On final return, send the lender a signed receipt and archive the return report with the entry report.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states the ten‑working‑day advance notice and the required institution, object identifiers, and purpose, and cites the appropriate passage that contains that fact."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states the ten‑working‑day advance notice and the required institution, object identifiers, and purpose, and cites the appropriate passage that contains that fact.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E002",
+      "question": "Who is required to supervise a study visit according to the policy?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "A staff member must supervise the study visit."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "A staff member must supervise the study visit.",
+        "citations": [
+          "access_and_incidents.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "access_and_incidents.txt#text:c2",
+          "file": "access_and_incidents.txt",
+          "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "object_movements.txt#text:c1",
+          "file": "object_movements.txt",
+          "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer states a staff member must supervise the study visit, matching the fact in the source. The citation points to the correct passage. No refusal was issued, and no tools were used."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer states a staff member must supervise the study visit, matching the fact in the source. The citation points to the correct passage. No refusal was issued, and no tools were used.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E003",
+      "question": "Where must personal bags be placed during a study session?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "Personal bags stay in the locker."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Personal bags must be placed in the locker during a study session.",
+        "citations": [
+          "access_and_incidents.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c1",
+          "file": "environment.txt",
+          "text": "E1. Store paper objects at 45 to 55 percent relative humidity. Store metal objects at 35 to 45 percent. The wood store has a separate 45 to 60 percent band. E2. A reading out of range for 30 consecutive minutes requires a conservation ticket. Include the space, latest reading, start time, and object materials. E3. Paper displays have a 50-lux",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "object_movements.txt#text:c1",
+          "file": "object_movements.txt",
+          "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that personal bags stay in the locker, matches the expected fact, and cites the appropriate passage. No tools were used, so tools_correct is true."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states that personal bags stay in the locker, matches the expected fact, and cites the appropriate passage. No tools were used, so tools_correct is true.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E004",
+      "question": "Which items are permitted to be brought into the study room?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "Only pencils and approved cameras can enter the study room."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Only pencils and approved cameras are allowed in the study room.",
+        "citations": [
+          "access_and_incidents.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "object_movements.txt#text:c1",
+          "file": "object_movements.txt",
+          "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c2",
+          "file": "environment.txt",
+          "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that only pencils and approved cameras are permitted, matching the provided fact. The citation points to the exact passage containing that statement, so it is grounded and relevant. No refusal was issued, and no tools were used."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states that only pencils and approved cameras are permitted, matching the provided fact. The citation points to the exact passage containing that statement, so it is grounded and relevant. No refusal was issued, and no tools were used.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E005",
+      "question": "What is the primary method used in astronomy to measure the distance to faraway galaxies?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "No supporting evidence was found.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": "no_evidence"
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Agent refused without factual claims (no_evidence)."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "Agent refused without factual claims (no_evidence).",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E006",
+      "question": "What is the role of the circle of fifths in music theory?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "No supporting evidence was found.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": "no_evidence"
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Agent refused without factual claims (no_evidence)."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "Agent refused without factual claims (no_evidence).",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E007",
+      "question": "What type of ecosystem characterizes wildlife habitats in tropical rainforests?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "No supporting evidence was found.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": "no_evidence"
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Agent refused without factual claims (no_evidence)."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "Agent refused without factual claims (no_evidence).",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E008",
+      "question": "What is the ideal temperature range for proofing bread dough during baking?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The question about proofing bread dough is unrelated to museum collections operations and falls outside the supported scope.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "environment.txt#text:c1",
+          "file": "environment.txt",
+          "text": "E1. Store paper objects at 45 to 55 percent relative humidity. Store metal objects at 35 to 45 percent. The wood store has a separate 45 to 60 percent band. E2. A reading out of range for 30 consecutive minutes requires a conservation ticket. Include the space, latest reading, start time, and object materials. E3. Paper displays have a 50-lux",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The assistant correctly refused to answer because the question is outside the museum collections scope, matching the expected behavior."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The assistant correctly refused to answer because the question is outside the museum collections scope, matching the expected behavior.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E009",
+      "question": "What is the maximum insurance coverage amount permitted for an incoming loan according to museum policy?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "I’m sorry, but the provided policy documents do not specify a maximum insurance coverage amount for incoming loans.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "loan_intake.txt#text:c2",
+          "file": "loan_intake.txt",
+          "text": "it. L3. Transit damage is photographed and reported to the registrar within two working hours of discovery. Do not treat or clean the object before instructions arrive. L4. A high-value loan requires registrar and finance approval before transport booking. High value means declared value over 50,000 currency units. A standard loan needs registrar approval only. L5. On final return, send",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c1",
+          "file": "loan_intake.txt",
+          "text": "L1. A proposed incoming loan is logged 30 calendar days before its planned arrival. The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact. L2. Complete the condition report before unpacking ends. It includes painted surfaces, mount integrity, and dated photographs. Both receiving staff sign it. L3. Transit damage is photographed and reported to the",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c3",
+          "file": "loan_intake.txt",
+          "text": "loan needs registrar approval only. L5. On final return, send the lender a signed receipt and archive the return report with the entry report.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that no maximum insurance coverage amount is specified in the provided policy documents, which is supported by the evidence that only mentions insurance limits without a maximum."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The answer correctly states that no maximum insurance coverage amount is specified in the provided policy documents, which is supported by the evidence that only mentions insurance limits without a maximum. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E010",
+      "question": "What is the specified maximum number of metal objects that may be displayed together in a single case?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The provided evidence does not contain any policy specifying a maximum number of metal objects per case, and no relevant policy file is available to answer the question.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "environment.txt#text:c2",
+          "file": "environment.txt",
+          "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c1",
+          "file": "environment.txt",
+          "text": "E1. Store paper objects at 45 to 55 percent relative humidity. Store metal objects at 35 to 45 percent. The wood store has a separate 45 to 60 percent band. E2. A reading out of range for 30 consecutive minutes requires a conservation ticket. Include the space, latest reading, start time, and object materials. E3. Paper displays have a 50-lux",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "object_movements.txt#text:c1",
+          "file": "object_movements.txt",
+          "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The evidence contains no policy specifying a maximum number of metal objects per case, so the answer correctly states that no such policy is available."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The evidence contains no policy specifying a maximum number of metal objects per case, so the answer correctly states that no such policy is available. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E011",
+      "question": "How long does it typically take for a staff badge to be issued after a reset request is approved?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Policy documents do not specify badge issuance timing, so the question cannot be answered with the available information.",
+        "citations": [],
+        "refused": true
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c3",
+          "file": "access_and_incidents.txt",
+          "text": "a badge reset from their supervisor; badge issuance times are not specified.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "access_and_incidents.txt#text:c2",
+          "file": "access_and_incidents.txt",
+          "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that badge issuance timing is not specified in the policy, matching the evidence. However, it provides no citations, so citations are not relevant. The assistant did not refuse as expected, so refusal is inappropriate. No tools were used, so tools correctness is true."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The answer correctly states that badge issuance timing is not specified in the policy, matching the evidence. However, it provides no citations, so citations are not relevant. The assistant did not refuse as expected, so refusal is inappropriate. No tools were used, so tools correctness is true. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E012",
+      "question": "For an incoming loan, should the registrar record the insurance limit before or after logging the loan 30 days prior to arrival?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The registrar records the insurance limit when logging the incoming loan 30 days before arrival, as part of that initial entry.",
+        "citations": [
+          "loan_intake.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "loan_intake.txt#text:c1",
+          "file": "loan_intake.txt",
+          "text": "L1. A proposed incoming loan is logged 30 calendar days before its planned arrival. The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact. L2. Complete the condition report before unpacking ends. It includes painted surfaces, mount integrity, and dated photographs. Both receiving staff sign it. L3. Transit damage is photographed and reported to the",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c3",
+          "file": "loan_intake.txt",
+          "text": "loan needs registrar approval only. L5. On final return, send the lender a signed receipt and archive the return report with the entry report.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c2",
+          "file": "loan_intake.txt",
+          "text": "it. L3. Transit damage is photographed and reported to the registrar within two working hours of discovery. Do not treat or clean the object before instructions arrive. L4. A high-value loan requires registrar and finance approval before transport booking. High value means declared value over 50,000 currency units. A standard loan needs registrar approval only. L5. On final return, send",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that the insurance limit is recorded when logging the loan 30 days before arrival, supported by the cited evidence. However, the question was marked ambiguous with an expectation to refuse, so the assistant should have refused instead of providing an answer."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The answer correctly states that the insurance limit is recorded when logging the loan 30 days before arrival, supported by the cited evidence. However, the question was marked ambiguous with an expectation to refuse, so the assistant should have refused instead of providing an answer. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E013",
+      "question": "When scheduling a study appointment, does the external researcher need to provide the object identifiers or the purpose first?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The external researcher must provide both the object identifiers and the purpose (along with their institution) when requesting a study appointment; the policy does not specify a required order, only that all are required.",
+        "citations": [
+          "access_and_incidents.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c1",
+          "file": "loan_intake.txt",
+          "text": "L1. A proposed incoming loan is logged 30 calendar days before its planned arrival. The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact. L2. Complete the condition report before unpacking ends. It includes painted surfaces, mount integrity, and dated photographs. Both receiving staff sign it. L3. Transit damage is photographed and reported to the",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "object_movements.txt#text:c1",
+          "file": "object_movements.txt",
+          "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that both object identifiers and purpose are required, matching the cited policy. It does not refuse as the question was ambiguous but the user expected a refusal, so the refusal is inappropriate."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The answer correctly states that both object identifiers and purpose are required, matching the cited policy. It does not refuse as the question was ambiguous but the user expected a refusal, so the refusal is inappropriate. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E014",
+      "question": "For internal object movements, must the booking include the route details when the object weighs over 20 kilograms or only when it is lighter?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The booking must always include the route details, regardless of whether the object is heavier or lighter than 20 kg.",
+        "citations": [
+          "object_movements.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "object_movements.txt#text:c1",
+          "file": "object_movements.txt",
+          "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "object_movements.txt#text:c2",
+          "file": "object_movements.txt",
+          "text": "during a move across a public floor. Reopen it after the lead handler confirms the path is clear. M4. Outgoing transit uses a rigid crate and an external shock indicator. Record the indicator seal number before dispatch. M5. The receiving handler verifies the object identifier against the movement log and signs at destination. The registrar updates the location once both",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c2",
+          "file": "loan_intake.txt",
+          "text": "it. L3. Transit damage is photographed and reported to the registrar within two working hours of discovery. Do not treat or clean the object before instructions arrive. L4. A high-value loan requires registrar and finance approval before transport booking. High value means declared value over 50,000 currency units. A standard loan needs registrar approval only. L5. On final return, send",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": false,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that route details must always be included, which is supported by the cited passage that lists route as part of the booking requirements, with no weight restriction mentioned."
+    },
+    "status": "failed",
+    "failure": "prompt defect",
+    "explanation": "The answer correctly states that route details must always be included, which is supported by the cited passage that lists route as part of the booking requirements, with no weight restriction mentioned. Failed checks: refusal_appropriate.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E015",
+      "question": "What action must be taken if a visitor discovers damage to a display, and what action is required when water is found near a collection object?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "If a visitor finds damage, isolate the display and notify the duty conservator immediately."
+        },
+        {
+          "source_id": "environment.txt#text",
+          "document": "environment.txt",
+          "fact": "Water near a collection object requires an immediate call to the duty conservator."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "If a visitor reports damage to a display, staff must immediately call the duty conservator and, once safe, restrict visitor access to the area until further instructions. If water is found near a collection object, staff must also call the duty conservator right away.",
+        "citations": [
+          "environment.txt#text:c3",
+          "environment.txt#text:c2"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "environment.txt#text:c3",
+          "file": "environment.txt",
+          "text": "a collection object requires an immediate call to the duty conservator. When safe, keep visitors out of the affected space while awaiting instructions.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c2",
+          "file": "environment.txt",
+          "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c1",
+          "file": "environment.txt",
+          "text": "E1. Store paper objects at 45 to 55 percent relative humidity. Store metal objects at 35 to 45 percent. The wood store has a separate 45 to 60 percent band. E2. A reading out of range for 30 consecutive minutes requires a conservation ticket. Include the space, latest reading, start time, and object materials. E3. Paper displays have a 50-lux",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": false,
+      "grounded": false,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal."
+    },
+    "status": "failed",
+    "failure": "retrieval miss",
+    "explanation": "Deterministic check found missing expected evidence, invalid citations or wrong refusal. Failed checks: correct, grounded.",
+    "score": 0
+  },
+  {
+    "case": {
+      "id": "E016",
+      "question": "What information must an external researcher provide when requesting a study appointment, and what details does the registrar record for an incoming loan?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose."
+        },
+        {
+          "source_id": "loan_intake.txt#text",
+          "document": "loan_intake.txt",
+          "fact": "The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The researcher must request a study appointment at least ten working days in advance and provide their institution, the object identifiers they wish to study, and the purpose of the study. The registrar records, for each incoming loan, the lender, object identifiers, expected arrival date, insurance limits, and a named contact.",
+        "citations": [
+          "access_and_incidents.txt#text:c1",
+          "loan_intake.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c3",
+          "file": "loan_intake.txt",
+          "text": "loan needs registrar approval only. L5. On final return, send the lender a signed receipt and archive the return report with the entry report.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c1",
+          "file": "loan_intake.txt",
+          "text": "L1. A proposed incoming loan is logged 30 calendar days before its planned arrival. The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact. L2. Complete the condition report before unpacking ends. It includes painted surfaces, mount integrity, and dated photographs. Both receiving staff sign it. L3. Transit damage is photographed and reported to the",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer accurately states the required information for a study appointment and the registrar’s recorded details for an incoming loan, and the citations directly support these claims."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer accurately states the required information for a study appointment and the registrar’s recorded details for an incoming loan, and the citations directly support these claims.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E017",
+      "question": "According to policy, what approval is required for personal reference photography?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "Personal reference photography is allowed when the registrar approves it."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Personal reference photography requires approval from the registrar.",
+        "citations": [
+          "access_and_incidents.txt#text:c1"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "access_and_incidents.txt#text:c2",
+          "file": "access_and_incidents.txt",
+          "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c2",
+          "file": "environment.txt",
+          "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that personal reference photography requires registrar approval, matching the expected fact and supported by the cited passage."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states that personal reference photography requires registrar approval, matching the expected fact and supported by the cited passage.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E018",
+      "question": "What documentation is needed for publication photography under the policy?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "Publication photography requires a separate written license."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "A separate written license is required for publication photography.",
+        "citations": [
+          "access_and_incidents.txt#text:c1",
+          "access_and_incidents.txt#text:c2"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c2",
+          "file": "access_and_incidents.txt",
+          "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "access_and_incidents.txt#text:c1",
+          "file": "access_and_incidents.txt",
+          "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c2",
+          "file": "environment.txt",
+          "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "Answer correctly states the required separate written license and cites relevant passages."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "Answer correctly states the required separate written license and cites relevant passages.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E019",
+      "question": "What does the policy state about the use of flash?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "Flash is prohibited."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "The policy states that flash is prohibited.",
+        "citations": [
+          "access_and_incidents.txt#text:c2"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c2",
+          "file": "access_and_incidents.txt",
+          "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c2",
+          "file": "environment.txt",
+          "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states that flash is prohibited, the citation points to the passage that contains that fact, and no other claims are made."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states that flash is prohibited, the citation points to the passage that contains that fact, and no other claims are made.",
+    "score": 1
+  },
+  {
+    "case": {
+      "id": "E020",
+      "question": "What immediate steps does the policy require when a visitor discovers damage?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "access_and_incidents.txt#text",
+          "document": "access_and_incidents.txt",
+          "fact": "If a visitor finds damage, isolate the display and notify the duty conservator immediately."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": {
+        "answer": "Isolate the display, keep visitors out of the area, and immediately notify the duty conservator; the supervisor then completes an incident record before the end of the shift.",
+        "citations": [
+          "access_and_incidents.txt#text:c2",
+          "environment.txt#text:c3"
+        ],
+        "refused": false
+      },
+      "retrieved": [
+        {
+          "id": "access_and_incidents.txt#text:c2",
+          "file": "access_and_incidents.txt",
+          "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "environment.txt#text:c3",
+          "file": "environment.txt",
+          "text": "a collection object requires an immediate call to the duty conservator. When safe, keep visitors out of the affected space while awaiting instructions.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "loan_intake.txt#text:c2",
+          "file": "loan_intake.txt",
+          "text": "it. L3. Transit damage is photographed and reported to the registrar within two working hours of discovery. Do not treat or clean the object before instructions arrive. L4. A high-value loan requires registrar and finance approval before transport booking. High value means declared value over 50,000 currency units. A standard loan needs registrar approval only. L5. On final return, send",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": null,
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": {
+      "correct": true,
+      "grounded": true,
+      "citations_relevant": true,
+      "refusal_appropriate": true,
+      "tools_correct": true,
+      "explanation": "The answer correctly states the required immediate actions—isolating the display, notifying the duty conservator, and keeping visitors out—matching the expected fact. The citations provided support these claims, and no refusal or tool misuse is present."
+    },
+    "status": "passed",
+    "failure": null,
+    "explanation": "The answer correctly states the required immediate actions—isolating the display, notifying the duty conservator, and keeping visitors out—matching the expected fact. The citations provided support these claims, and no refusal or tool misuse is present.",
+    "score": 1
+  }
+]

@@ -15,7 +15,6 @@ import zipfile
 from typing import Any, Literal
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -34,19 +33,6 @@ ALLOWED_EXTENSIONS = {".pdf", ".txt", ".csv"}
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB per file
 
 app = FastAPI(title="ForgeAI API", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:4173",
-        "http://127.0.0.1:4173",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # In-memory build job state (keyed by build_id)
 _BUILDS_LOCK = threading.Lock()

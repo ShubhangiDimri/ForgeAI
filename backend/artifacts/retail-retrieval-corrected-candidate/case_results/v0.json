@@ -1,0 +1,1226 @@
+[
+  {
+    "case": {
+      "id": "E001",
+      "question": "For the P1005 observation on 30 January 2026 in the US mobile channel, use the calculator to find total merchandise revenue if units sold increase by 3 and the recorded unit price stays the same.",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r1",
+          "document": "inventory.csv",
+          "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+        }
+      ],
+      "expected_tools": [
+        "calculator"
+      ]
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r1:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "date": "2026-01-30",
+            "product_id": "P1005",
+            "category": "Shoes",
+            "brand": "Adidas",
+            "region": "US",
+            "channel": "mobile",
+            "season": "Winter",
+            "base_price": "17.1",
+            "current_price": "11.12",
+            "price_change_pct": "-34.97",
+            "discount_pct": "35",
+            "promotion_type": "Buy One Get One",
+            "units_sold": "4",
+            "revenue": "44.48",
+            "inventory_level": "408",
+            "stockout_flag": "0",
+            "demand_index": "190.48"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E002",
+      "question": "What total revenue was recorded for P1009 on 5 March 2026 in the UK app channel?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r3",
+          "document": "inventory.csv",
+          "fact": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r3:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "date": "2026-03-05",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "UK",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "29",
+            "revenue": "5357.46",
+            "inventory_level": "299",
+            "stockout_flag": "0",
+            "demand_index": "140.1"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E003",
+      "question": "What inventory level and stockout flag were recorded for P1009 on 11 March 2026 in the IN app channel?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r4",
+          "document": "inventory.csv",
+          "fact": "date=2026-03-11 | product_id=P1009 | category=Shoes | brand=Nike | region=IN | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=19 | revenue=3510.06 | inventory_level=265 | stockout_flag=0 | demand_index=91.79"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r4:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-11 | product_id=P1009 | category=Shoes | brand=Nike | region=IN | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=19 | revenue=3510.06 | inventory_level=265 | stockout_flag=0 | demand_index=91.79",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "date": "2026-03-11",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "IN",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "19",
+            "revenue": "3510.06",
+            "inventory_level": "265",
+            "stockout_flag": "0",
+            "demand_index": "91.79"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E004",
+      "question": "Use CSV lookup to retrieve all columns for the P1009 observation dated 9 February 2026 in the CA app channel.",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r2",
+          "document": "inventory.csv",
+          "fact": "date=2026-02-09 | product_id=P1009 | category=Shoes | brand=Nike | region=CA | channel=app | season=Winter | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=25 | revenue=4618.5 | inventory_level=285 | stockout_flag=0 | demand_index=120.77"
+        }
+      ],
+      "expected_tools": [
+        "csv_lookup"
+      ]
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r2:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-09 | product_id=P1009 | category=Shoes | brand=Nike | region=CA | channel=app | season=Winter | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=25 | revenue=4618.5 | inventory_level=285 | stockout_flag=0 | demand_index=120.77",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "date": "2026-02-09",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "CA",
+            "channel": "app",
+            "season": "Winter",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "25",
+            "revenue": "4618.5",
+            "inventory_level": "285",
+            "stockout_flag": "0",
+            "demand_index": "120.77"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E005",
+      "question": "What is the current inventory level for product P1026?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r9",
+          "document": "inventory.csv",
+          "fact": "date=2026-01-01 | product_id=P1026 | category=Shoes | brand=Asics | region=IN | channel=app | season=Winter | base_price=14.91 | current_price=14.91 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=3 | revenue=44.73 | inventory_level=426 | stockout_flag=0 | demand_index=107.14"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r9:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-01 | product_id=P1026 | category=Shoes | brand=Asics | region=IN | channel=app | season=Winter | base_price=14.91 | current_price=14.91 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=3 | revenue=44.73 | inventory_level=426 | stockout_flag=0 | demand_index=107.14",
+          "page": null,
+          "row": 9,
+          "cells": {
+            "date": "2026-01-01",
+            "product_id": "P1026",
+            "category": "Shoes",
+            "brand": "Asics",
+            "region": "IN",
+            "channel": "app",
+            "season": "Winter",
+            "base_price": "14.91",
+            "current_price": "14.91",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "3",
+            "revenue": "44.73",
+            "inventory_level": "426",
+            "stockout_flag": "0",
+            "demand_index": "107.14"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E006",
+      "question": "What is the demand index for product P1033?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r10",
+          "document": "inventory.csv",
+          "fact": "date=2026-02-23 | product_id=P1033 | category=Shoes | brand=Adidas | region=IN | channel=mobile | season=Winter | base_price=400.15 | current_price=400.15 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=11604.35 | inventory_level=294 | stockout_flag=0 | demand_index=136.79"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r10:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-23 | product_id=P1033 | category=Shoes | brand=Adidas | region=IN | channel=mobile | season=Winter | base_price=400.15 | current_price=400.15 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=11604.35 | inventory_level=294 | stockout_flag=0 | demand_index=136.79",
+          "page": null,
+          "row": 10,
+          "cells": {
+            "date": "2026-02-23",
+            "product_id": "P1033",
+            "category": "Shoes",
+            "brand": "Adidas",
+            "region": "IN",
+            "channel": "mobile",
+            "season": "Winter",
+            "base_price": "400.15",
+            "current_price": "400.15",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "29",
+            "revenue": "11604.35",
+            "inventory_level": "294",
+            "stockout_flag": "0",
+            "demand_index": "136.79"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E007",
+      "question": "For the P1038 observation on 22 February 2026 in the DE web channel, what would total revenue be in currency units if its recorded unit price increased by 10 and units sold stayed at 10?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r11",
+          "document": "inventory.csv",
+          "fact": "date=2026-02-22 | product_id=P1038 | category=Shoes | brand=New Balance | region=DE | channel=web | season=Winter | base_price=289.29 | current_price=188.04 | price_change_pct=-35.0 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=10 | revenue=1880.4 | inventory_level=325 | stockout_flag=0 | demand_index=140.85"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r11:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-22 | product_id=P1038 | category=Shoes | brand=New Balance | region=DE | channel=web | season=Winter | base_price=289.29 | current_price=188.04 | price_change_pct=-35.0 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=10 | revenue=1880.4 | inventory_level=325 | stockout_flag=0 | demand_index=140.85",
+          "page": null,
+          "row": 11,
+          "cells": {
+            "date": "2026-02-22",
+            "product_id": "P1038",
+            "category": "Shoes",
+            "brand": "New Balance",
+            "region": "DE",
+            "channel": "web",
+            "season": "Winter",
+            "base_price": "289.29",
+            "current_price": "188.04",
+            "price_change_pct": "-35.0",
+            "discount_pct": "35",
+            "promotion_type": "Buy One Get One",
+            "units_sold": "10",
+            "revenue": "1880.4",
+            "inventory_level": "325",
+            "stockout_flag": "0",
+            "demand_index": "140.85"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E008",
+      "question": "What current_price was recorded for P1079 on 16 March 2026 in the DE app channel?",
+      "category": "direct",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r15",
+          "document": "inventory.csv",
+          "fact": "date=2026-03-16 | product_id=P1079 | category=Shoes | brand=New Balance | region=DE | channel=app | season=Spring | base_price=296.17 | current_price=296.17 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=21 | revenue=6219.57 | inventory_level=190 | stockout_flag=0 | demand_index=111.7"
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r15:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-16 | product_id=P1079 | category=Shoes | brand=New Balance | region=DE | channel=app | season=Spring | base_price=296.17 | current_price=296.17 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=21 | revenue=6219.57 | inventory_level=190 | stockout_flag=0 | demand_index=111.7",
+          "page": null,
+          "row": 15,
+          "cells": {
+            "date": "2026-03-16",
+            "product_id": "P1079",
+            "category": "Shoes",
+            "brand": "New Balance",
+            "region": "DE",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "296.17",
+            "current_price": "296.17",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "21",
+            "revenue": "6219.57",
+            "inventory_level": "190",
+            "stockout_flag": "0",
+            "demand_index": "111.7"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E009",
+      "question": "What is the primary method used in astronomy to measure the distance to faraway galaxies?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E010",
+      "question": "What is the role of the circle of fifths in music theory?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E011",
+      "question": "What type of ecosystem characterizes wildlife habitats in tropical rainforests?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E012",
+      "question": "What is the ideal temperature range for proofing bread dough during baking?",
+      "category": "out_of_scope",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E013",
+      "question": "What is the standard warranty period for Nike shoes (product ID P1009) sold in the UK region?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r3:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "date": "2026-03-05",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "UK",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "29",
+            "revenue": "5357.46",
+            "inventory_level": "299",
+            "stockout_flag": "0",
+            "demand_index": "140.1"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E014",
+      "question": "What exact restocking fee applies to a mailed return of unused Adidas shoes P1005?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r1:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "date": "2026-01-30",
+            "product_id": "P1005",
+            "category": "Shoes",
+            "brand": "Adidas",
+            "region": "US",
+            "channel": "mobile",
+            "season": "Winter",
+            "base_price": "17.1",
+            "current_price": "11.12",
+            "price_change_pct": "-34.97",
+            "discount_pct": "35",
+            "promotion_type": "Buy One Get One",
+            "units_sold": "4",
+            "revenue": "44.48",
+            "inventory_level": "408",
+            "stockout_flag": "0",
+            "demand_index": "190.48"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E015",
+      "question": "What are the shipping carrier options and estimated delivery times for orders placed from the IN region for New Balance products?",
+      "category": "unsupported",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "shipping_policy.txt#text:c1",
+          "file": "shipping_policy.txt",
+          "text": "Northstar Retail - fictional shipping policy S1. Standard shipping takes 3-5 business days after dispatch. S2. Express shipping takes 1-2 business days after dispatch. S3. Delivery dates are estimates, not guarantees. S4. Live tracking and address changes require customer support; no order system is available.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "inventory.csv#r88:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-08 | product_id=P1286 | category=Electronics | brand=Fitbit | region=DE | channel=mobile | season=Spring | base_price=226.98 | current_price=226.98 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=15 | revenue=3404.7 | inventory_level=285 | stockout_flag=0 | demand_index=86.21",
+          "page": null,
+          "row": 88,
+          "cells": {
+            "date": "2026-03-08",
+            "product_id": "P1286",
+            "category": "Electronics",
+            "brand": "Fitbit",
+            "region": "DE",
+            "channel": "mobile",
+            "season": "Spring",
+            "base_price": "226.98",
+            "current_price": "226.98",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "15",
+            "revenue": "3404.7",
+            "inventory_level": "285",
+            "stockout_flag": "0",
+            "demand_index": "86.21"
+          }
+        },
+        {
+          "id": "inventory.csv#r139:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-06 | product_id=P1454 | category=Groceries | brand=GreatValue | region=CA | channel=mobile | season=Winter | base_price=18.87 | current_price=18.87 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=22 | revenue=415.14 | inventory_level=198 | stockout_flag=0 | demand_index=139.24",
+          "page": null,
+          "row": 139,
+          "cells": {
+            "date": "2026-01-06",
+            "product_id": "P1454",
+            "category": "Groceries",
+            "brand": "GreatValue",
+            "region": "CA",
+            "channel": "mobile",
+            "season": "Winter",
+            "base_price": "18.87",
+            "current_price": "18.87",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "22",
+            "revenue": "415.14",
+            "inventory_level": "198",
+            "stockout_flag": "0",
+            "demand_index": "139.24"
+          }
+        },
+        {
+          "id": "inventory.csv#r98:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-17 | product_id=P1308 | category=Electronics | brand=Fitbit | region=UK | channel=app | season=Winter | base_price=145.66 | current_price=94.68 | price_change_pct=-35.0 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=17 | revenue=1609.56 | inventory_level=257 | stockout_flag=0 | demand_index=126.87",
+          "page": null,
+          "row": 98,
+          "cells": {
+            "date": "2026-02-17",
+            "product_id": "P1308",
+            "category": "Electronics",
+            "brand": "Fitbit",
+            "region": "UK",
+            "channel": "app",
+            "season": "Winter",
+            "base_price": "145.66",
+            "current_price": "94.68",
+            "price_change_pct": "-35.0",
+            "discount_pct": "35",
+            "promotion_type": "Buy One Get One",
+            "units_sold": "17",
+            "revenue": "1609.56",
+            "inventory_level": "257",
+            "stockout_flag": "0",
+            "demand_index": "126.87"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E016",
+      "question": "What is the current price for product P1009 without specifying the region?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r2:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-09 | product_id=P1009 | category=Shoes | brand=Nike | region=CA | channel=app | season=Winter | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=25 | revenue=4618.5 | inventory_level=285 | stockout_flag=0 | demand_index=120.77",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "date": "2026-02-09",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "CA",
+            "channel": "app",
+            "season": "Winter",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "25",
+            "revenue": "4618.5",
+            "inventory_level": "285",
+            "stockout_flag": "0",
+            "demand_index": "120.77"
+          }
+        },
+        {
+          "id": "inventory.csv#r3:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "date": "2026-03-05",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "UK",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "29",
+            "revenue": "5357.46",
+            "inventory_level": "299",
+            "stockout_flag": "0",
+            "demand_index": "140.1"
+          }
+        },
+        {
+          "id": "inventory.csv#r4:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-11 | product_id=P1009 | category=Shoes | brand=Nike | region=IN | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=19 | revenue=3510.06 | inventory_level=265 | stockout_flag=0 | demand_index=91.79",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "date": "2026-03-11",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "IN",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "19",
+            "revenue": "3510.06",
+            "inventory_level": "265",
+            "stockout_flag": "0",
+            "demand_index": "91.79"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E017",
+      "question": "What discount percentage was recorded for product P1022 in the web channel?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r6:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-01 | product_id=P1022 | category=Shoes | brand=Asics | region=DE | channel=web | season=Winter | base_price=94.62 | current_price=66.23 | price_change_pct=-30.0 | discount_pct=30 | promotion_type=Clearance | units_sold=30 | revenue=1986.9 | inventory_level=138 | stockout_flag=0 | demand_index=143.54",
+          "page": null,
+          "row": 6,
+          "cells": {
+            "date": "2026-01-01",
+            "product_id": "P1022",
+            "category": "Shoes",
+            "brand": "Asics",
+            "region": "DE",
+            "channel": "web",
+            "season": "Winter",
+            "base_price": "94.62",
+            "current_price": "66.23",
+            "price_change_pct": "-30.0",
+            "discount_pct": "30",
+            "promotion_type": "Clearance",
+            "units_sold": "30",
+            "revenue": "1986.9",
+            "inventory_level": "138",
+            "stockout_flag": "0",
+            "demand_index": "143.54"
+          }
+        },
+        {
+          "id": "inventory.csv#r7:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-28 | product_id=P1022 | category=Shoes | brand=Asics | region=IN | channel=web | season=Winter | base_price=94.62 | current_price=94.62 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=22 | revenue=2081.64 | inventory_level=277 | stockout_flag=0 | demand_index=105.26",
+          "page": null,
+          "row": 7,
+          "cells": {
+            "date": "2026-02-28",
+            "product_id": "P1022",
+            "category": "Shoes",
+            "brand": "Asics",
+            "region": "IN",
+            "channel": "web",
+            "season": "Winter",
+            "base_price": "94.62",
+            "current_price": "94.62",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "22",
+            "revenue": "2081.64",
+            "inventory_level": "277",
+            "stockout_flag": "0",
+            "demand_index": "105.26"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E018",
+      "question": "What demand index was recorded for product P1009 in the app channel?",
+      "category": "ambiguous",
+      "expected_refusal": true,
+      "expected_facts": [],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r2:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-02-09 | product_id=P1009 | category=Shoes | brand=Nike | region=CA | channel=app | season=Winter | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=25 | revenue=4618.5 | inventory_level=285 | stockout_flag=0 | demand_index=120.77",
+          "page": null,
+          "row": 2,
+          "cells": {
+            "date": "2026-02-09",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "CA",
+            "channel": "app",
+            "season": "Winter",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "25",
+            "revenue": "4618.5",
+            "inventory_level": "285",
+            "stockout_flag": "0",
+            "demand_index": "120.77"
+          }
+        },
+        {
+          "id": "inventory.csv#r3:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+          "page": null,
+          "row": 3,
+          "cells": {
+            "date": "2026-03-05",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "UK",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "29",
+            "revenue": "5357.46",
+            "inventory_level": "299",
+            "stockout_flag": "0",
+            "demand_index": "140.1"
+          }
+        },
+        {
+          "id": "inventory.csv#r4:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-03-11 | product_id=P1009 | category=Shoes | brand=Nike | region=IN | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=19 | revenue=3510.06 | inventory_level=265 | stockout_flag=0 | demand_index=91.79",
+          "page": null,
+          "row": 4,
+          "cells": {
+            "date": "2026-03-11",
+            "product_id": "P1009",
+            "category": "Shoes",
+            "brand": "Nike",
+            "region": "IN",
+            "channel": "app",
+            "season": "Spring",
+            "base_price": "184.74",
+            "current_price": "184.74",
+            "price_change_pct": "0.0",
+            "discount_pct": "0",
+            "promotion_type": "None",
+            "units_sold": "19",
+            "revenue": "3510.06",
+            "inventory_level": "265",
+            "stockout_flag": "0",
+            "demand_index": "91.79"
+          }
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E019",
+      "question": "From the inventory record dated 2026-01-30 for product P1005, what is the current price? Also, are opened electronics eligible for change‑of‑mind returns?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r1",
+          "document": "inventory.csv",
+          "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+        },
+        {
+          "source_id": "return_policy.pdf#p1",
+          "document": "return_policy.pdf",
+          "fact": "Opened electronics are not eligible for change-of-mind returns."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r1:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "date": "2026-01-30",
+            "product_id": "P1005",
+            "category": "Shoes",
+            "brand": "Adidas",
+            "region": "US",
+            "channel": "mobile",
+            "season": "Winter",
+            "base_price": "17.1",
+            "current_price": "11.12",
+            "price_change_pct": "-34.97",
+            "discount_pct": "35",
+            "promotion_type": "Buy One Get One",
+            "units_sold": "4",
+            "revenue": "44.48",
+            "inventory_level": "408",
+            "stockout_flag": "0",
+            "demand_index": "190.48"
+          }
+        },
+        {
+          "id": "return_policy.pdf#p1:c1",
+          "file": "return_policy.pdf",
+          "text": "Northstar Retail | Fictional rehearsal policy Returns and exchanges R1. Unused shoes and apparel may be returned within 30 calendar days of delivery with proof of purchase. R2. Electronics may be returned within 14 calendar days of delivery if unopened and accompanied by proof of purchase. R3. Opened electronics are not eligible for change-of-mind returns. Defective items are referred to warranty support. R4. Approved refunds are issued to the original payment method within 7 business days after inspection. R5. Discounted items follow the same return rules unless explicitly marked final sale. The inventory CSV does not identify final-sale items.",
+          "page": 1,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "warranty_policy.pdf#p1:c1",
+          "file": "warranty_policy.pdf",
+          "text": "Northstar Retail | Fictional rehearsal policy Warranty policy W1. Electronics have a 12-month warranty from purchase for manufacturing defects. W2. Accidental damage, liquid damage and normal wear are excluded. W3. Warranty claims require proof of purchase and a description of the defect. W4. Warranty support determines repair or replacement after inspection; do not promise either outcome.",
+          "page": 1,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "pricing_policy.txt#text:c1",
+          "file": "pricing_policy.txt",
+          "text": "Northstar Retail - fictional pricing policy P1. Inventory CSV rows are historical observations, not live stock or current offers. P2. Identify observations by product ID, date, region and channel. Ask for clarification if multiple rows match. P3. For a specified observation, multiply current_price by requested quantity to calculate merchandise subtotal. Do not apply discount_pct again. P4. Currency is not specified in the source; report amounts in unspecified currency units. Taxes and shipping fees are not supplied. P5. stockout_flag indicates critically low inventory, not necessarily zero stock. Blank promotion_type means no promotion type recorded. P6. Do not infer product names, live availability or promotion eligibility from historical observations.",
+          "page": null,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  },
+  {
+    "case": {
+      "id": "E020",
+      "question": "What is the discount percentage for product P1005 on 2026-01-30? Also, are taxes and shipping fees supplied for this product?",
+      "category": "multi_document",
+      "expected_refusal": false,
+      "expected_facts": [
+        {
+          "source_id": "inventory.csv#r1",
+          "document": "inventory.csv",
+          "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+        },
+        {
+          "source_id": "pricing_policy.txt#text",
+          "document": "pricing_policy.txt",
+          "fact": "Taxes and shipping fees are not supplied."
+        }
+      ],
+      "expected_tools": []
+    },
+    "execution": {
+      "answer": null,
+      "retrieved": [
+        {
+          "id": "inventory.csv#r1:c1",
+          "file": "inventory.csv",
+          "text": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48",
+          "page": null,
+          "row": 1,
+          "cells": {
+            "date": "2026-01-30",
+            "product_id": "P1005",
+            "category": "Shoes",
+            "brand": "Adidas",
+            "region": "US",
+            "channel": "mobile",
+            "season": "Winter",
+            "base_price": "17.1",
+            "current_price": "11.12",
+            "price_change_pct": "-34.97",
+            "discount_pct": "35",
+            "promotion_type": "Buy One Get One",
+            "units_sold": "4",
+            "revenue": "44.48",
+            "inventory_level": "408",
+            "stockout_flag": "0",
+            "demand_index": "190.48"
+          }
+        },
+        {
+          "id": "pricing_policy.txt#text:c1",
+          "file": "pricing_policy.txt",
+          "text": "Northstar Retail - fictional pricing policy P1. Inventory CSV rows are historical observations, not live stock or current offers. P2. Identify observations by product ID, date, region and channel. Ask for clarification if multiple rows match. P3. For a specified observation, multiply current_price by requested quantity to calculate merchandise subtotal. Do not apply discount_pct again. P4. Currency is not specified in the source; report amounts in unspecified currency units. Taxes and shipping fees are not supplied. P5. stockout_flag indicates critically low inventory, not necessarily zero stock. Blank promotion_type means no promotion type recorded. P6. Do not infer product names, live availability or promotion eligibility from historical observations.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "shipping_policy.txt#text:c1",
+          "file": "shipping_policy.txt",
+          "text": "Northstar Retail - fictional shipping policy S1. Standard shipping takes 3-5 business days after dispatch. S2. Express shipping takes 1-2 business days after dispatch. S3. Delivery dates are estimates, not guarantees. S4. Live tracking and address changes require customer support; no order system is available.",
+          "page": null,
+          "row": null,
+          "cells": null
+        },
+        {
+          "id": "return_policy.pdf#p1:c1",
+          "file": "return_policy.pdf",
+          "text": "Northstar Retail | Fictional rehearsal policy Returns and exchanges R1. Unused shoes and apparel may be returned within 30 calendar days of delivery with proof of purchase. R2. Electronics may be returned within 14 calendar days of delivery if unopened and accompanied by proof of purchase. R3. Opened electronics are not eligible for change-of-mind returns. Defective items are referred to warranty support. R4. Approved refunds are issued to the original payment method within 7 business days after inspection. R5. Discounted items follow the same return rules unless explicitly marked final sale. The inventory CSV does not identify final-sale items.",
+          "page": 1,
+          "row": null,
+          "cells": null
+        }
+      ],
+      "tools": [],
+      "error": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+      "invalid_citation": false,
+      "invalid_tool_call": false,
+      "refusal_code": null
+    },
+    "judgment": null,
+    "status": "error",
+    "failure": null,
+    "explanation": "RuntimeError: Groq openai/gpt-oss-120b returned HTTP 401",
+    "score": null
+  }
+]

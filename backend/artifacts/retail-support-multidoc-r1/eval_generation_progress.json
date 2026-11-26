@@ -1,0 +1,236 @@
+[
+  {
+    "id": "E001",
+    "question": "If the units sold increase by 3, what would the total revenue be assuming the current price remains the same?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r1",
+        "document": "inventory.csv",
+        "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+      }
+    ],
+    "expected_tools": [
+      "calculator"
+    ]
+  },
+  {
+    "id": "E002",
+    "question": "What was the total revenue recorded for product P1009 on the given date?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r3",
+        "document": "inventory.csv",
+        "fact": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E003",
+    "question": "What is the stock status for product P1009?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r4",
+        "document": "inventory.csv",
+        "fact": "date=2026-03-11 | product_id=P1009 | category=Shoes | brand=Nike | region=IN | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=19 | revenue=3510.06 | inventory_level=265 | stockout_flag=0 | demand_index=91.79"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E004",
+    "question": "Please retrieve the full record for product ID P1009 using the CSV lookup.",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r2",
+        "document": "inventory.csv",
+        "fact": "date=2026-02-09 | product_id=P1009 | category=Shoes | brand=Nike | region=CA | channel=app | season=Winter | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=25 | revenue=4618.5 | inventory_level=285 | stockout_flag=0 | demand_index=120.77"
+      }
+    ],
+    "expected_tools": [
+      "csv_lookup"
+    ]
+  },
+  {
+    "id": "E005",
+    "question": "What is the current inventory level for product P1026?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r9",
+        "document": "inventory.csv",
+        "fact": "date=2026-01-01 | product_id=P1026 | category=Shoes | brand=Asics | region=IN | channel=app | season=Winter | base_price=14.91 | current_price=14.91 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=3 | revenue=44.73 | inventory_level=426 | stockout_flag=0 | demand_index=107.14"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E006",
+    "question": "What is the demand index for product P1033?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r10",
+        "document": "inventory.csv",
+        "fact": "date=2026-02-23 | product_id=P1033 | category=Shoes | brand=Adidas | region=IN | channel=mobile | season=Winter | base_price=400.15 | current_price=400.15 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=11604.35 | inventory_level=294 | stockout_flag=0 | demand_index=136.79"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E007",
+    "question": "If the price per unit is increased by $10, what would be the new total revenue assuming the units sold remain at 10?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r11",
+        "document": "inventory.csv",
+        "fact": "date=2026-02-22 | product_id=P1038 | category=Shoes | brand=New Balance | region=DE | channel=web | season=Winter | base_price=289.29 | current_price=188.04 | price_change_pct=-35.0 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=10 | revenue=1880.4 | inventory_level=325 | stockout_flag=0 | demand_index=140.85"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E008",
+    "question": "What is the current price for product P1079?",
+    "category": "direct",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r15",
+        "document": "inventory.csv",
+        "fact": "date=2026-03-16 | product_id=P1079 | category=Shoes | brand=New Balance | region=DE | channel=app | season=Spring | base_price=296.17 | current_price=296.17 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=21 | revenue=6219.57 | inventory_level=190 | stockout_flag=0 | demand_index=111.7"
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E009",
+    "question": "What is the primary method used in astronomy to measure the distance to faraway galaxies?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E010",
+    "question": "What is the role of the circle of fifths in music theory?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E011",
+    "question": "What type of ecosystem characterizes wildlife habitats in tropical rainforests?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E012",
+    "question": "What is the ideal temperature range for proofing bread dough during baking?",
+    "category": "out_of_scope",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E013",
+    "question": "What is the standard warranty period for Nike shoes (product ID P1009) sold in the UK region?",
+    "category": "unsupported",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E014",
+    "question": "What is the return policy timeframe for customers who purchased Adidas shoes (product ID P1005) through the mobile channel?",
+    "category": "unsupported",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E015",
+    "question": "What are the shipping carrier options and estimated delivery times for orders placed from the IN region for New Balance products?",
+    "category": "unsupported",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E016",
+    "question": "What is the current price for product P1009 without specifying the region?",
+    "category": "ambiguous",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E017",
+    "question": "What is the discount percentage applied to product P1022 without indicating the sales channel?",
+    "category": "ambiguous",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E018",
+    "question": "What is the demand index for product P1038 without mentioning the season?",
+    "category": "ambiguous",
+    "expected_refusal": true,
+    "expected_facts": [],
+    "expected_tools": []
+  },
+  {
+    "id": "E019",
+    "question": "From the inventory record dated 2026-01-30 for product P1005, what is the current price? Also, are opened electronics eligible for change‑of‑mind returns?",
+    "category": "multi_document",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r1",
+        "document": "inventory.csv",
+        "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+      },
+      {
+        "source_id": "return_policy.pdf#p1",
+        "document": "return_policy.pdf",
+        "fact": "Opened electronics are not eligible for change-of-mind returns."
+      }
+    ],
+    "expected_tools": []
+  },
+  {
+    "id": "E020",
+    "question": "What is the discount percentage for product P1005 on 2026-01-30? Also, are taxes and shipping fees supplied for this product?",
+    "category": "multi_document",
+    "expected_refusal": false,
+    "expected_facts": [
+      {
+        "source_id": "inventory.csv#r1",
+        "document": "inventory.csv",
+        "fact": "date=2026-01-30 | product_id=P1005 | category=Shoes | brand=Adidas | region=US | channel=mobile | season=Winter | base_price=17.1 | current_price=11.12 | price_change_pct=-34.97 | discount_pct=35 | promotion_type=Buy One Get One | units_sold=4 | revenue=44.48 | inventory_level=408 | stockout_flag=0 | demand_index=190.48"
+      },
+      {
+        "source_id": "pricing_policy.txt#text",
+        "document": "pricing_policy.txt",
+        "fact": "Taxes and shipping fees are not supplied."
+      }
+    ],
+    "expected_tools": []
+  }
+]

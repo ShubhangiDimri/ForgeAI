@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 
 from forgeai import generator, runner, tools, workflow
-from forgeai.evaluation import TARGETS, Anchor, Case, freeze, generate, read_frozen
+from forgeai.evaluation import TARGETS, Anchor, Case, evidence_cards, freeze, generate, read_frozen
 from forgeai.judge import Judgment, assess
 from forgeai.optimizer import proposed_patch
 from forgeai.runner import Execution, ToolTrace
@@ -51,7 +51,7 @@ class DraftModel:
             self.count += 1
             category = payload["category"]
             questions.append(f"Fixture {category} question {self.count}?")
-        if stage == "eval_generate":
+        if stage in {"eval_generate", "eval_multi_document"}:
             return schema(cases=[dict(question=q, slot=i) for i, q in enumerate(questions, 1)])
         return schema(questions=questions)
 
@@ -82,6 +82,13 @@ def test_invalid_model_evidence_is_rejected():
     with pytest.raises(ValueError, match="No valid"):
         generate(saved_config(), FIXTURES, model)
     assert model.ask.call_count == 5
+
+
+def test_evidence_cards_skip_standalone_section_markers():
+    source = Passage(id="policy.txt#text", file="policy.txt", text="A1. Keep the room locked.\n2. Log each entry.")
+    cards = evidence_cards([source])
+    assert [card.fact for card in cards] == ["Keep the room locked.", "Log each entry."]
+    assert {card.source_id for card in cards} == {source.id}
 
 
 @pytest.mark.parametrize("mode, expected", [
@@ -366,3 +373,42 @@ def test_ambiguous_case_does_not_accept_mechanical_refusal():
     result = assess(case, Execution(answer=answer, refusal_code="no_evidence"), model)
     assert result.status == "failed"
     model.ask.assert_called_once()
+
+
+def test_multidoc_generation_sees_policy_body_after_large_csv():
+    sources = [
+        Passage(id=f"rows.csv#r{i}", file="rows.csv",
+                text=f"product_id=A{i} | historical price={i} | region=UK | channel=web")
+        for i in range(1, 201)
+    ]
+    sources.append(Passage(id="rules.pdf#p1", file="rules.pdf",
+                           text="Returns\nUnopened products may be returned within fourteen days."))
+    config = saved_config()
+    config.requirements.must_answer = ["historical price", "returns"]
+
+    class InspectDraft(DraftModel):
+        def ask(self, stage, payload, schema):
+            if stage == "eval_multi_document":
+                for slot in payload["slots"]:
+                    assert set(slot["documents"]) == {"rows.csv", "rules.pdf"}
+                    assert "Unopened products may be returned" in slot["facts"][1]
+            return super().ask(stage, payload, schema)
+
+    dataset = generate(config, sources, InspectDraft())
+    assert len(dataset.cases) == 20
+    assert sum(c.category == "multi_document" for c in dataset.cases) == 2
+
+
+def test_one_multidoc_case_is_not_replaced_by_a_direct_case():
+    class OneApproved(DraftModel):
+        approved_one = False
+
+        def ask(self, stage, payload, schema):
+            if stage == "eval_validate" and payload["category"] == "multi_document":
+                accepted = [] if self.approved_one else [1]
+                self.approved_one = True
+                return schema(accepted=accepted)
+            return super().ask(stage, payload, schema)
+
+    with pytest.raises(ValueError, match="Only 1/2 multi-document"):
+        generate(saved_config(), FIXTURES, OneApproved())

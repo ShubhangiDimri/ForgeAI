@@ -1,0 +1,12 @@
+[
+  {
+    "version": 0,
+    "total": 20,
+    "passed": 0,
+    "failed": 0,
+    "error": 20,
+    "pass_rate": 0.0,
+    "dimensions": {},
+    "seconds": 6.16
+  }
+]

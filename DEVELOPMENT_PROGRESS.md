@@ -97,3 +97,58 @@ The requester took over model installation. Stopped the scratch Qwen pull, its l
   Both remain complete_with_errors due to baseline infrastructure errors.
 - Kept the validation changes local because GitHub reported origin as public.
 - Fresh browser build completed with three live intake questions, a groundability review and explicit approval. The prototype saved a runnable definition. The full evaluation evidence comes from the two saved Groq demos.
+
+## Reliability audit and controlled comparison on 26 November 2026
+
+- Audited all 34 nonpass observations from the completed academic and procurement runs. The original frozen datasets and traces were preserved. Reviewed corrections are stored separately under backend/eval_datasets/corrected-v1.
+- Evaluated the optional citation precision instruction with a new baseline on the original cases and pinned agent and judge models. Academic scored 13/20 then 12/20. Procurement scored 14/20 then 14/20. Both retained the baseline. The candidate remains off by default.
+- Retained the academic DNS error traces and procurement rate-limit checkpoint. The final comparison has 80 matched cases and zero infrastructure errors. Groq slot 2 completed the replay. Separate NVIDIA and Cloudflare 70B structured-response checks passed.
+- Backend tests returned 57 passed in 5.83 s. See FAILURE_ANALYSIS.md for per-case diagnoses and the remaining quality work.
+
+### Retail exact-identifier retrieval
+
+- Retrieved bounded candidates for repeated CSV identifiers, with focused
+  clarification guidance and space for separately requested policy evidence.
+- Backend verification passed 64 tests. Live GPT-OSS 20B clarified retail
+  cases E017 and E018 using the matching rows. The result is a chat smoke
+  test and separate from the pinned evaluation scorecards.
+- Saved both corrected-benchmark attempts. Groq HTTP 429 and 401 errors
+  prevented a comparable full pinned score. See FAILURE_ANALYSIS.md for
+  case evidence and the artifact directories.
+
+### Unseen-domain museum rehearsal
+
+- Source files and their synthesis prompt are under `backend/demo_data/`.
+  The four policy documents describe a fictional museum and contain no
+  production data. The test cases were generated automatically.
+- The first run, `backend/artifacts/groq-museum-rehearsal-r1/`, is preserved.
+  It rejected all direct candidates. Inspection found standalone section
+  labels in evidence slots. The generator now excludes those labels and the
+  independent review uses structured scope rather than the generated
+  assistant prompt.
+- The fresh unattended retry, `backend/artifacts/groq-museum-rehearsal-r2/`,
+  froze 20 cases across all five categories, including two cross-document
+  cases. All expected evidence anchors were checked against the source
+  snapshot. GPT-OSS 120B ran the agent and GPT-OSS 20B judged both versions.
+- Baseline passed 13/20. One targeted scope/clarification iteration passed
+  14/20 and was selected. Both versions completed with zero provider
+  errors. Six cases still scored as failures. The raw traces distinguish
+  questionable refusal/ambiguity judgments from a genuine missing policy
+  in the retrieved evidence for one cross-document case.
+- The backend suite passed 66 tests, including mocked third-key selection
+  and the section-label regression, with one existing dependency warning.
+
+### Final live verification
+
+- The selected museum configuration passed four additional live chat checks.
+  The direct answer cited the 50-lux rule. The multi-document answer cited
+  the two-working-day movement deadline and the ten-working-day study
+  appointment deadline. Unsupported and out-of-scope requests were refused.
+  Traces are in `backend/artifacts/groq-museum-rehearsal-r2/chat_smoke.json`.
+- The controlled retail replay finished on the same frozen 20 corrected
+  cases with pinned models and rubric. Both variants scored 16/20 with zero
+  final provider errors. The new retrieval path passed E017/E018 and
+  regressed E004/E016. See the candidate `comparison.md` and each run's raw
+  scorecard. HTTP 429 interruptions were checkpointed. Groq key 1 returned
+  HTTP 401, so recovery used valid configured credentials with the same
+  model IDs.

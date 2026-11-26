@@ -2,6 +2,8 @@
 __pycache__/
 .pytest_cache/
 .env
+.streamlit/secrets.toml
+node_modules/
 *.gguf
 *.safetensors
 work/
@@ -40,9 +42,7 @@ htmlcov/
 /artifacts/nvidia-academic-r2/
 /artifacts/nvidia-procurement-r2/
 
-# Frontend dependencies and build output
-node_modules/
-frontend/dist/
+# Backend uploads and intermediate artifacts
 backend/uploads/
 backend/artifacts/cf-academic/
 backend/artifacts/cf-procurement/
@@ -51,3 +51,10 @@ backend/artifacts/nvidia-procurement-r2/
 
 # Local UI verification runs
 /backend/artifacts/ui-verification-*/
+
+# Incomplete/scratch test runs
+backend/artifacts/agent-2c122e/
+backend/artifacts/agent-e263ee/
+backend/artifacts/store-support-assistant-2f9f7c/
+backend/artifacts/retail-support-assistant-156149/
+backend/artifacts/groq-museum-rehearsal-r1/

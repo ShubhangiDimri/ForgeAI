@@ -1,0 +1,153 @@
+{
+  "model": "groq:openai/gpt-oss-120b",
+  "cases": [
+    {
+      "category": "supported",
+      "question": "What is the lighting limit for a paper display?",
+      "trace": {
+        "answer": {
+          "answer": "Paper displays have a lighting limit of 50 lux.",
+          "citations": [
+            "environment.txt#text:c2"
+          ],
+          "refused": false
+        },
+        "retrieved": [
+          {
+            "id": "environment.txt#text:c2",
+            "file": "environment.txt",
+            "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+            "page": null,
+            "row": null,
+            "cells": null
+          },
+          {
+            "id": "environment.txt#text:c1",
+            "file": "environment.txt",
+            "text": "E1. Store paper objects at 45 to 55 percent relative humidity. Store metal objects at 35 to 45 percent. The wood store has a separate 45 to 60 percent band. E2. A reading out of range for 30 consecutive minutes requires a conservation ticket. Include the space, latest reading, start time, and object materials. E3. Paper displays have a 50-lux",
+            "page": null,
+            "row": null,
+            "cells": null
+          },
+          {
+            "id": "access_and_incidents.txt#text:c2",
+            "file": "access_and_incidents.txt",
+            "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+            "page": null,
+            "row": null,
+            "cells": null
+          }
+        ],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": null
+      }
+    },
+    {
+      "category": "multi_document",
+      "question": "How far in advance should I book an internal object movement, and how far in advance should an external researcher request a study appointment?",
+      "trace": {
+        "answer": {
+          "answer": "Book internal movements two working days in advance; external researchers must request a study appointment ten working days in advance.",
+          "citations": [
+            "object_movements.txt#text:c1",
+            "access_and_incidents.txt#text:c1"
+          ],
+          "refused": false
+        },
+        "retrieved": [
+          {
+            "id": "access_and_incidents.txt#text:c1",
+            "file": "access_and_incidents.txt",
+            "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+            "page": null,
+            "row": null,
+            "cells": null
+          },
+          {
+            "id": "object_movements.txt#text:c1",
+            "file": "object_movements.txt",
+            "text": "M1. Book internal movements two working days in advance. The booking includes the object identifier, destination, route, time, and names of both handlers. M2. Each internal move requires two trained handlers. For freestanding objects heavier than 20 kilograms, a padded trolley is also mandatory. M3. Close the gallery to visitors during a move across a public floor. Reopen it after",
+            "page": null,
+            "row": null,
+            "cells": null
+          },
+          {
+            "id": "loan_intake.txt#text:c1",
+            "file": "loan_intake.txt",
+            "text": "L1. A proposed incoming loan is logged 30 calendar days before its planned arrival. The registrar records the lender, object identifiers, arrival date, insurance limits, and a named contact. L2. Complete the condition report before unpacking ends. It includes painted surfaces, mount integrity, and dated photographs. Both receiving staff sign it. L3. Transit damage is photographed and reported to the",
+            "page": null,
+            "row": null,
+            "cells": null
+          }
+        ],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": null
+      }
+    },
+    {
+      "category": "unsupported",
+      "question": "What is the maximum number of researchers allowed at a single study appointment?",
+      "trace": {
+        "answer": {
+          "answer": "The policy documents do not specify a maximum number of researchers per study appointment; clarification is needed.",
+          "citations": [],
+          "refused": true
+        },
+        "retrieved": [
+          {
+            "id": "access_and_incidents.txt#text:c1",
+            "file": "access_and_incidents.txt",
+            "text": "A1. An external researcher must request a study appointment ten working days in advance and provide institution, object identifiers, and purpose. A2. A staff member must supervise the study visit. Personal bags stay in the locker. Only pencils and approved cameras can enter the study room. A3. Personal reference photography is allowed when the registrar approves it. Publication photography requires",
+            "page": null,
+            "row": null,
+            "cells": null
+          },
+          {
+            "id": "environment.txt#text:c2",
+            "file": "environment.txt",
+            "text": "time, and object materials. E3. Paper displays have a 50-lux lighting limit. Metal displays have a 150-lux limit. Turn off case lighting when the gallery closes. E4. Check gallery humidity sensors each Monday. Record test results in the equipment log and tell facilities if a sensor fails. E5. Water near a collection object requires an immediate call to the duty",
+            "page": null,
+            "row": null,
+            "cells": null
+          },
+          {
+            "id": "access_and_incidents.txt#text:c2",
+            "file": "access_and_incidents.txt",
+            "text": "is allowed when the registrar approves it. Publication photography requires a separate written license. Flash is prohibited. A4. If a visitor finds damage, isolate the display and notify the duty conservator immediately. The supervisor completes an incident record before shift end. A5. Security reviews access logs monthly. Staff may request a badge reset from their supervisor; badge issuance times are",
+            "page": null,
+            "row": null,
+            "cells": null
+          }
+        ],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": null
+      }
+    },
+    {
+      "category": "out_of_scope",
+      "question": "What causes volcanic eruptions?",
+      "trace": {
+        "answer": {
+          "answer": "No supporting evidence was found.",
+          "citations": [],
+          "refused": true
+        },
+        "retrieved": [],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": "no_evidence"
+      }
+    }
+  ]
+}

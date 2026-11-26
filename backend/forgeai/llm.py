@@ -10,7 +10,7 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 PROMPTS = Path(__file__).with_name("prompts")
 OUTPUT_BUDGET = {"questions": 160, "requirements": 320, "coverage": 180, "design": 320,
-                 "route": 150, "answer": 240, "eval_generate": 260, "eval_questions": 220, "eval_outside": 160, "eval_validate": 72, "judge": 160}
+                 "route": 150, "answer": 240, "answer_precise": 240, "eval_generate": 260, "eval_multi_document": 260, "eval_questions": 220, "eval_outside": 160, "eval_validate": 72, "judge": 160}
 
 
 class ModelClient:
@@ -86,10 +86,10 @@ def groq_key() -> str:
         slot = provider_key("FORGE_GROQ_KEY_SLOT")
     except RuntimeError:
         slot = ""
-    if slot not in {"", "1", "2"}:
-        raise RuntimeError("FORGE_GROQ_KEY_SLOT must be 1 or 2")
+    if slot not in {"", "1", "2", "3"}:
+        raise RuntimeError("FORGE_GROQ_KEY_SLOT must be 1, 2 or 3")
     names = (f"GROQ_API_KEY_{slot}",) if slot else (
-        "GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2",
+        "GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2", "GROQ_API_KEY_3",
     )
     for name in names:
         try:

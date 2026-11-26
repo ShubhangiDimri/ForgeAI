@@ -1,0 +1,218 @@
+{
+  "model": "groq:openai/gpt-oss-20b",
+  "purpose": "Standalone live chat smoke test; excluded from pinned evaluation scorecards",
+  "cases": [
+    {
+      "case_id": "E002",
+      "question": "What total revenue was recorded for P1009 on 5 March 2026 in the UK app channel?",
+      "trace": {
+        "answer": {
+          "answer": "$5,357.46",
+          "citations": [
+            "inventory.csv#r3:c1"
+          ],
+          "refused": false
+        },
+        "retrieved": [
+          {
+            "id": "inventory.csv#r3:c1",
+            "file": "inventory.csv",
+            "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+            "page": null,
+            "row": 3,
+            "cells": {
+              "date": "2026-03-05",
+              "product_id": "P1009",
+              "category": "Shoes",
+              "brand": "Nike",
+              "region": "UK",
+              "channel": "app",
+              "season": "Spring",
+              "base_price": "184.74",
+              "current_price": "184.74",
+              "price_change_pct": "0.0",
+              "discount_pct": "0",
+              "promotion_type": "None",
+              "units_sold": "29",
+              "revenue": "5357.46",
+              "inventory_level": "299",
+              "stockout_flag": "0",
+              "demand_index": "140.1"
+            }
+          }
+        ],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": null
+      }
+    },
+    {
+      "case_id": "E017",
+      "question": "What discount percentage was recorded for product P1022 in the web channel?",
+      "trace": {
+        "answer": {
+          "answer": "The question is ambiguous: two records for product P1022 in the web channel have different discount percentages (30% on 2026-01-01 and 0% on 2026-02-28). Please specify the date or context to provide the correct discount percentage.",
+          "citations": [],
+          "refused": true
+        },
+        "retrieved": [
+          {
+            "id": "inventory.csv#r6:c1",
+            "file": "inventory.csv",
+            "text": "date=2026-01-01 | product_id=P1022 | category=Shoes | brand=Asics | region=DE | channel=web | season=Winter | base_price=94.62 | current_price=66.23 | price_change_pct=-30.0 | discount_pct=30 | promotion_type=Clearance | units_sold=30 | revenue=1986.9 | inventory_level=138 | stockout_flag=0 | demand_index=143.54",
+            "page": null,
+            "row": 6,
+            "cells": {
+              "date": "2026-01-01",
+              "product_id": "P1022",
+              "category": "Shoes",
+              "brand": "Asics",
+              "region": "DE",
+              "channel": "web",
+              "season": "Winter",
+              "base_price": "94.62",
+              "current_price": "66.23",
+              "price_change_pct": "-30.0",
+              "discount_pct": "30",
+              "promotion_type": "Clearance",
+              "units_sold": "30",
+              "revenue": "1986.9",
+              "inventory_level": "138",
+              "stockout_flag": "0",
+              "demand_index": "143.54"
+            }
+          },
+          {
+            "id": "inventory.csv#r7:c1",
+            "file": "inventory.csv",
+            "text": "date=2026-02-28 | product_id=P1022 | category=Shoes | brand=Asics | region=IN | channel=web | season=Winter | base_price=94.62 | current_price=94.62 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=22 | revenue=2081.64 | inventory_level=277 | stockout_flag=0 | demand_index=105.26",
+            "page": null,
+            "row": 7,
+            "cells": {
+              "date": "2026-02-28",
+              "product_id": "P1022",
+              "category": "Shoes",
+              "brand": "Asics",
+              "region": "IN",
+              "channel": "web",
+              "season": "Winter",
+              "base_price": "94.62",
+              "current_price": "94.62",
+              "price_change_pct": "0.0",
+              "discount_pct": "0",
+              "promotion_type": "None",
+              "units_sold": "22",
+              "revenue": "2081.64",
+              "inventory_level": "277",
+              "stockout_flag": "0",
+              "demand_index": "105.26"
+            }
+          }
+        ],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": null
+      }
+    },
+    {
+      "case_id": "E018",
+      "question": "What demand index was recorded for product P1009 in the app channel?",
+      "trace": {
+        "answer": {
+          "answer": "The question is ambiguous: multiple records exist for product P1009 in the app channel across different dates and regions. Please specify the date or region to identify the correct demand index.",
+          "citations": [],
+          "refused": true
+        },
+        "retrieved": [
+          {
+            "id": "inventory.csv#r2:c1",
+            "file": "inventory.csv",
+            "text": "date=2026-02-09 | product_id=P1009 | category=Shoes | brand=Nike | region=CA | channel=app | season=Winter | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=25 | revenue=4618.5 | inventory_level=285 | stockout_flag=0 | demand_index=120.77",
+            "page": null,
+            "row": 2,
+            "cells": {
+              "date": "2026-02-09",
+              "product_id": "P1009",
+              "category": "Shoes",
+              "brand": "Nike",
+              "region": "CA",
+              "channel": "app",
+              "season": "Winter",
+              "base_price": "184.74",
+              "current_price": "184.74",
+              "price_change_pct": "0.0",
+              "discount_pct": "0",
+              "promotion_type": "None",
+              "units_sold": "25",
+              "revenue": "4618.5",
+              "inventory_level": "285",
+              "stockout_flag": "0",
+              "demand_index": "120.77"
+            }
+          },
+          {
+            "id": "inventory.csv#r3:c1",
+            "file": "inventory.csv",
+            "text": "date=2026-03-05 | product_id=P1009 | category=Shoes | brand=Nike | region=UK | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=29 | revenue=5357.46 | inventory_level=299 | stockout_flag=0 | demand_index=140.1",
+            "page": null,
+            "row": 3,
+            "cells": {
+              "date": "2026-03-05",
+              "product_id": "P1009",
+              "category": "Shoes",
+              "brand": "Nike",
+              "region": "UK",
+              "channel": "app",
+              "season": "Spring",
+              "base_price": "184.74",
+              "current_price": "184.74",
+              "price_change_pct": "0.0",
+              "discount_pct": "0",
+              "promotion_type": "None",
+              "units_sold": "29",
+              "revenue": "5357.46",
+              "inventory_level": "299",
+              "stockout_flag": "0",
+              "demand_index": "140.1"
+            }
+          },
+          {
+            "id": "inventory.csv#r4:c1",
+            "file": "inventory.csv",
+            "text": "date=2026-03-11 | product_id=P1009 | category=Shoes | brand=Nike | region=IN | channel=app | season=Spring | base_price=184.74 | current_price=184.74 | price_change_pct=0.0 | discount_pct=0 | promotion_type=None | units_sold=19 | revenue=3510.06 | inventory_level=265 | stockout_flag=0 | demand_index=91.79",
+            "page": null,
+            "row": 4,
+            "cells": {
+              "date": "2026-03-11",
+              "product_id": "P1009",
+              "category": "Shoes",
+              "brand": "Nike",
+              "region": "IN",
+              "channel": "app",
+              "season": "Spring",
+              "base_price": "184.74",
+              "current_price": "184.74",
+              "price_change_pct": "0.0",
+              "discount_pct": "0",
+              "promotion_type": "None",
+              "units_sold": "19",
+              "revenue": "3510.06",
+              "inventory_level": "265",
+              "stockout_flag": "0",
+              "demand_index": "91.79"
+            }
+          }
+        ],
+        "tools": [],
+        "error": null,
+        "invalid_citation": false,
+        "invalid_tool_call": false,
+        "refusal_code": null
+      }
+    }
+  ]
+}
