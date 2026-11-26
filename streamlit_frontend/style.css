@@ -26,9 +26,13 @@
     padding: 0.75rem 2rem 1.5rem;
 }
 
-/* Hide default Streamlit chrome clutter & heading anchor links */
-#MainMenu, footer, [data-testid="stToolbar"], .stAppDeployButton, [data-testid="stHeader"] {
+/* Hide default Streamlit chrome clutter & heading anchor links, keeping sidebar expand button intact */
+#MainMenu, footer, .stAppDeployButton, [data-testid="stStatusWidget"], [data-testid="stHeaderActionElements"] {
     display: none !important;
+}
+[data-testid="stHeader"] {
+    background: transparent !important;
+    height: 2.25rem !important;
 }
 h1 a, h2 a, h3 a, h4 a {
     display: none !important;
@@ -100,12 +104,16 @@ h1 a, h2 a, h3 a, h4 a {
     background-color: #EAE6DC;
     color: var(--forge-text);
 }
-[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] {
-    background-color: var(--forge-red-soft);
-    color: var(--forge-red);
+[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"],
+[data-testid="stSidebar"] a[aria-current="page"],
+[data-testid="stSidebar"] [data-testid="stPageLink"]:has([aria-current="page"]) [data-testid="stPageLink-NavLink"] {
+    background-color: var(--forge-red-soft) !important;
+    color: var(--forge-red) !important;
 }
-[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] svg {
-    color: var(--forge-red);
+[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] *,
+[data-testid="stSidebar"] a[aria-current="page"] *,
+[data-testid="stSidebar"] [data-testid="stPageLink"]:has([aria-current="page"]) * {
+    color: var(--forge-red) !important;
 }
 
 .st-key-secondary-nav {
@@ -175,7 +183,7 @@ h1 a, h2 a, h3 a, h4 a {
 
 /* Page link styled as primary action button (e.g., Build new agent) */
 .st-key-overview-cta [data-testid="stPageLink-NavLink"] {
-    background-color: var(--forge-red);
+    background-color: var(--forge-red) !important;
     color: #FFFEFC !important;
     border-radius: 6px;
     padding: 0.45rem 0.9rem;
@@ -184,8 +192,11 @@ h1 a, h2 a, h3 a, h4 a {
     justify-content: center;
     transition: background-color 0.15s ease;
 }
+.st-key-overview-cta [data-testid="stPageLink-NavLink"] * {
+    color: #FFFEFC !important;
+}
 .st-key-overview-cta [data-testid="stPageLink-NavLink"]:hover {
-    background-color: var(--forge-red-hover);
+    background-color: var(--forge-red-hover) !important;
 }
 
 /* Inputs, Textareas, Selectboxes, File Uploader */
@@ -310,6 +321,8 @@ h1 a, h2 a, h3 a, h4 a {
 .run-actions {
     white-space: nowrap;
     text-align: right;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 .run-actions a {
     display: inline-block;
@@ -328,6 +341,17 @@ h1 a, h2 a, h3 a, h4 a {
     background: #F2F0E9;
     border-color: #CFCAC0;
     color: var(--forge-red);
+}
+.run-actions span.disabled {
+    display: inline-block;
+    border: 1px solid var(--forge-border);
+    border-radius: 5px;
+    padding: 0.22rem 0.5rem;
+    font-size: 0.74rem;
+    color: #B2AEA6;
+    background: #FAF9F5;
+    margin-left: 0.25rem;
+    cursor: not-allowed;
 }
 
 /* Vertical Stepper (Build Agent Pipeline) */

@@ -23,7 +23,38 @@ def models(providers, configured_only=False):
     ))
 
 
-def status_pill(status: str) -> str:
+DEMO_RUN_IDS = {
+    "groq-academic-final",
+    "groq-procurement-final",
+    "citation-precision-academic-r2",
+    "citation-precision-procurement-r1",
+    "groq-museum-rehearsal-r2",
+    "retail-retrieval-key3-candidate",
+}
+
+STATUS_LABELS = {
+    "complete": "Completed",
+    "completed": "Completed",
+    "complete_with_errors": "Completed with errors",
+    "incomplete": "Incomplete",
+    "prototype": "Prototype",
+    "running": "Running",
+}
+
+
+def readable_status(status: str) -> str:
+    return STATUS_LABELS.get((status or "").lower(), status.replace("_", " ").capitalize())
+
+
+def readable_agent_name(run: dict) -> str:
+    scope = (run.get("scope") or "").strip()
+    if not scope or scope == run["id"]:
+        return run["id"].replace("-", " ").title()
+    clean = scope.removeprefix("Build an ").removeprefix("Build a ").strip()
+    return clean[:52].rstrip(" ,.;") + ("…" if len(clean) > 52 else "")
+
+
+def status_pill(status: str, label: str | None = None) -> str:
     s = (status or "").lower()
     if s in {"complete", "completed", "passed", "supported"}:
         cls = "forge-pill-success"
@@ -33,7 +64,7 @@ def status_pill(status: str) -> str:
         cls = "forge-pill-warn"
     else:
         cls = "forge-pill-neutral"
-    return f'<span class="forge-pill {cls}">{escape(status)}</span>'
+    return f'<span class="forge-pill {cls}">{escape(label or status)}</span>'
 
 
 def choose_run(key: str):
@@ -77,14 +108,25 @@ def overview():
             st.info("No generated agents found. Upload documents and provide a brief to build your first agent.")
         return
 
-    search_col, status_col = st.columns([2.5, 1])
-    query_text = search_col.text_input("Search agents", placeholder="Search by run ID, scope, or model...", label_visibility="collapsed")
+    search_col, view_col, status_col = st.columns([2, 1.1, 1.1])
+    query_text = search_col.text_input("Search agents", placeholder="Search by agent, run ID, or model...", label_visibility="collapsed")
+    view_filter = view_col.selectbox("Run type", ["All runs", "Demo runs", "Experiments"], label_visibility="collapsed")
     statuses = ["All statuses", *sorted({r["status"] for r in runs})]
-    status_filter = status_col.selectbox("Filter status", statuses, label_visibility="collapsed")
+    status_filter = status_col.selectbox(
+        "Filter status",
+        statuses,
+        format_func=lambda s: s if s == "All statuses" else readable_status(s),
+        label_visibility="collapsed",
+    )
 
     filtered = []
     q = query_text.strip().lower()
     for run in runs:
+        is_demo = run["id"] in DEMO_RUN_IDS
+        if view_filter == "Demo runs" and not is_demo:
+            continue
+        if view_filter == "Experiments" and is_demo:
+            continue
         if status_filter != "All statuses" and run["status"] != status_filter:
             continue
         if q and q not in f'{run["id"]} {run["scope"]} {run["model"]}'.lower():
@@ -92,38 +134,54 @@ def overview():
         filtered.append(run)
 
     if not filtered:
-        st.info("No runs match the current search or status filter.")
+        st.info("No runs match the current search or filters.")
         return
 
+    page_size = 7
+    total_pages = max(1, (len(filtered) + page_size - 1) // page_size)
+    page_num = min(st.session_state.get("overview-page", 1), total_pages)
+    start_idx = (page_num - 1) * page_size
+    page_runs = filtered[start_idx : start_idx + page_size]
+
     rows = []
-    for run in filtered:
+    for run in page_runs:
         rate = run["selected_pass_rate"]
-        score = f'<strong>{rate:.0%}</strong> <span style="color:#73736C;font-size:0.75rem">({run["total_cases"]})</span>' if rate is not None else "—"
+        has_eval = rate is not None
+        score = f'<strong>{rate:.0%}</strong> <span style="color:#73736C;font-size:0.75rem">({run["total_cases"]})</span>' if has_eval else "—"
         short_model = run["model"].split("/")[-1] if "/" in run["model"] else run["model"]
+        created = run["created_at"][:10] if run.get("created_at") else "—"
         query = urlencode({"run": run["id"]})
-        actions = " ".join(
-            f'<a href="{page.url_path}?{query}">{label}</a>'
-            for page, label in (
-                (playground_page, "Chat"),
-                (evaluations_page, "Eval"),
-                (reports_page, "Reports"),
-            )
-        )
+        action_items = [
+            f'<a href="{playground_page.url_path}?{query}">Chat</a>',
+            f'<a href="{evaluations_page.url_path}?{query}">Eval</a>' if has_eval else '<span class="disabled" title="No evaluation available">Eval</span>',
+            f'<a href="{reports_page.url_path}?{query}">Reports</a>',
+        ]
+        agent_title = readable_agent_name(run)
         rows.append(
             f'<tr>'
-            f'<td><strong>{escape(run["id"])}</strong><small title="{escape(run["scope"])}">{escape(run["scope"])}</small></td>'
+            f'<td><strong title="{escape(run["scope"])}">{escape(agent_title)}</strong><small>{escape(run["id"])}</small></td>'
             f'<td title="{escape(run["model"])}"><code>{escape(short_model)}</code></td>'
-            f'<td>{status_pill(run["status"])}</td>'
+            f'<td>{status_pill(run["status"], readable_status(run["status"]))}</td>'
             f'<td>{score}</td>'
-            f'<td class="run-actions">{actions}</td>'
+            f'<td style="color:#73736C;font-size:0.78rem">{escape(created)}</td>'
+            f'<td class="run-actions">{" ".join(action_items)}</td>'
             f'</tr>'
         )
     st.html(
         '<div class="forge-table-wrap"><table class="forge-table">'
-        '<colgroup><col style="width:36%"><col style="width:18%"><col style="width:15%"><col style="width:11%"><col style="width:20%"></colgroup>'
-        '<thead><tr><th>Agent / Run</th><th>Model</th><th>Status</th><th>Score</th><th style="text-align:right">Actions</th></tr></thead>'
+        '<colgroup><col style="width:27%"><col style="width:15%"><col style="width:17%"><col style="width:9%"><col style="width:10%"><col style="width:22%"></colgroup>'
+        '<thead><tr><th>Agent</th><th>Model</th><th>Status</th><th>Score</th><th>Created</th><th style="text-align:right">Actions</th></tr></thead>'
         f'<tbody>{"".join(rows)}</tbody></table></div>'
     )
+
+    info_col, prev_col, next_col = st.columns([4, 0.8, 0.8], vertical_alignment="center")
+    info_col.caption(f"Showing {start_idx + 1}–{start_idx + len(page_runs)} of {len(filtered)} runs (Page {page_num} of {total_pages})")
+    if prev_col.button("Previous", disabled=page_num <= 1, use_container_width=True):
+        st.session_state["overview-page"] = page_num - 1
+        st.rerun()
+    if next_col.button("Next", disabled=page_num >= total_pages, use_container_width=True):
+        st.session_state["overview-page"] = page_num + 1
+        st.rerun()
 
 
 # ---------------------------------------------------------------------------
