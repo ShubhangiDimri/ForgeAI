@@ -13,18 +13,20 @@ Review the [brief, input documents, and synthesis prompt](README.md), then use t
 | Must refuse | unrelated requests, information on live stock availability |
 | Assumptions | CSV lookup and calculator are available as described |
 | Unresolved | None recorded |
-| Selected agent | v1, `groq:openai/gpt-oss-120b` |
+| Selected agent | v0, `groq:openai/gpt-oss-120b` |
 | Retrieval settings | 120 words per chunk, 20 words overlap, top 4, minimum score 0.22 |
 | Tools | `csv_lookup` (Needed for exact SKU and price retrieval from catalogue.csv), `calculator` (Required for arithmetic on order subtotals) |
 
 [Raw requirements](../../backend/artifacts/groq-procurement-final/requirements.json) · [Groundability review](../../backend/artifacts/groq-procurement-final/coverage.json) · [Full agent definition and system prompt](../../backend/artifacts/groq-procurement-final/agent_config.json)
 
+The run metadata and final report identify v0 as retained. The saved agent definition matches the v0 snapshot, though its internal version field reads 1.
+
 ## Scorecards and optimization
 
 | Version | Passed | Failed | Errors | Pass rate |
 | --- | ---: | ---: | ---: | ---: |
-| v0 | 12/20 | 7 | 1 | 60% |
-| v1 (retained) | 11/20 | 9 | 0 | 55% |
+| v0 (retained) | 12/20 | 7 | 1 | 60% |
+| v1 | 11/20 | 9 | 0 | 55% |
 
 - **Iteration 1.** Clarify tool choice and input provenance after tool-related failures. Changed `system_prompt`. Recorded outcome: no improvement.
 - **Cases targeted by the critic.** E004, E008, E016.
@@ -34,7 +36,7 @@ Review the [brief, input documents, and synthesis prompt](README.md), then use t
 
 ## Check individual answers
 
-These examples use actual answers and judge notes from retained v1.
+These examples use actual answers and judge notes from the v1 candidate.
 
 ### E004 · Passed
 

@@ -2,7 +2,14 @@
 
 Answers collections staff questions about loan intake, storage, object movements, and incident procedures.
 
-The baseline passed **13/20**. The first iteration clarified scope and disambiguation instructions and passed **14/20**, so **v1** was retained. Both versions recorded zero infrastructure errors. [Final report](../../backend/artifacts/groq-museum-rehearsal-r2/final_report.md)
+## Evaluation scorecard
+
+| Version | Passed | Failed | Errors | Pass rate | Δ vs baseline | Selection |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| [Baseline (v0)](EVIDENCE.md#scorecards-and-optimization) | **13/20** | 7 | 0 | **65%** | — | Not retained |
+| [Iteration 1 (v1)](EVIDENCE.md#scorecards-and-optimization) | **14/20** | 6 | 0 | **70%** | +5 pp | **Retained** |
+
+Iteration 1 clarified scope and disambiguation instructions. [Final report](../../backend/artifacts/groq-museum-rehearsal-r2/final_report.md)
 
 [Review the run evidence](EVIDENCE.md) for the requirements, tool choices, optimization decision, examples, and all 20 case outcomes in GitHub-readable tables.
 

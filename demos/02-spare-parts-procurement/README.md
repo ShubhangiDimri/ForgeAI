@@ -2,7 +2,14 @@
 
 Helps procurement staff find catalogue items and interpret supplier terms. The saved tool smoke test shows CSV lookup and calculator use.
 
-The baseline passed **12/20**, with seven failed cases and one judge rate-limit error. The first iteration adjusted tool-selection instructions and passed **11/20**, so **v0** was retained. [Final report](../../backend/artifacts/groq-procurement-final/final_report.md)
+## Evaluation scorecard
+
+| Version | Passed | Failed | Errors | Pass rate | Δ vs baseline | Selection |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| [Baseline (v0)](EVIDENCE.md#scorecards-and-optimization) | **12/20** | 7 | 1 | **60%** | — | **Retained** |
+| [Iteration 1 (v1)](EVIDENCE.md#scorecards-and-optimization) | **11/20** | 9 | 0 | **55%** | -5 pp | Not retained |
+
+The baseline’s one error was a judge rate limit. Iteration 1 adjusted tool-selection instructions. [Final report](../../backend/artifacts/groq-procurement-final/final_report.md)
 
 [Review the run evidence](EVIDENCE.md) for the requirements, tool choices, optimization decision, examples, and all 20 case outcomes in GitHub-readable tables.
 
