@@ -12,16 +12,17 @@
 | 6 | Critic and optimizer | Verified. Four semantic failure classifications have mock-backed coverage, separate from infrastructure errors. The optimizer patches specific fields, reruns the frozen dataset and retains the best score. Both initial and resume paths enforce the baseline plus three-iteration maximum. Existing live logs contain changes, reasons, affected IDs, and numeric before/after scores. |
 | 7 | Honest reports | Verified and improved. Archived definitions, scorecards, error traces and final reports reconcile. New reports link the selected definition, scorecards and logs, show affected cases and score comparisons, and enumerate partial, unsupported or inconclusive requirements. |
 | 8 | Runnable product | Verified. The generic CLI and Streamlit Playground load saved definitions. Saved Academic and Procurement chat/tool smoke artifacts and the museum chat trace are available. |
-| 9 | Two full demonstrations | Verified against tracked artifacts. Academic and Procurement have separate briefs and document sets, source and synthesis prompts, requirements, valid definitions and version snapshots, distinct frozen datasets, per-case traces, iteration logs, scorecards and final reports. |
+| 9 | Two full demonstrations | Verified against tracked artifacts. Museum and Procurement are the primary pair, with Academic retained as a supplementary run. The primary runs have separate briefs and document sets, source and synthesis prompts, requirements, valid definitions and version snapshots, distinct frozen datasets, per-case traces, iteration logs, scorecards and final reports. |
 
 ## Saved demonstrations
 
 | Run | Baseline | Iteration 1 | Retained |
 | --- | --- | --- | --- |
-| [Academic](backend/artifacts/groq-academic-final/final_report.md) | 12 passed, 7 failed, 1 invalid route response | 11 passed, 9 failed, 0 errors | v0 |
-| [Procurement](backend/artifacts/groq-procurement-final/final_report.md) | 12 passed, 7 failed, 1 judge HTTP 429 | 11 passed, 9 failed, 0 errors | v0 |
-| [Museum unattended rehearsal](backend/artifacts/groq-museum-rehearsal-r2/final_report.md) | 13 passed, 7 failed, 0 errors | 14 passed, 6 failed, 0 errors | v1 |
+| [Academic, supplementary](backend/artifacts/groq-academic-final/final_report.md) | 12 passed, 7 failed, 1 invalid route response | 11 passed, 9 failed, 0 errors | v0 |
+| [Procurement, primary](backend/artifacts/groq-procurement-final/final_report.md) | 12 passed, 7 failed, 1 judge HTTP 429 | 11 passed, 9 failed, 0 errors | v0 |
+| [Museum, primary](backend/artifacts/groq-museum-rehearsal-r2/final_report.md) | 13 passed, 7 failed, 0 errors | 14 passed, 6 failed, 0 errors | v1 |
 
+- Museum inputs are in [demo_data/museum_rehearsal](backend/demo_data/museum_rehearsal), [brief](backend/demo_data/museum_rehearsal_brief.txt) and [synthesis prompt](backend/demo_data/museum_rehearsal_synthesis_prompt.txt).
 - Academic inputs are in [demo_data/academic](backend/demo_data/academic), [brief](backend/demo_data/academic_factory_brief.txt), [synthesis prompt](backend/demo_data/synthesis_prompt.txt) and [expansion prompt](backend/demo_data/academic_expansion_prompt.txt).
 - Procurement inputs are in [demo_data/procurement](backend/demo_data/procurement), [brief](backend/demo_data/procurement_brief.txt) and [synthesis prompt](backend/demo_data/procurement_synthesis_prompt.txt).
 - Evaluation prompts are in [forgeai/prompts](backend/forgeai/prompts). Each archived demo directory contains its own `requirements.json`, `coverage.json`, `agent_config.json`, `eval_dataset.json`, `case_results/`, `versions/`, `scorecards.json`, `iteration_logs.json` and `final_report.md`.

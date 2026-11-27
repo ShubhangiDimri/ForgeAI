@@ -14,9 +14,21 @@ ForgeAI is an autonomous agent factory. It turns a requester brief and a folder 
 6. **Critic and optimizer.** Diagnose failures, apply a targeted change, then score the same frozen cases. Run up to three iterations after baseline and retain the best measured version.
 7. **Reporting.** Save the selected definition, per-case results, iteration changes, scorecards and remaining limitations.
 8. **Runnable agents.** Load any saved definition in Playground or the CLI. Playground shows citations, retrieved passages and tool activity.
-9. **Two end-to-end demonstrations.** Academic policy and spare-parts procurement have independent briefs, datasets and complete run artifacts. A museum collections run adds an unattended rehearsal on a different domain.
+9. **Two end-to-end demonstrations.** Museum collections and spare-parts procurement are the two primary submissions. Academic policy is a supplementary run.
 
 The Streamlit interface also supports human approval of requirements, conversation reset, a Grounding switch and artifact downloads. A prototype-only mode saves an agent before evaluation.
+
+| Assignment requirement | Implementation | Reviewer check |
+| --- | --- | --- |
+| R1 Intake | [intake.py](backend/forgeai/intake.py) | Open a run's requirements or enable interactive intake. |
+| R2 Groundability | [coverage.py](backend/forgeai/coverage.py) | Inspect `coverage.json` for source quotes and limitations. |
+| R3 Agent generation | [generator.py](backend/forgeai/generator.py) | Inspect `agent_config.json` for the prompt, retrieval settings, output contract and tools. |
+| R4 Evaluation generation | [evaluation.py](backend/forgeai/evaluation.py) | Compare `eval_dataset.json` with the recorded source anchors. |
+| R5 Judge | [judge.py](backend/forgeai/judge.py) | Open Evaluations or inspect `case_results/` for the rubric, evidence and decisions. |
+| R6 Optimization | [optimizer.py](backend/forgeai/optimizer.py) and [workflow.py](backend/forgeai/workflow.py) | Open the Optimization Log to compare the changed fields, affected cases and scores. |
+| R7 Reporting | [workflow.py](backend/forgeai/workflow.py) | Read `final_report.md` and `scorecards.json`, including errors and limitations. |
+| R8 Runnable agent | [runner.py](backend/forgeai/runner.py) | Choose a saved agent in Playground or load its config with the CLI. |
+| R9 Two demonstrations | [Museum](backend/artifacts/groq-museum-rehearsal-r2/) and [Procurement](backend/artifacts/groq-procurement-final/) | Compare the briefs, sources and complete evaluation histories. |
 
 ## System Architecture
 
@@ -119,13 +131,15 @@ Use a fresh output directory for each build. Add `--prototype-only` to skip eval
 
 | Live run | Baseline | Iteration 1 | Retained | Change |
 | --- | ---: | ---: | --- | --- |
-| [Academic policy](backend/artifacts/groq-academic-final/) | 12/20 | 11/20 | v0 | Required verified citation excerpts |
-| [Spare-parts procurement](backend/artifacts/groq-procurement-final/) | 12/20 | 11/20 | v0 | Tightened tool-selection instructions |
 | [Museum collections](backend/artifacts/groq-museum-rehearsal-r2/) | 13/20 | 14/20 | v1 | Clarified scope and disambiguation instructions |
+| [Spare-parts procurement](backend/artifacts/groq-procurement-final/) | 12/20 | 11/20 | v0 | Tightened tool-selection instructions |
+| [Academic policy, supplementary](backend/artifacts/groq-academic-final/) | 12/20 | 11/20 | v0 | Required verified citation excerpts |
 
-Academic and Procurement retained their baselines because the candidate versions passed fewer cases on the same frozen questions. Academic baseline recorded one invalid route response. Procurement baseline recorded one judge HTTP 429. Both iteration runs and both museum versions recorded zero infrastructure errors.
+Museum demonstrates an unattended policy build and a measured improvement. Procurement demonstrates CSV lookup and calculator use. Academic and Procurement retained their baselines because the candidate versions passed fewer cases on the same frozen questions. Academic baseline recorded one invalid route response. Procurement baseline recorded one judge HTTP 429. Both iteration runs and both museum versions recorded zero execution or judge errors.
 
 Each run folder contains the definition, frozen dataset, raw results, scorecards, iteration log and final report. The [demo inputs and synthesis prompts](backend/demo_data/) and [evaluation prompts](backend/forgeai/prompts/) are included. See the [assignment verification](ASSIGNMENT_VERIFICATION.md) for the evidence mapped to all nine requirements.
+
+The [retail retrieval replay](backend/artifacts/retail-retrieval-key3-candidate/comparison.md) is supplementary regression evidence. The [baseline](backend/artifacts/retail-retrieval-key3-baseline/) and candidate both scored **16/20** on the same corrected frozen dataset. Two clarification cases improved and two other cases regressed.
 
 ## Evaluation and Reliability
 

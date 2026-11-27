@@ -27,10 +27,7 @@ def models(providers, configured_only=False):
 DEMO_RUN_IDS = {
     "groq-academic-final",
     "groq-procurement-final",
-    "citation-precision-academic-r2",
-    "citation-precision-procurement-r1",
     "groq-museum-rehearsal-r2",
-    "retail-retrieval-key3-candidate",
 }
 
 STATUS_LABELS = {
@@ -1011,7 +1008,7 @@ def docs():
                     "python -m pytest -q\n"
                     "python -m forgeai build --non-interactive --brief \"...\" --docs ./demo_data/academic --out ./artifacts/my-run\n"
                     "python -m forgeai chat --config ./artifacts/groq-academic-final/agent_config.json\n"
-                    "python -m forgeai evaluate --resume-scoring --run ./artifacts/groq-academic-final",
+                    "python -m forgeai evaluate --resume-scoring --run ./artifacts/my-run",
                     language="bash",
                 )
 

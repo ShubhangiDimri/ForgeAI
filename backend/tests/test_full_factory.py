@@ -66,7 +66,7 @@ class DraftModel:
 
 
 def saved_config():
-    return Config.model_validate_json(Path("artifacts/academic-final/agent_config.json").read_bytes())
+    return Config.model_validate_json(Path("artifacts/groq-museum-rehearsal-r2/agent_config.json").read_bytes())
 
 
 def test_generate_and_freeze(tmp_path):
