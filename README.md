@@ -129,6 +129,8 @@ Use a fresh output directory for each build. Add `--prototype-only` to skip eval
 
 ## Demonstration Results
 
+Start with the [submission demos](demos/). Each demo page links to its brief, source documents, synthesis prompt, frozen evaluation cases, and final report.
+
 | Live run | Baseline | Iteration 1 | Retained | Change |
 | --- | ---: | ---: | --- | --- |
 | [Museum collections](backend/artifacts/groq-museum-rehearsal-r2/) | 13/20 | 14/20 | v1 | Clarified scope and disambiguation instructions |
