@@ -4,6 +4,8 @@ Answers collections staff questions about loan intake, storage, object movements
 
 The baseline passed **13/20**. The first iteration clarified scope and disambiguation instructions and passed **14/20**, so **v1** was retained. Both versions recorded zero infrastructure errors. [Final report](../../backend/artifacts/groq-museum-rehearsal-r2/final_report.md)
 
+[Review the run evidence](EVIDENCE.md) for the requirements, tool choices, optimization decision, examples, and all 20 case outcomes in GitHub-readable tables.
+
 | Evidence | Files |
 | --- | --- |
 | Inputs | [Requester brief](../../backend/demo_data/museum_rehearsal_brief.txt), [source documents](../../backend/demo_data/museum_rehearsal/), [document synthesis prompt](../../backend/demo_data/museum_rehearsal_synthesis_prompt.txt) |

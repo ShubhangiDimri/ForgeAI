@@ -4,6 +4,8 @@ Helps procurement staff find catalogue items and interpret supplier terms. The s
 
 The baseline passed **12/20**, with seven failed cases and one judge rate-limit error. The first iteration adjusted tool-selection instructions and passed **11/20**, so **v0** was retained. [Final report](../../backend/artifacts/groq-procurement-final/final_report.md)
 
+[Review the run evidence](EVIDENCE.md) for the requirements, tool choices, optimization decision, examples, and all 20 case outcomes in GitHub-readable tables.
+
 | Evidence | Files |
 | --- | --- |
 | Inputs | [Requester brief](../../backend/demo_data/procurement_brief.txt), [source documents](../../backend/demo_data/procurement/), [document synthesis prompt](../../backend/demo_data/procurement_synthesis_prompt.txt) |
