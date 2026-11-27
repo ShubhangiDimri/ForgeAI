@@ -168,10 +168,6 @@ From `backend/`:
 - Historical scores predate the latest judge safeguards. Use a fresh pinned baseline to measure changes under the current rubric.
 - Image-only PDFs require OCR before ingestion.
 
-## Demo Video and Deployment
 
-- **Demo video:** link pending.
-- **Hosted Streamlit app:** link pending.
-- **Hosted API:** link pending.
 
 For Streamlit Community Cloud, use `streamlit_frontend/app.py` as the entry point and set `FORGEAI_API_URL` to the hosted FastAPI HTTPS URL. On the backend host, configure provider credentials, protect reviewer access and persist uploads and run artifacts across restarts.
