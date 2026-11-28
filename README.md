@@ -169,5 +169,81 @@ From `backend/`:
 - Image-only PDFs require OCR before ingestion.
 
 
+## Demo Video and Deployment
 
-For Streamlit Community Cloud, use `streamlit_frontend/app.py` as the entry point and set `FORGEAI_API_URL` to the hosted FastAPI HTTPS URL. On the backend host, configure provider credentials, protect reviewer access and persist uploads and run artifacts across restarts.
+- **Demo video:** link pending.
+- **Hosted Streamlit app:** [ForgeAI live demo](https://forgeai-oceanai-demo.streamlit.app/)
+- **Hosted API:** FastAPI on Azure VM, accessed by Streamlit over authenticated HTTPS.
+
+## Backend Docker
+
+The Compose service runs only FastAPI on port 8000. It uses one Uvicorn worker, CPU PyTorch, and hosted LLM providers. On first start it downloads the MiniLM embedding files to a persistent cache. Later starts reuse a complete local snapshot. The build context excludes credentials, uploads, saved runs, and local caches. [CPU PyTorch wheels](https://pytorch.org/get-started/locally/)
+
+### Local Windows PowerShell
+
+Run from the repository root with Docker Desktop in Linux container mode. Keep your existing `backend/.env`; on a fresh clone, copy `backend/.env.example` to `backend/.env` and fill in credentials for your hosted providers. Use hosted model IDs in `FORGE_MODEL` and `FORGE_JUDGE_MODEL` if you override the defaults.
+
+```powershell
+New-Item -ItemType Directory -Force backend/uploads, backend/.cache | Out-Null
+docker compose config --quiet
+docker compose build backend
+docker compose up -d --wait --wait-timeout 300
+Invoke-RestMethod http://127.0.0.1:8000/api/health
+(Invoke-RestMethod http://127.0.0.1:8000/api/runs).runs | Select-Object id, status
+$report = 'http://127.0.0.1:8000/api/runs/groq-museum-rehearsal-r2/artifacts/final_report.md'
+Invoke-WebRequest $report -OutFile "$env:TEMP/forgeai-report-before.md"
+docker compose restart backend
+docker compose up -d --wait --wait-timeout 300
+Invoke-WebRequest $report -OutFile "$env:TEMP/forgeai-report-restarted.md"
+docker compose up -d --force-recreate --wait --wait-timeout 300
+Invoke-WebRequest $report -OutFile "$env:TEMP/forgeai-report-recreated.md"
+Get-FileHash "$env:TEMP/forgeai-report-before.md", "$env:TEMP/forgeai-report-restarted.md", "$env:TEMP/forgeai-report-recreated.md"
+docker image ls forgeai-backend:local
+docker stats --no-stream (docker compose ps -q backend)
+```
+
+Start the [local Streamlit app](#setup-and-installation) in a second shell with `FORGEAI_API_URL=http://127.0.0.1:8000`. Open Reports to download a saved run and Playground to exercise retrieval. Check memory again while building an agent or chatting. Health checks verify the API process. They don’t test provider credentials or model completion.
+
+The host's `backend/artifacts/` holds runs, reports, and checkpoints. `backend/uploads/` holds uploaded documents and `backend/.cache/` holds the embedding cache. Back up these directories before migrating a VM. `docker compose down` leaves them on disk. In-flight build threads and pending interactive approvals live in process memory. Use the existing recovery controls where a checkpoint has been written. If you configure a different embedding ID, populate that model in the same Hugging Face cache before using it. Saved agents continue to use their own embedding configuration.
+
+### Azure Linux VM
+
+Install Docker Engine and the Compose plugin on the VM. The following commands assume an x86-64 Ubuntu VM and a shell with Docker access. [Docker Engine installation for Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+
+```bash
+git clone https://github.com/ShubhangiDimri/ForgeAI.git
+cd ForgeAI
+mkdir -p backend/uploads backend/.cache
+umask 077
+cp -n backend/.env.example backend/.env
+chmod 600 backend/.env
+nano backend/.env
+export FORGEAI_UID=$(id -u) FORGEAI_GID=$(id -g)
+docker compose config --quiet
+docker compose build backend
+docker compose up -d --wait --wait-timeout 300
+curl -fsS http://127.0.0.1:8000/api/health
+docker stats --no-stream "$(docker compose ps -q backend)"
+```
+
+On a 1 GB VM, the OS and Docker share memory with PyTorch, MiniLM, FAISS, and active builds. Run one build at a time and keep uploaded datasets small. First inference and corpus indexing can use more memory than idle API requests. Check `free -h` and `swapon --show` first. If the VM has no swap and has at least 2 GiB of free disk, Ubuntu can use a swap file as an OOM buffer. Swap adds latency.
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+printf '%s\n' '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+Run the swap commands only on a VM where `/swapfile` does not already exist. The API binds to loopback on the host by default. Keep Azure NSG port 8000 closed to the internet. For private testing, run `ssh -L 8000:127.0.0.1:8000 <azure-user>@<vm-host>` from your workstation. For Streamlit Community Cloud, use a publicly reachable HTTPS hostname with access control through an HTTPS reverse proxy or managed ingress that can reach the backend. The FastAPI endpoints themselves accept unauthenticated requests, including builds and artifact downloads. Keep provider keys on the backend.
+
+### Streamlit Community Cloud
+
+Use `streamlit_frontend/app.py` as the entry point. In **Advanced settings → Secrets**, configure the HTTPS backend origin:
+
+```toml
+FORGEAI_API_URL = "https://api.example.com"
+```
+
+If your ingress enforces a bearer token, set `FORGEAI_API_TOKEN` in the same secrets panel. The existing Streamlit client sends it in the Authorization header. The FastAPI service does not validate that token itself. Streamlit makes these requests server-side, so CORS changes are unnecessary. [Streamlit Community Cloud secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management)
