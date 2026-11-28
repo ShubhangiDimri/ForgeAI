@@ -170,8 +170,6 @@ From `backend/`:
 
 
 ## Demo Video and Deployment
-
-- **Demo video:** link pending.
 - **Hosted Streamlit app:** [ForgeAI live demo](https://forgeai-oceanai-demo.streamlit.app/)
 - **Hosted API:** FastAPI on Azure VM, accessed by Streamlit over authenticated HTTPS.
 
